@@ -3,25 +3,49 @@ title: "Assignment 1: Gina Graphs"
 output: html_notebook
 ---
 
-Import libraries
+# Import libraries
 ```{r}
 library(tidyverse)
 library(lubridate)
+library(formattable) # round numbers
 ```
 
-Read csv
+# Read csv
 ```{r}
+# general (cummulative) information regarding tests, deaths, and recoveries. Complete timeline.
 tests_deaths_recoveries_data <- read.csv("data/covid19za_timeline_testing.csv")
 head(tests_deaths_recoveries_data)
 ```
+
+# Deaths vs Recovered
+```{r}
+# total deaths
+total_deaths <- max(tests_deaths_recoveries_data$deaths, na.rm = TRUE)
+head(total_deaths)
+
+# get last day's number of deaths increase
+last_death_cols <- tail(tests_deaths_recoveries_data$deaths, n=2)
+death_day_update <- last_death_cols[2] - last_death_cols[1]
+head(death_day_update)
+
+# total recovered
+total_recovered <- max(tests_deaths_recoveries_data$recovered, na.rm = TRUE)
+head(total_recovered)
+
+# percentage recovered
+percentage_recovered <- total_recovered / (total_recovered + total_deaths) * 100
+head(formattable(percentage_recovered, digits = 1, format = "f")) # round to 1 digit
+```
+
+
 # Total number of tests and test day increase
 ```{r}
 # get number of tests
 total_tests <- max(tests_deaths_recoveries_data$cumulative_tests, na.rm = TRUE)
 head(total_tests)
 # get last day's number of tests increase
-last_cols <- tail(tests_deaths_recoveries_data$cumulative_tests, n=2)
-test_day_update <- last_cols[2] - last_cols[1]
+last_tests_cols <- tail(tests_deaths_recoveries_data$cumulative_tests, n=2)
+test_day_update <- last_tests_cols[2] - last_tests_cols[1]
 test_day_update
 ```
 
