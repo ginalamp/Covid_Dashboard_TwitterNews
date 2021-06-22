@@ -4,6 +4,9 @@ renv/
 # Added: lock files
 *.~lock*
 
+# Added: Rmd html generation
+*.nb.html
+
 # History files
 .Rhistory
 .Rapp.history
