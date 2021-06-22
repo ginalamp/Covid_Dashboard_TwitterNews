@@ -1,0 +1,28 @@
+---
+title: "Assignment 1: Gina Graphs"
+output: html_notebook
+---
+
+Import libraries
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+Read csv
+```{r}
+tests_deaths_recoveries_data <- read.csv("data/covid19za_timeline_testing.csv")
+head(tests_deaths_recoveries_data)
+```
+# Total number of tests and test day increase
+```{r}
+# get number of tests
+total_tests <- max(tests_deaths_recoveries_data$cumulative_tests, na.rm = TRUE)
+head(total_tests)
+# get last day's number of tests increase
+last_cols <- tail(tests_deaths_recoveries_data$cumulative_tests, n=2)
+test_day_update <- last_cols[2] - last_cols[1]
+test_day_update
+```
+
+
