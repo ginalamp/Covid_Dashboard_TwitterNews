@@ -7,8 +7,7 @@ output: html_notebook
 library(tidyverse)
 library(lubridate)
 ```
-table4a %>% 
-  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+
 ```{r Data: Confirmed Cases}
 data <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
 head(data)
@@ -29,7 +28,11 @@ ggplot(cases, aes(date, cases)) +
   geom_smooth(color = "blue") + 
   scale_y_continuous(breaks = seq(0, 1000000, by = 100000), limits = c(0, 1000000), labels = NULL) +
   scale_x_date(labels = NULL) +
-  facet_wrap(~ province, nrow = 2)
+  facet_wrap(~ province, nrow = 2) +
+  theme_minimal() +
+  labs(title= "Confirmed Cases by Province",
+       x = NULL,
+       y = NULL)
 
 ```
 
