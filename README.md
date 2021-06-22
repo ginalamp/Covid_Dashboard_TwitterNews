@@ -5,6 +5,8 @@ Johanna Engelhard and Gina Lamprecht
 
 ## Assignment 1
 
+[Graph Allocation spreadsheet](https://docs.google.com/spreadsheets/d/1thUrLAOECz5pQ8OlmwxMl1a2i2PxGF3Oj1CnxEZAU8g/edit?usp=sharing)
+
 ### Overview
 * Due 29 June 2021
 * An analysis of COVID-19 spread in South Africa
