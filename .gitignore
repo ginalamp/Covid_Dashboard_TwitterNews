@@ -1,6 +1,9 @@
 # Added: R virtual environment
 renv/
 
+# Added: lock files
+*.~lock*
+
 # History files
 .Rhistory
 .Rapp.history
