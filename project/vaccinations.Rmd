@@ -14,7 +14,7 @@ head(data)
 ```
 
 
-```{r}
+```{r tidying}
 vaccinations <- data %>%
   mutate(date = dmy(date)) %>%
   mutate(daily=vaccinations-lag(vaccinations,default=0)) %>%

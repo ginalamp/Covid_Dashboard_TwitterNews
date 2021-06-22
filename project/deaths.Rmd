@@ -13,7 +13,7 @@ library(lubridate)
 data <- read.csv("data/covid19za_provincial_cumulative_timeline_deaths.csv")
 head(data)
 ```
-```{r}
+```{r tidying}
 deaths <- data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
 deaths <- deaths %>% 
   select(date, province, deaths, total)  %>% 
@@ -22,14 +22,14 @@ deaths <- deaths %>%
 
 head(deaths)
 ```
-```{r}
+```{r total and daily deaths}
 deaths_summary <- data %>%
   select(date, total) %>%
   mutate(date = dmy(date)) %>%
   mutate(daily=total-lag(total,default=0))
 ```
 
-```{r}
+```{r plot daily deaths}
 ggplot(deaths_summary, aes(date, daily)) + 
   geom_col() +
   labs(title= "Daily deaths",
@@ -38,7 +38,7 @@ ggplot(deaths_summary, aes(date, daily)) +
        y = NULL) +
   theme_minimal()
 ```
-```{r}
+```{r plot total deaths}
 ggplot(deaths_summary, aes(date, total)) + 
   geom_point() +
   labs(title= "Total Deaths",
@@ -48,7 +48,7 @@ ggplot(deaths_summary, aes(date, total)) +
   theme_minimal()
 ```
 
-```{r}
+```{r total deaths per province}
 total_deaths <- tail(data, 1) %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
 total_deaths <- total_deaths %>% 
   select(date, province, deaths, total)  %>% 
@@ -59,8 +59,7 @@ total_deaths <- total_deaths %>%
 total_deaths$province <- factor(total_deaths$province, levels = total_deaths$province)
 total_deaths
 ```
-```{r}
-
+```{r plot deaths by province}
 ggplot(total_deaths, aes(province, deaths)) + 
   geom_col() +
   geom_text(aes(label = deaths), vjust = -1) +
