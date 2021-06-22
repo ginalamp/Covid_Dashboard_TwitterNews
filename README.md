@@ -12,6 +12,7 @@ Data still needed:
 * lockdown level information
 * active cases
 * check timelines
+* population per province
 
 Notes on Data that we have:
 
