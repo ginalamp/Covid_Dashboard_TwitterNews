@@ -1,0 +1,74 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+```{r Data: deaths}
+data <- read.csv("data/covid19za_provincial_cumulative_timeline_deaths.csv")
+head(data)
+```
+```{r tidying}
+deaths <- data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
+deaths <- deaths %>% 
+  select(date, province, deaths, total)  %>% 
+  filter(province != 'UNKNOWN') %>% 
+  mutate(date = dmy(date))
+
+head(deaths)
+```
+```{r total and daily deaths}
+deaths_summary <- data %>%
+  select(date, total) %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily=total-lag(total,default=0))
+```
+
+```{r plot daily deaths}
+ggplot(deaths_summary, aes(date, daily)) + 
+  geom_col() +
+  labs(title= "Daily deaths",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  theme_minimal()
+```
+```{r plot total deaths}
+ggplot(deaths_summary, aes(date, total)) + 
+  geom_point() +
+  labs(title= "Total Deaths",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  theme_minimal()
+```
+
+```{r total deaths per province}
+total_deaths <- tail(data, 1) %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
+total_deaths <- total_deaths %>% 
+  select(date, province, deaths, total)  %>% 
+  filter(province != 'UNKNOWN') %>% 
+  mutate(date = dmy(date)) %>%
+  arrange(desc(deaths))
+
+total_deaths$province <- factor(total_deaths$province, levels = total_deaths$province)
+total_deaths
+```
+```{r plot deaths by province}
+ggplot(total_deaths, aes(province, deaths)) + 
+  geom_col() +
+  geom_text(aes(label = deaths), vjust = -1) +
+  scale_x_discrete() +
+  scale_y_continuous(labels = NULL) +
+  labs(title= "Deaths by Province",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  theme_minimal()
+```
+
