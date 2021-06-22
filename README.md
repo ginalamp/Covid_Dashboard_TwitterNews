@@ -13,6 +13,10 @@ Data still needed:
 * active cases
 * check timelines
 
+Notes on Data that we have:
+
+* Tests, deaths, recoveries : covid19za_timeline_testing.csv
+* Timeline only April and May 2020 : covid19za_provincial_cumulative_timeline_testing.csv
 
 ### Overview
 * Due 29 June 2021
