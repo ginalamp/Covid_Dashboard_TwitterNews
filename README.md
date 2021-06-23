@@ -3,14 +3,13 @@ ISM Honours Data Analysis block
 
 Johanna Engelhard and Gina Lamprecht
 
-## Assignment 1
+# Assignment 1
 
 [Graph Allocation spreadsheet](https://docs.google.com/spreadsheets/d/1thUrLAOECz5pQ8OlmwxMl1a2i2PxGF3Oj1CnxEZAU8g/edit?usp=sharing)
 
 Data still needed:
 
 * lockdown level information
-* active cases
 * check timelines
 * population per province
 
@@ -19,6 +18,21 @@ Notes on Data that we have:
 * Tests, deaths, recoveries : covid19za_timeline_testing.csv
 * Timeline only April and May 2020 : covid19za_provincial_cumulative_timeline_testing.csv
 
+* [Global github repo](https://github.com/owid/covid-19-data/tree/master/public/data)
+* [South African github repo - most current sources](https://github.com/dsfsi/covid19za)
+* [South Africa bunch of data](https://ourworldindata.org/coronavirus/country/south-africa) - extracted South African rows (was super big and took long to download, but has most complete statistics (basically everything we need other than lockdown and population data it seems) - which helps with timelines) in file: owid-covid-data_SouthAfricaExtracted_big.csv
+* [Covid Lockdown Levels as text - might need scraping](https://www.gov.za/covid-19/about/about-alert-system)
+* [Population per city - needs admin_name grouping and summing](https://simplemaps.com/data/za-cities) - in za_population_per_city.csv
+
+Additional (extra) - if the big file doesn't cover it well enough
+* [Excess Mortality github global](https://github.com/owid/covid-19-data/blob/master/public/data/excess_mortality/README.md)
+* [Excess Mortality South Africa](https://data.humdata.org/dataset/financial-times-excess-mortality-during-covid-19-pandemic-data)
+
+
+## Background research
+[Excess mortality](https://ourworldindata.org/excess-mortality-covid)
+
+## Instructions etc
 ### Overview
 * Due 29 June 2021
 * An analysis of COVID-19 spread in South Africa
@@ -57,6 +71,6 @@ Notes on Data that we have:
 * Pivoting longer/wider
 
 
-## Assignment 2
+# Assignment 2
 
 [Getting access to the Twitter API | Docs](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
