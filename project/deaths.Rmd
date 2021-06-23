@@ -40,6 +40,7 @@ ggplot(deaths_summary, aes(date, daily_deaths)) +
   theme_minimal()
 ```
 ```{r}
+# total confirmed cases in SA
 cases <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
 cases <- cases %>%
   mutate(date = dmy(date)) %>%
@@ -49,6 +50,7 @@ head(cases)
 
 ```
 ```{r}
+# add confirmed cases and fatality rate to deaths df 
 deaths_summary <- deaths_summary %>%
   left_join(cases, by="date") %>%
   mutate(fatality_rate = 100*(total_deaths / total_confirmed_cases))
@@ -57,7 +59,8 @@ head(deaths_summary)
 
 ```
 
-```{r plot total deaths}
+```{r}
+# plot total deaths
 p1 <- ggplot() + 
   geom_point(data=deaths_summary, aes(date, total_deaths), color="blue") +
   labs(title= "Total Deaths",
@@ -71,6 +74,7 @@ p1 <- ggplot() +
 p1
 ```
 ```{r}
+# plot fatality rate
 p2 <- ggplot(data=deaths_summary, aes(date, fatality_rate)) + 
   geom_point() +
   labs(title= "Case fatality rate",
@@ -85,6 +89,8 @@ p2 <- ggplot(data=deaths_summary, aes(date, fatality_rate)) +
 p2
 ```
 ```{r}
+# overlay death and cfr plots
+
 # adapted from https://drawar.github.io/posts/dual-y-axis-ggplot2/
 
 # Get the plot grobs

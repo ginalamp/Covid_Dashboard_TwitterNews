@@ -90,4 +90,48 @@ ggplot(testing_data, aes(x = rev(date), rolling_avg)) +
 # TODO: fix dates (axis ticks reverse) and fix sizing
 ```
 
+```{r}
+hospitalisations <- data %>%
+  mutate(date = dmy(date)) %>%
+  select(date, hospitalisation) %>%
+  filter(!is.na(hospitalisation))
+head(hospitalisations)
+```
+```{r}
+ggplot(hospitalisations, aes(date, hospitalisation)) + 
+  geom_smooth(color = "blue") + 
+  scale_y_continuous() +
+  scale_x_date() +
+  theme_minimal() +
+  labs(title= "Hospitalisations",
+       x = NULL,
+       y = NULL) 
+# problem - a lot of missing data
+```
+
+```{r}
+tests <- data %>%
+  mutate(date = dmy(date)) %>%
+  select(date, cumulative_tests, cumulative_tests_private, cumulative_tests_public) %>%
+  mutate(daily_private=cumulative_tests_private-lag(cumulative_tests_private,default=0)) %>%
+  mutate(daily_public=cumulative_tests_public-lag(cumulative_tests_public,default=0)) %>%
+  filter(!is.na(cumulative_tests_private))
+tail(tests)
+```
+```{r}
+total <- tail(tests, 1) %>%
+  mutate(total_tests = cumulative_tests, total_private_tests = cumulative_tests_private) %>%
+  mutate(total_public_tests = cumulative_tests_public) %>%
+  mutate(new_private = daily_private, new_public = daily_public) %>%
+  select(total_tests, total_public_tests, total_private_tests, new_public, new_private) %>%
+  pivot_longer(c('total_tests', 'total_public_tests', 'total_private_tests', 'new_public', 'new_private')) %>%
+  mutate(percentage = round(100*value/head(total, 1)$value, 1))
+total
+```
+```{r eval=FALSE}
+library(ggpmisc)
+ggplot() +
+  annotate(geom = "table", x=0, y=0, label = list(total)) +
+  theme_void()
+```
                
