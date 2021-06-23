@@ -35,4 +35,25 @@ ggplot(cases, aes(date, cases)) +
        y = NULL)
 
 ```
+```{r}
+library(RcppRoll)
+
+cases <- cases %>%
+  group_by(province) %>%
+  mutate(daily_cases=cases-lag(cases,default=0)) %>%
+  mutate(rolling_avg = roll_mean(daily_cases, n=7, fill = NA, align = "right"))
+
+cases_last_8_mths <- cases %>%
+  filter(date >= ymd("2020-11-12"))
+
+ggplot(cases_last_8_mths, aes(date, rolling_avg)) + 
+  geom_point(color = "blue") + 
+  scale_y_continuous(labels = NULL) +
+  scale_x_date(labels = NULL) +
+  facet_wrap(~ province, nrow = 2) +
+  theme_minimal() +
+  labs(title= "Daily Case Trends per Province",
+       x = NULL,
+       y = NULL)
+```
 

@@ -1,0 +1,54 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+```{r}
+data <- read.csv("data/nicd_hospital_surveillance_data.csv")
+head(data)
+```
+
+```{r}
+hospitalisations <- data %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily_admissions=total_admissions-lag(total_admissions,default=0)) %>%
+  select(date, daily_admissions, total_admissions)
+head(hospitalisations)
+```
+```{r}
+ggplot() + 
+  #geom_smooth(hospitalisations, mapping = aes(date, total_admissions), color = "blue") + 
+  geom_smooth(hospitalisations, mapping = aes(date, daily_admissions), color = "red") + 
+  scale_y_continuous() +
+  scale_x_date() +
+  theme_minimal() +
+  labs(title= "Hospitalisations",
+       x = NULL,
+       y = NULL) 
+```
+```{r Data: testing}
+data <- read.csv("data/covid19za_timeline_testing.csv")
+head(data)
+```
+```{r}
+hospitalisations <- data %>%
+  mutate(date = dmy(date)) %>%
+  select(date, hospitalisation) %>%
+  filter(!is.na(hospitalisation))
+head(hospitalisations)
+```
+```{r}
+ggplot(hospitalisations, aes(date, hospitalisation)) + 
+  geom_smooth(color = "blue") + 
+  scale_y_continuous() +
+  scale_x_date() +
+  theme_minimal() +
+  labs(title= "Hospitalisations",
+       x = NULL,
+       y = NULL) 
+# problem - a lot of missing data
+```
