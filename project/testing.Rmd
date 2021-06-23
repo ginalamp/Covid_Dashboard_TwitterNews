@@ -90,24 +90,7 @@ ggplot(testing_data, aes(x = rev(date), rolling_avg)) +
 # TODO: fix dates (axis ticks reverse) and fix sizing
 ```
 
-```{r}
-hospitalisations <- data %>%
-  mutate(date = dmy(date)) %>%
-  select(date, hospitalisation) %>%
-  filter(!is.na(hospitalisation))
-head(hospitalisations)
-```
-```{r}
-ggplot(hospitalisations, aes(date, hospitalisation)) + 
-  geom_smooth(color = "blue") + 
-  scale_y_continuous() +
-  scale_x_date() +
-  theme_minimal() +
-  labs(title= "Hospitalisations",
-       x = NULL,
-       y = NULL) 
-# problem - a lot of missing data
-```
+
 
 ```{r}
 tests <- data %>%
