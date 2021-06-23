@@ -13,6 +13,9 @@ Data still needed:
 * active cases
 * check timelines
 * population per province
+* hospital admissions for complete timeline
+* excess deaths (SA, provinces, and metros)
+* table mapping province abbreviation to full name (could do this by hand?)
 
 Notes on Data that we have:
 
