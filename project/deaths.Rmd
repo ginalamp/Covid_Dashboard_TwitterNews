@@ -207,3 +207,35 @@ ggplot(total_deaths, aes(province, deaths)) +
   theme_minimal()
 ```
 
+```{r deaths per province per 100k}
+province_population <- read.csv("data/province_population.csv")
+province_population
+
+total_deaths <- total_deaths %>%  
+  mutate(code = province) %>%  # format so the column names are the same to be able to join the dataframes
+  mutate(provincial_deaths = deaths) %>%
+  select(!province) %>%
+  select(!deaths)
+total_deaths
+
+total_deaths <- total_deaths %>%
+  left_join(province_population, by = "code") # join dataframes so total_deaths includes province populations
+
+total_deaths <- total_deaths %>%
+  mutate(deaths_per_100k = round(100000 * provincial_deaths / population)) # add deaths per 100k
+
+total_deaths
+```
+
+```{r plot deaths by province per 100k}
+ggplot(total_deaths, aes(code, deaths_per_100k)) + 
+  geom_col() +
+  geom_text(aes(label = deaths_per_100k), vjust = -1) +
+  scale_x_discrete() +
+  scale_y_continuous(labels = NULL) +
+  labs(title= "Deaths by Province (per 100k)",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  theme_minimal()
+```
