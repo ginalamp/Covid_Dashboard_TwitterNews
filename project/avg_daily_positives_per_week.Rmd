@@ -1,0 +1,54 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r Setup}
+library(tidyverse)
+library(lubridate)
+library(RcppRoll)
+
+```
+
+```{r Data: Confirmed Cases}
+data <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
+head(data)
+```
+
+```{r}
+daily_cases <- data %>%
+  mutate(date = dmy(date)) %>%
+  mutate(total_cases = total) %>%
+  select(date, total_cases) %>%
+  mutate(daily_cases=total_cases-lag(total_cases,default=0))
+
+head(daily_cases)
+```
+```{r}
+# trying to calculate average of daily cases per week
+
+# add rolling average to the data
+daily_cases_avg <- daily_cases %>%
+  mutate(rolling_avg = roll_mean(daily_cases, n=7, fill = NA, align = "right")) %>%
+  mutate(rolling_avg = round(rolling_avg))
+  
+# reduce data to start in April 2020 and include weekly average
+weekly_avg_daily_cases <- daily_cases_avg %>%
+  filter(date - ymd("2020-4-9") >= 0)
+
+weekly_avg_daily_cases <- weekly_avg_daily_cases[c(TRUE, rep(FALSE, 6)),]
+weekly_avg_daily_cases
+```
+
+```{r}
+ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
+  geom_col() +
+  labs(title= "Average daily positives per week",
+       caption = "Updated: June 2021",
+       x = "Week",
+       y = NULL) +
+  #geom_text(aes(label = rolling_avg), hjust = 0) +
+  scale_x_date(labels = NULL) +
+  coord_flip() +  
+  theme_minimal()
+```
+

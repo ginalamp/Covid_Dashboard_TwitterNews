@@ -1,0 +1,50 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r Setup}
+library(tidyverse)
+library(lubridate)
+
+```
+
+```{r Data: excess deaths}
+data <- read.csv("data/excess_deaths.csv")
+head(data)
+```
+```{r}
+# prep data
+sa_data <- data %>%
+  filter(country == "South Africa") %>% # filter to SA
+  filter(!is.na(excess_deaths)) %>% # take out NA values
+  select(date, deaths, expected_deaths, excess_deaths, total_excess_deaths_pct) %>%
+  mutate(date = ymd(date)) %>%
+  mutate(excess_deaths = as.numeric(excess_deaths))
+head(sa_data)
+```
+```{r}
+# look at the three time intervals
+
+may3_june5 <- sa_data %>%
+  filter(date >= ymd("2020-05-03")) %>%
+  filter(date <= ymd("2020-06-05"))
+may3_june5
+
+may3_june12 <- sa_data %>%
+  filter(date >= ymd("2020-05-03")) %>%
+  filter(date <= ymd("2020-06-12"))
+may3_june12
+
+may3_june19 <- sa_data %>%
+  filter(date >= ymd("2020-05-03")) %>%
+  filter(date <= ymd("2020-06-19"))
+may3_june19
+```
+```{r}
+# excess deaths for given time periods
+sum(may3_june5$excess_deaths)
+sum(may3_june12$excess_deaths)
+sum(may3_june19$excess_deaths)
+
+```
