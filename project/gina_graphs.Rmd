@@ -16,6 +16,7 @@ library(lubridate) # dates
 library(formattable) # round numbers
 library(ggplot2)
 library(scales)
+library(RcppRoll) # rolling average
 ```
 
 # Read csv
@@ -83,31 +84,43 @@ test_day_update
 # Daily confirmed cases
 final TODO: 
 * Add lockdown levels
-* line plot of 7-day rolling average (and add title)
 * Format dates and values
 * format y-axis integer representation
 
 <!-- # add rolling average to the data -->
 <!-- testing <- testing %>% -->
 <!--   mutate(rolling_avg = roll_mean(daily_tests, n=7, fill = NA, align = "right")) -->
+## Daily confirmed cases: base graph
 ```{r}
-confirmed <- provincial_total_confirmed %>% select(date, total) %>% mutate(date = dmy(date))
+confirmed <- provincial_total_confirmed %>% 
+  select(date, total) %>% 
+  mutate(date = dmy(date)) 
 
+# get daily confirmed cases
 confirmed_summary <- provincial_total_confirmed %>%
   select(date, total) %>%
   mutate(date = dmy(date)) %>%
   mutate(daily_confirmed=total-lag(total,default=0))
 names(confirmed_summary)[names(confirmed_summary) == 'total'] <- 'total_confirmed'
 
-ggplot(confirmed_summary, aes(date, daily_confirmed)) + 
-  geom_col() +
-  labs(title= "Daily confirmed cases",
-       caption = "Updated: June 2021",
-       x = NULL,
-       y = NULL) +
+# 7-day rolling average
+confirmed_rolling_average <- confirmed %>%
+  mutate(daily_cases=total-lag(total,default=0)) %>%
+  mutate(rolling_avg = roll_mean(daily_cases, n=7, fill = NA, align = "right"))
+
+confirmed_summary <- confirmed_summary %>% 
+  inner_join(confirmed_rolling_average, by = "date")
+
+# plot
+ggplot(confirmed_summary, aes(date)) + 
+  geom_col(aes(y = daily_confirmed, colour = "Active Cases"), color = "lightblue") + 
+  geom_line(aes(y = rolling_avg, colour = "Confirmed Cases"), color = "black") +
+  labs(title= "Cases vs Active cases",
+     caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
   theme_minimal()
 ```
-
 
 # Cases vs Active cases
 `active = total_confirmed - total_recovered - total_deaths`
