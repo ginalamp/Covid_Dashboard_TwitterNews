@@ -56,4 +56,32 @@ ggplot(cases_last_8_mths, aes(date, rolling_avg)) +
        x = NULL,
        y = NULL)
 ```
+```{r}
+province_population <- read.csv("data/province_population.csv")
+province_population
+
+total_cases <- tail(cases, 9) # cumulative cases per province up to 21 June 2021
+total_cases <- total_cases %>%
+  ungroup() %>%
+  mutate(code = province) %>%
+  select(code, cases) %>%
+  left_join(province_population, by = "code") %>% # add province populations to province cases
+  select(code, province, cases, population) %>%
+  mutate(cases_per_100k = round(100000 * cases / population)) # calculate infections per 100k population
+  
+total_cases
+```
+```{r plot deaths by province per 100k}
+ggplot(total_cases, aes(province, cases_per_100k)) + 
+  geom_col() +
+  geom_text(aes(label = cases_per_100k), hjust = 0) +
+  scale_x_discrete() +
+  scale_y_continuous(labels = NULL) +
+  labs(title= "Prov Infections per 100,000 Population",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  coord_flip() +
+  theme_minimal()
+```
 
