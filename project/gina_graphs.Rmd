@@ -7,6 +7,7 @@ output: html_notebook
 - max in a column
 - last element in column minus second last element in column
 - calculating active cases
+- province data tidying
 
 # Import libraries
 ```{r}
@@ -27,9 +28,9 @@ head(tests_deaths_recoveries_data)
 provincial_total_confirmed <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
 head(provincial_total_confirmed)
 
-# big one
-# big_data <- read.csv("data/owid-covid-data_SouthAfricaExtracted_big.csv")
-# head(big_data)
+# provincial deaths, and recoveries
+provincial_recoveries_data<- read.csv("data/covid19za_provincial_cumulative_timeline_recoveries.csv")
+head(provincial_recoveries_data)
 ```
 
 
@@ -118,20 +119,20 @@ death_data <- read.csv("data/covid19za_provincial_cumulative_timeline_deaths.csv
 head(death_data)
 ```
 ```{r tidying}
-deaths <- death_data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
-deaths <- deaths %>%
+provincial_deaths <- death_data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
+provincial_deaths <- provincial_deaths %>%
   select(date, province, deaths, total)  %>%
   filter(province != 'UNKNOWN') %>%
   mutate(date = dmy(date))
 
-head(deaths)
+head(provincial_deaths)
 ```
 ### Create deaths summary
 ```{r total and daily deaths}
 death_summary <- death_data %>%
   select(date, total) %>%
   mutate(date = dmy(date)) %>%
-  mutate(daily_death=total-lag(total,default=0))
+  mutate(daily_deaths=total-lag(total,default=0))
 names(death_summary)[names(death_summary) == 'total'] <- 'total_deaths'
 head(death_summary)
 ```
@@ -153,7 +154,7 @@ head(recovery_summary)
 active_df <- recovery_summary %>% 
   inner_join(death_summary, by = "date") %>% 
   inner_join(confirmed_summary, by = "date")
-head(active_cases_df)
+head(active_df)
 ```
 
 
@@ -167,7 +168,7 @@ active_df
 ### Get active cases summary
 ```{r}
 active_confirmed_summary <- active_df %>%
-  select(date, total_active, total_confirmed, daily_confirmed) %>%
+  select(date, total_active, total_confirmed, daily_confirmed, total_deaths, daily_deaths) %>%
   mutate(daily_active=total_active-lag(total_active,default=0))
 head(active_confirmed_summary)
 ```
@@ -181,7 +182,6 @@ final TODO:
 * Adjust y-axis number formatting
 * Gap in active cases
 ```{r}
-
 ggplot(active_confirmed_summary, aes(date)) + 
   geom_line(aes(y = total_active, colour = "Active Cases")) + 
   geom_line(aes(y = total_confirmed, colour = "Confirmed Cases")) +
@@ -206,4 +206,22 @@ ggplot(active_confirmed_summary, aes(date, total_active)) +
        y = NULL) +
   theme_minimal()
 ```
+
+# Doubling rates (help plz)
+TODO
+* Not entirely sure how to calculate this (I think we need to calculate the number of days it takes for the confirmed cases and the deaths to double - unsure about timeline)
+
+<!-- ```{r} -->
+<!-- ggplot(active_confirmed_summary, aes(date)) +  -->
+<!--   geom_line(aes(y = daily_deaths, colour = "Death")) +  -->
+<!--   geom_line(aes(y = daily_confirmed, colour = "Confirmed Cases")) + -->
+<!--   labs(title= "Doubling rates", -->
+<!--      caption = "Updated: June 2021", -->
+<!--      x = NULL, -->
+<!--      y = NULL) + -->
+<!--   theme_minimal() -->
+<!-- ``` -->
+
+
+
 
