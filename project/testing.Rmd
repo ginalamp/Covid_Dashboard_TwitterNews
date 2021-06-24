@@ -64,15 +64,16 @@ ggplot(avg, aes(x = week, tests)) +
 # trying to calculate average of daily tests per week
 
 # add rolling average to the data
-testing <- testing %>%
-  mutate(rolling_avg = roll_mean(daily_tests, n=7, fill = NA, align = "right"))
+testing_avg <- testing %>%
+  mutate(rolling_avg = roll_mean(daily_tests, n=7, fill = NA, align = "right")) %>%
+  mutate(rolling_avg = round(rolling_avg))
   
 # reduce data to start in April 2020 and include weekly average
-testing_data <- testing %>%
+testing_data <- testing_avg %>%
   filter(date - ymd("2020-4-9") >= 0)
 
-testing_data[c(TRUE, rep(FALSE, 6)),]
-
+testing_data <- testing_data[c(TRUE, rep(FALSE, 6)),]
+testing_data
 ```
 ```{r}
 # plot data
