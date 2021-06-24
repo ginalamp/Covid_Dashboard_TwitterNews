@@ -10,8 +10,10 @@ output: html_notebook
 # Import libraries
 ```{r}
 library(tidyverse)
-library(lubridate)
+library(lubridate) # dates
 library(formattable) # round numbers
+library(ggplot2)
+library(scales)
 ```
 
 # Read csv
@@ -23,6 +25,10 @@ head(tests_deaths_recoveries_data)
 # total (cumulative) number of confirmed cases by province
 provincial_total_confirmed <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
 head(provincial_total_confirmed)
+
+# big one
+# big_data <- read.csv("data/owid-covid-data_SouthAfricaExtracted_big.csv")
+# head(big_data)
 ```
 
 
@@ -45,7 +51,7 @@ head(total_recovered)
 percentage_recovered <- total_recovered / (total_recovered + total_deaths) * 100
 head(formattable(percentage_recovered, digits = 1, format = "f")) # round to 1 digit
 ```
-# Confirmed vs Active
+# Confirmed vs Active Total
 ```{r}
 # total confirmed cases
 total_confirmed <- max(provincial_total_confirmed$total, na.rm = TRUE)
@@ -70,6 +76,119 @@ head(total_tests)
 last_tests_cols <- tail(tests_deaths_recoveries_data$cumulative_tests, n=2)
 test_day_update <- last_tests_cols[2] - last_tests_cols[1]
 test_day_update
+```
+
+# Daily confirmed cases
+final TODO: 
+* Add lockdown levels
+* line plot of 7-day rolling average (and add title)
+* Format dates and values
+* format y-axis integer representation
+
+<!-- # add rolling average to the data -->
+<!-- testing <- testing %>% -->
+<!--   mutate(rolling_avg = roll_mean(daily_tests, n=7, fill = NA, align = "right")) -->
+```{r}
+confirmed <- provincial_total_confirmed %>% select(date, total) %>% mutate(date = dmy(date))
+
+confirmed_summary <- provincial_total_confirmed %>%
+  select(date, total) %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily_confirmed=total-lag(total,default=0))
+names(confirmed_summary)[names(confirmed_summary) == 'total'] <- 'total_confirmed'
+
+ggplot(confirmed_summary, aes(date, daily_confirmed)) + 
+  geom_col() +
+  labs(title= "Daily confirmed cases",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  theme_minimal()
+```
+
+
+# Cases vs Active cases
+`active = total_confirmed - total_recovered - total_deaths`
+
+## Get death cases
+From Johanna's code (TODO remove this duplicate when merging code)
+```{r Data: deaths}
+death_data <- read.csv("data/covid19za_provincial_cumulative_timeline_deaths.csv")
+head(death_data)
+```
+```{r tidying}
+deaths <- death_data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
+deaths <- deaths %>%
+  select(date, province, deaths, total)  %>%
+  filter(province != 'UNKNOWN') %>%
+  mutate(date = dmy(date))
+
+head(deaths)
+```
+### Create deaths summary
+```{r total and daily deaths}
+death_summary <- death_data %>%
+  select(date, total) %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily_death=total-lag(total,default=0))
+names(death_summary)[names(death_summary) == 'total'] <- 'total_deaths'
+head(death_summary)
+```
+## Get recovery data
+```{r}
+recovery_summary <- tests_deaths_recoveries_data %>%
+  select(date, recovered) %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily_recovered=recovered-lag(recovered,default=0))
+names(recovery_summary)[names(recovery_summary) == 'recovered'] <- 'total_recovered'
+
+head(recovery_summary)
+```
+
+
+## Join recoveries, deaths and confirmed
+```{r}
+# inner_join() joins based on matching keys (we only want overlapping dates)
+active_df <- recovery_summary %>% 
+  inner_join(death_summary, by = "date") %>% 
+  inner_join(confirmed_summary, by = "date")
+head(active_cases_df)
+```
+
+
+
+## Get active cases
+```{r}
+active_df$total_active <- with(active_df, total_confirmed - total_deaths - total_recovered)
+active_df
+```
+
+### Get active cases summary
+```{r}
+active_confirmed_summary <- active_df %>%
+  select(date, total_active, total_confirmed, daily_confirmed) %>%
+  mutate(daily_active=total_active-lag(total_active,default=0))
+head(active_confirmed_summary)
+```
+
+
+## Plot Active vs confirmed
+final TODO: 
+* add total active and total confirmed label
+* Remove legend title
+* Adjust dates shown (values and format)
+* Adjust y-axis number formatting
+* Gap in active cases
+```{r}
+
+ggplot(active_confirmed_summary, aes(date)) + 
+  geom_line(aes(y = total_active, colour = "Active Cases")) + 
+  geom_line(aes(y = total_confirmed, colour = "Confirmed Cases")) +
+  labs(title= "Cases vs Active cases",
+     caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+  theme_minimal()
 ```
 
 
