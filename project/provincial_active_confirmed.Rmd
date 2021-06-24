@@ -1,7 +1,10 @@
 ---
-title: "R Notebook"
+title: "Confirmed and Active Cases by Province"
 output: html_notebook
 ---
+# TODO
+* Add labels (total active and confirmed per province)
+* Convert province codes to nice province names
 
 # Import libraries
 ```{r}
@@ -37,15 +40,6 @@ provincial_confirmed <- provincial_confirmed %>%
 
 head(provincial_confirmed)
 ```
-### Provincial confirmed summary for EC
-```{r}
-pcs <- provincial_total_confirmed %>%
-  select(date, EC) %>%
-  mutate(date = dmy(date)) %>%
-  mutate(daily_confirmed=EC-lag(EC,default=0))
-names(pcs)[names(pcs) == 'EC'] <- 'EC_total_confirmed'
-head(pcs)
-```
 
 
 ## Provincial recoveries
@@ -60,17 +54,17 @@ provincial_recoveries <- provincial_recoveries %>%
 
 head(provincial_recoveries)
 ```
-### Provincial confirmed summary for EC
-```{r}
-prs <- provincial_recoveries_data %>%
-  select(date, EC) %>%
-  mutate(date = dmy(date)) %>%
-  mutate(daily_recoveries=EC-lag(EC,default=0))
-names(prs)[names(prs) == 'EC'] <- 'EC_total_recovery'
-head(prs)
-```
 
 ## Provincial deaths
+```{r tidying}
+provincial_deaths <- death_data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
+provincial_deaths <- provincial_deaths %>%
+  select(date, province, deaths, total)  %>%
+  filter(province != 'UNKNOWN') %>%
+  mutate(date = dmy(date))
+
+head(provincial_deaths)
+```
 ```{r}
 death_summary <- death_data %>%
   select(date, total) %>%
@@ -78,16 +72,6 @@ death_summary <- death_data %>%
   mutate(daily_deaths=total-lag(total,default=0))
 names(death_summary)[names(death_summary) == 'total'] <- 'total_deaths'
 head(death_summary)
-```
-
-### Provincial death summary for EC
-```{r}
-pds <- death_data %>%
-  select(date, EC) %>%
-  mutate(date = dmy(date)) %>%
-  mutate(daily_deaths=EC-lag(EC,default=0))
-names(pds)[names(pds) == 'EC'] <- 'EC_total_death'
-head(pds)
 ```
 
 ## Provincial Active
@@ -99,62 +83,26 @@ provincial_active <- provincial_confirmed %>%
   inner_join(provincial_deaths, by = c("province", "date"))
 head(provincial_active)
 ```
-### EC Active
-```{r}
-# inner_join() joins based on matching keys (we only want overlapping dates)
-ec_active <- pcs %>% 
-  inner_join(prs, by = "date") %>% 
-  inner_join(pds, by = "date")
-# replace NA with 0
-ec_active[is.na(ec_active)] <- 0
-head(ec_active)
-```
 
 
 ## Get active cases per province
-```{r}
+```{r Get active cases per province}
 provincial_active$active <- with(provincial_active, confirmed - recoveries - deaths)
 provincial_active <- provincial_active %>%
   select(date, province, confirmed, recoveries, deaths, active )
 head(provincial_active)
 ```
-### Eastern Cape
-```{r}
-ec_active$active <- with(ec_active, daily_confirmed - daily_recoveries - daily_deaths)
-# provincial_active <- provincial_active %>%
-#   select(date, province, confirmed, recoveries, deaths, active )
-head(ec_active)
-```
 
-<!-- Draft with bigger data -->
-<!-- ```{r} -->
-<!-- ec_active <- provincial_active %>% filter(province == "EC") -->
-<!-- head(ec_active) -->
-<!-- ``` -->
-
-Total active in EC
-```{r}
-sum(ec_active$active)
-```
-
-```{r}
-ggplot(ec_active, aes(date, active)) + 
-  geom_line() +
-  labs(title= "Active cases total by day",
-       caption = "Updated: June 2021",
-       x = NULL,
-       y = NULL) +
+```{r Plot}
+ggplot(provincial_active, aes(date)) + 
+  geom_line(aes(y = confirmed, colour = "Confirmed Cases"), color = "red") + 
+  geom_line(aes(y = active, colour = "Active Cases"), color = "blue") +
+  scale_y_continuous(breaks = seq(0, 1000000, by = 1000000), limits = c(0, 5000000), labels = NULL) +
+  scale_x_date(labels = NULL) +
+  facet_wrap(~ province, nrow = 2) +
+  labs(title= "Confirmed and Active Cases by Province",
+     caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
   theme_minimal()
 ```
-
-
-### Create provincial recovery summary
-
-<!-- ```{r total and daily recoveries} -->
-<!-- recovery_provincial_summary <- provincial_recoveries_data %>% -->
-<!--   select(date, total) %>% -->
-<!--   mutate(date = dmy(date)) %>% -->
-<!--   mutate(daily_recoveries=total-lag(total,default=0)) -->
-<!-- names(recovery_provincial_summary)[names(recovery_provincial_summary) == 'total'] <- 'total_recoveries' -->
-<!-- head(recovery_provincial_summary) -->
-<!-- ``` -->
