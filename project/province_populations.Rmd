@@ -1,0 +1,40 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+```{r Data: deaths}
+data <- read.csv("data/za_population_per_city.csv")
+head(data)
+```
+```{r}
+province_population <- data %>%
+  mutate(province = admin_name) %>%
+  group_by(province) %>%
+  filter(!is.na(population)) %>%
+  summarise_at(vars(population), list(population = sum))
+
+province_population <- province_population %>%
+  mutate(code = province)
+
+province_population$code[1] = "EC"
+province_population$code[2] = "FS"
+province_population$code[3] = "GP"
+province_population$code[4] = "KZN"
+province_population$code[5] = "LP"
+province_population$code[6] = "MP"
+province_population$code[7] = "NW"
+province_population$code[8] = "NC"
+province_population$code[9] = "WC"
+
+province_population
+
+write.csv(province_population, "data/province_population.csv")
+```
+
+
