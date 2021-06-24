@@ -1,0 +1,193 @@
+---
+title: "No of tests per positive case (weekly)"
+output: html_notebook
+---
+```{r Setup}
+library(tidyverse)
+library(lubridate)
+library(RcppRoll)
+library(zoo) # daily tests
+
+```
+
+# Number of tests per positive case (weekly)
+Assume `x = tests/positives`
+
+## Average daily tests per week
+
+```{r Data: testing}
+data <- read.csv("data/covid19za_timeline_testing.csv")
+head(data)
+```
+```{r tidying data}
+testing <- data %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily_tests=cumulative_tests-lag(cumulative_tests,default=0)) %>%
+  mutate(week = week(date)) %>%
+  select(date, week, daily_tests, cumulative_tests)
+
+head(testing)
+```
+```{r eval=FALSE}
+# trying to calculate average of daily tests per week
+testing <- testing %>% 
+  filter(!is.na(daily_tests))   # take out NA values
+weekly <- aggregate(x = testing$daily_tests,  
+          by = list(testing$week),              
+          FUN = sum)
+weekly  # average daily tests per week
+
+```
+
+```{r eval=FALSE}
+# trying to calculate average of daily tests per week
+avg <- testing %>%
+  group_by(year(date), week(date)) %>%
+  summarise_at(vars(daily_tests), list(tests = sum)) %>%
+  mutate(year = `year(date)`, week = `week(date)`) %>%
+  select(year, week, tests)
+
+
+avg
+
+#plot avg
+ggplot(avg, aes(x = week, tests)) + 
+  geom_col() +
+  labs(title= "Average daily tests per week",
+       caption = "Updated: June 2021",
+       x = "Week",
+       y = NULL) +
+  geom_text(aes(label = tests), hjust = 0) +
+  coord_flip() +   
+  theme_minimal()
+
+# does not work because the weeks are the same in 2020 and 2021
+
+```
+
+```{r}
+# trying to calculate average of daily tests per week
+
+# add rolling average to the data
+testing_avg <- testing %>%
+  mutate(testing_rolling_avg = roll_mean(daily_tests, n=7, fill = NA, align = "right")) %>%
+  mutate(testing_rolling_avg = round(testing_rolling_avg))
+  
+# reduce data to start in April 2020 and include weekly average
+testing_data <- testing_avg %>%
+  filter(date - ymd("2020-4-9") >= 0)
+
+testing_data <- testing_data[c(TRUE, rep(FALSE, 6)),]
+
+testing_data
+```
+```{r}
+# plot data
+ggplot(testing_data, aes(x = rev(date), testing_rolling_avg)) + 
+  geom_col() +
+  labs(title= "Average daily tests per week",
+       caption = "Updated: June 2021",
+       x = "Week",
+       y = NULL) +
+  #geom_text(aes(label = rolling_avg), hjust = 0) +
+  scale_x_date(labels = NULL) +
+  coord_flip() +  
+  theme_minimal()
+
+# TODO: fix dates (axis ticks reverse) and fix sizing
+```
+
+<!-- Not running - throws error -->
+<!-- ```{r} -->
+<!-- tests <- data %>% -->
+<!--   mutate(date = dmy(date)) %>% -->
+<!--   select(date, cumulative_tests, cumulative_tests_private, cumulative_tests_public) %>% -->
+<!--   mutate(daily_private=cumulative_tests_private-lag(cumulative_tests_private,default=0)) %>% -->
+<!--   mutate(daily_public=cumulative_tests_public-lag(cumulative_tests_public,default=0)) %>% -->
+<!--   filter(!is.na(cumulative_tests_private)) -->
+<!-- tail(tests) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- total <- tail(tests, 1) %>% -->
+<!--   mutate(total_tests = cumulative_tests, total_private_tests = cumulative_tests_private) %>% -->
+<!--   mutate(total_public_tests = cumulative_tests_public) %>% -->
+<!--   mutate(new_private = daily_private, new_public = daily_public) %>% -->
+<!--   select(total_tests, total_public_tests, total_private_tests, new_public, new_private) %>% -->
+<!--   pivot_longer(c('total_tests', 'total_public_tests', 'total_private_tests', 'new_public', 'new_private')) %>% -->
+<!--   mutate(percentage = round(100*value/head(total, 1)$value, 1)) -->
+<!-- total -->
+<!-- ``` -->
+<!-- ```{r eval=FALSE} -->
+<!-- library(ggpmisc) -->
+<!-- ggplot() + -->
+<!--   annotate(geom = "table", x=0, y=0, label = list(total)) + -->
+<!--   theme_void() -->
+<!-- ``` -->
+               
+
+
+## Average Daily Positives per week
+```{r Data: Confirmed Cases}
+confirmed_data <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
+head(data)
+```
+
+```{r}
+daily_cases <- confirmed_data %>%
+  mutate(date = dmy(date)) %>%
+  mutate(total_cases = total) %>%
+  select(date, total_cases) %>%
+  mutate(daily_cases=total_cases-lag(total_cases,default=0))
+
+head(daily_cases)
+```
+```{r}
+# trying to calculate average of daily cases per week
+
+# add rolling average to the data
+daily_cases_avg <- daily_cases %>%
+  mutate(confirmed_rolling_avg = roll_mean(daily_cases, n=7, fill = NA, align = "right")) %>%
+  mutate(confirmed_rolling_avg = round(confirmed_rolling_avg))
+  
+# reduce data to start in April 2020 and include weekly average
+weekly_avg_daily_cases <- daily_cases_avg %>%
+  filter(date - ymd("2020-4-9") >= 0)
+
+weekly_avg_daily_cases <- weekly_avg_daily_cases[c(TRUE, rep(FALSE, 6)),]
+weekly_avg_daily_cases
+```
+
+```{r}
+ggplot(weekly_avg_daily_cases, aes(rev(date), confirmed_rolling_avg)) +
+  geom_col() +
+  labs(title= "Average daily positives per week",
+       caption = "Updated: June 2021",
+       x = "Week",
+       y = NULL) +
+  #geom_text(aes(label = rolling_avg), hjust = 0) +
+  scale_x_date(labels = NULL) +
+  coord_flip() +  
+  theme_minimal()
+```
+
+```{r}
+tests_per_positive <- testing_data %>% 
+  inner_join(weekly_avg_daily_cases, by="date") %>% 
+  select(date, testing_rolling_avg, confirmed_rolling_avg)
+# %>%   drop_na(date, testing_rolling_avg, confirmed_rolling_avg) # avg daily test per week has NA at start
+tests_per_positive$ratio <- with(tests_per_positive, testing_rolling_avg / confirmed_rolling_avg)
+head(tests_per_positive)
+```
+
+```{r}
+ggplot(tests_per_positive, aes(rev(date), ratio)) +
+  geom_col() +
+  labs(title= "No of tests per positive case (weekly)",
+       caption = "Updated: June 2021",
+       x = "Week",
+       y = NULL) +
+  #geom_text(aes(label = rolling_avg), hjust = 0) +
+  scale_x_date(labels = NULL) +
+  # coord_flip() +
+  theme_minimal()
+```
