@@ -6,6 +6,7 @@ output: html_notebook
 # TODO: functions to create
 - max in a column
 - last element in column minus second last element in column
+- calculating active cases
 
 # Import libraries
 ```{r}
@@ -191,4 +192,18 @@ ggplot(active_confirmed_summary, aes(date)) +
   theme_minimal()
 ```
 
+# Active cases total by day
+final TODO: 
+* Adjust dates shown (values and format)
+* Adjust y-axis number formatting
+* Gap in active cases
+```{r}
+ggplot(active_confirmed_summary, aes(date, total_active)) + 
+  geom_col() +
+  labs(title= "Active cases total by day",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  theme_minimal()
+```
 
