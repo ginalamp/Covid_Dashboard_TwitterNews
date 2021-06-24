@@ -52,9 +52,11 @@ head(pcs)
 ```{r}
 provincial_recoveries <- provincial_recoveries_data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "recoveries")
 provincial_recoveries <- provincial_recoveries %>%
+  group_by(province) %>%
   select(date, province, recoveries, total)  %>%
   filter(province != 'UNKNOWN') %>%
-  mutate(date = dmy(date))
+  mutate(date = dmy(date)) %>% 
+  summarise(date = date, recoveries = recoveries)
 
 head(provincial_recoveries)
 ```
