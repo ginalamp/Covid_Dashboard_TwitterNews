@@ -32,9 +32,26 @@ province_population$code[7] = "NW"
 province_population$code[8] = "NC"
 province_population$code[9] = "WC"
 
+province_population <- province_population %>%
+  mutate(population_wrong = population)
+
+# province populations from http://www.statssa.gov.za/publications/P0302/P03022020.pdf
+province_population$population[1] = 6734001
+province_population$population[2] = 2928903
+province_population$population[3] = 15488137
+province_population$population[4] = 11531628
+province_population$population[5] = 5852553
+province_population$population[6] = 4679786
+province_population$population[7] = 4108816
+province_population$population[8] = 1292786
+province_population$population[9] = 7005741
+
 province_population
 
+```
+```{r}
 write.csv(province_population, "data/province_population.csv")
+
 ```
 
 

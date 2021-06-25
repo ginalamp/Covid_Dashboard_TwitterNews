@@ -1,10 +1,10 @@
-"","province","population","code"
-"1","Eastern Cape",1463669,"EC"
-"2","Free State",820448,"FS"
-"3","Gauteng",8081258,"GP"
-"4","KwaZulu-Natal",1625218,"KZN"
-"5","Limpopo",445837,"LP"
-"6","Mpumalanga",394532,"MP"
-"7","North West",828791,"NW"
-"8","Northern Cape",375908,"NC"
-"9","Western Cape",1408891,"WC"
+"","province","population","code","population_wrong"
+"1","Eastern Cape",6734001,"EC",1463669
+"2","Free State",2928903,"FS",820448
+"3","Gauteng",15488137,"GP",8081258
+"4","KwaZulu-Natal",11531628,"KZN",1625218
+"5","Limpopo",5852553,"LP",445837
+"6","Mpumalanga",4679786,"MP",394532
+"7","North West",4108816,"NW",828791
+"8","Northern Cape",1292786,"NC",375908
+"9","Western Cape",7005741,"WC",1408891
