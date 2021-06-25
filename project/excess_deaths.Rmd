@@ -1,0 +1,134 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(lubridate)
+library(readxl)
+```
+
+```{r Data: deaths}
+data <- read_xlsx("data/weekly_excess_deaths_provinces.xlsx") %>%
+  mutate(date = ymd(date))
+head(data)
+```
+
+# excess deaths (south africa)
+
+```{r}
+# look at the three time intervals
+
+may3_june5 <- data %>%
+  filter(date <= ymd("2021-06-05")) %>%
+  select(date, RSA)
+may3_june5
+
+may3_june12 <- data %>%
+  filter(date <= ymd("2021-06-12")) %>%
+  select(date, RSA)
+may3_june12
+
+may3_june19 <- data %>%
+  filter(date <= ymd("2021-06-19")) %>%
+  select(date, RSA)
+may3_june19
+```
+```{r}
+# excess deaths for given time periods
+sum(may3_june5$RSA)
+sum(may3_june12$RSA)
+sum(may3_june19$RSA)
+
+```
+
+# excess deaths (provinces)
+
+```{r}
+excess_deaths <- data %>%
+  select(!RSA) %>% # take out RSA so it's only provinces
+  pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC'), names_to = "province", values_to = "exs_deaths") %>%
+  filter(!is.na(exs_deaths)) # take out NA values
+excess_deaths
+
+# group by province and sum excess deaths to find out the total cumulative excess deaths per province
+total_excess_deaths <- excess_deaths %>%
+  group_by(province) %>%
+  summarise_at(vars(exs_deaths), list(total_exs_deaths = sum)) %>%
+  mutate(total_exs_deaths = round(total_exs_deaths)) %>%
+  arrange(desc(total_exs_deaths))
+total_excess_deaths
+```
+```{r}
+# covid deaths per province
+covid_deaths <- read.csv("data/covid19za_provincial_cumulative_timeline_deaths.csv") %>% 
+  pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths") %>% 
+  select(date, province, deaths)  %>% 
+  filter(province != 'UNKNOWN') %>% 
+  mutate(date = dmy(date)) %>%
+  filter(date == dmy("19-06-2021")) # only interested in the total covid deaths up to 19 June
+
+covid_deaths
+```
+
+```{r}
+# combine excess deaths with covid deaths for comparison (by province)
+excess_deaths_provinces <- total_excess_deaths %>%
+  inner_join(covid_deaths, by = 'province')
+
+excess_deaths_provinces$province <- factor(excess_deaths_provinces$province, levels = excess_deaths_provinces$province) # to keep the ordering when plotting
+
+excess_deaths_provinces
+```
+```{r}
+ggplot() + 
+  geom_col(excess_deaths_provinces, mapping = aes(province, total_exs_deaths), fill = "blue") +
+  geom_col(excess_deaths_provinces, mapping = aes(province, deaths), fill = "red") +
+  #geom_text(aes(label = deaths), vjust = -1) +
+  scale_x_discrete() +
+  scale_y_continuous(labels = NULL) +
+  labs(title= "Excess Deaths (Provinces)",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  theme_minimal()
+```
+# excess deaths (metros)
+
+```{r}
+metros_data <- read_xlsx("data/weekly_excess_deaths_metros.xlsx") %>%
+  mutate(date = ymd(date))
+head(metros_data)
+```
+```{r}
+excess_deaths_metros <- metros_data %>%
+  pivot_longer(c('BUF', 'CPT', 'EKU', 'ETH', 'JHN', 'MAN', 'NMA', 'TSH'), names_to = "metro", values_to = "exs_deaths") %>%
+  filter(!is.na(exs_deaths)) 
+excess_deaths_metros
+
+# group by metro and sum excess deaths to find out the total cumulative excess deaths per metro
+total_excess_deaths_metros <- excess_deaths_metros %>%
+  group_by(metro) %>%
+  summarise_at(vars(exs_deaths), list(total_exs_deaths = sum)) %>%
+  mutate(total_exs_deaths = round(total_exs_deaths)) %>%
+  arrange(desc(total_exs_deaths))
+
+total_excess_deaths_metros$metro <- factor(total_excess_deaths_metros$metro, levels = total_excess_deaths_metros$metro) # to keep the ordering when plotting
+
+
+total_excess_deaths_metros
+```
+```{r}
+ggplot() + 
+  geom_col(total_excess_deaths_metros, mapping = aes(metro, total_exs_deaths)) +
+  #geom_text(aes(label = total_excess_deaths), vjust = 0) +
+  scale_x_discrete() +
+  scale_y_continuous() +
+  scale_y_continuous(breaks = seq(0, 15000, by = 5000), limits = c(0, 15000)) +
+  labs(title= "Excess Deaths (Metros)",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  theme_minimal()
+```
+
