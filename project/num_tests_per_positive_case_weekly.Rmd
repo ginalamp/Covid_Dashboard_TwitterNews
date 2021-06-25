@@ -77,8 +77,10 @@ testing_avg <- testing %>%
 testing_data <- testing_avg %>%
   filter(date - ymd("2020-4-9") >= 0)
 
-testing_data <- testing_data[c(TRUE, rep(FALSE, 6)),]
-
+#testing_data <- testing_data[c(TRUE, rep(FALSE, 6)),]
+testing_data <- testing_data %>%
+  filter(as.numeric(date - ymd("2020-4-9")) %% 7 == 0)
+  
 testing_data
 ```
 ```{r}
@@ -153,7 +155,9 @@ daily_cases_avg <- daily_cases %>%
 weekly_avg_daily_cases <- daily_cases_avg %>%
   filter(date - ymd("2020-4-9") >= 0)
 
-weekly_avg_daily_cases <- weekly_avg_daily_cases[c(TRUE, rep(FALSE, 6)),]
+#weekly_avg_daily_cases <- weekly_avg_daily_cases[c(TRUE, rep(FALSE, 6)),]
+weekly_avg_daily_cases <- weekly_avg_daily_cases %>%
+  filter(as.numeric(date - ymd("2020-4-9")) %% 7 == 0)
 weekly_avg_daily_cases
 ```
 
@@ -168,6 +172,13 @@ ggplot(weekly_avg_daily_cases, aes(rev(date), confirmed_rolling_avg)) +
   scale_x_date(labels = NULL) +
   coord_flip() +  
   theme_minimal()
+```
+
+```{r}
+left <- testing_data %>%
+  left_join(weekly_avg_daily_cases, by='date')
+inner <- testing_data %>%
+  inner_join(weekly_avg_daily_cases, by='date')
 ```
 
 ```{r}
