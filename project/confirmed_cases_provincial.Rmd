@@ -67,7 +67,10 @@ total_cases <- total_cases %>%
   select(code, cases) %>%
   left_join(province_population, by = "code") %>% # add province populations to province cases
   select(code, province, cases, population) %>%
-  mutate(cases_per_100k = round(100000 * cases / population)) # calculate infections per 100k population
+  mutate(cases_per_100k = round(100000 * cases / population, digits=2)) %>% # calculate infections per 100k population
+  arrange(cases_per_100k)
+
+total_cases$province <- factor(total_cases$province, levels = total_cases$province) # keep order when plotting
   
 total_cases
 ```
