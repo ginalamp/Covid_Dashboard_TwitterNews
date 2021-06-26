@@ -1,0 +1,89 @@
+---
+title: "Doubling Rate: Deaths and Confirmed Cases"
+output: html_notebook
+---
+
+# Theory
+Calculating the doubling rate based on the prior 7 days:
+
+$t_2 - t_1 = 7$
+
+$T_d = (t_2 - t_2)\frac{ln(2)}{ln(\frac{q2}{q1})}$
+
+Example of Surat city Table 1 shows data wise cumulative COVID19 cas-es  reported  in  Surat  city.3  According  to  Formula2using  the  data  of  COVID19  Doubling  rate/time  calculated  for  24th   March   2020   considering   17thMarch 2020 is day 1 ( t1 = 1), 24th March 2020 is Day 8  (t2 =  8)  ,  q1 is  number  of  cases  on  day  1  (17thMarch 2020 ) = 1 ,q2 number of cases on day 8 (24thMarch  2020)  =5  ,  ln(2)  is  natural  logarithmic  value  of 2 . 
+
+source: [Doubling Time and its Interpretation for COVID 19 Cases](http://njcmindia.org/uploads/11-3_141-143.pdf)
+
+
+## Method
+1. Get confirmed/death data
+2. Calculate doubling rate for each entry on a 7-day basis (creating a column with doubling rates)
+3. plot
+
+# Importing
+```{r}
+library(tidyverse)
+library(lubridate) # dates
+library(ggplot2)
+```
+
+# Reading data
+```{r}
+provincial_total_confirmed <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
+head(provincial_total_confirmed)
+```
+# Confirmed cases
+## Get total confirmed cases per date
+```{r}
+confirmed <- provincial_total_confirmed %>% 
+  select(date, total) %>% 
+  mutate(date = dmy(date)) 
+
+confirmed_summary <- provincial_total_confirmed %>%
+  select(date, total) %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily_confirmed=total-lag(total,default=0))
+  
+names(confirmed_summary)[names(confirmed_summary) == 'total'] <- 'total_confirmed'
+head(confirmed)
+```
+## Calculate doubling rate
+```{r}
+# calculate 7-day doubling rate
+calculate_doubling_rate <- function(q1, q2) {
+  num_days <- 7
+  doubling_rate <- num_days*(log(2)/(log(q2/q1)))
+  return(doubling_rate)
+}
+```
+
+```{r}
+  confirmed_after7 <- confirmed %>% tail(-7)
+  
+  # add 7 0s at end
+  date <- rep(c(Sys.Date()),7)
+  total <- rep(c(0),7)
+  data_temp<- data.frame(date, total)
+  data_temp <- as.data.frame(data_temp)
+  confirmed_after7 <- rbind(confirmed_after7, data_temp, make.row.names=FALSE)
+  tail(confirmed_after7)
+  
+  confirmed$doubling_rate <- with(confirmed, calculate_doubling_rate(confirmed$total, confirmed_after7$total))
+  confirmed  <- confirmed %>% head(-7)
+  head(confirmed)
+```
+
+```{r}
+ggplot(confirmed, aes(date, doubling_rate)) + 
+  geom_line() +
+  labs(title= "Active cases total by day",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  theme_minimal()
+```
+
+
+
+
+
