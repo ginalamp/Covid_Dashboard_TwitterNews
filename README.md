@@ -20,7 +20,8 @@ Notes on Data that we have:
 
 * Tests, deaths, recoveries : covid19za_timeline_testing.csv
 * Timeline only April and May 2020 : covid19za_provincial_cumulative_timeline_testing.csv
-
+* [rt South Africa](https://github.com/dsfsi/covid19za/blob/master/data/calc/calculated_rt_sa_provincial_cumulative.csv) -> calculated_rt_sa_provincial_cumulative.csv
+* [Global hospital admissions JSON](https://github.com/owid/covid-19-data/blob/master/public/data/internal/megafile--hospital-admissions.json)
 * [Global github repo](https://github.com/owid/covid-19-data/tree/master/public/data)
 * [South African github repo - most current sources](https://github.com/dsfsi/covid19za)
 * [South Africa bunch of data](https://ourworldindata.org/coronavirus/country/south-africa) - extracted South African rows (was super big and took long to download, but has most complete statistics (basically everything we need other than lockdown and population data it seems) - which helps with timelines) in file: owid-covid-data_SouthAfricaExtracted_big.csv
@@ -34,7 +35,7 @@ Additional (extra) - if the big file doesn't cover it well enough
 
 ## Background research
 [Excess mortality](https://ourworldindata.org/excess-mortality-covid)
-
+[Doubling rates](http://njcmindia.org/uploads/11-3_141-143.pdf)
 ## Instructions etc
 ### Overview
 * Due 29 June 2021
