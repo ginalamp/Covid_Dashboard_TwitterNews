@@ -87,9 +87,6 @@ final TODO:
 * Format dates and values
 * format y-axis integer representation
 
-<!-- # add rolling average to the data -->
-<!-- testing <- testing %>% -->
-<!--   mutate(rolling_avg = roll_mean(daily_tests, n=7, fill = NA, align = "right")) -->
 ## Daily confirmed cases: base graph
 ```{r}
 confirmed <- provincial_total_confirmed %>% 
