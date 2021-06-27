@@ -25,17 +25,33 @@ source: [Doubling Time and its Interpretation for COVID 19 Cases](http://njcmind
 library(tidyverse)
 library(lubridate) # dates
 library(ggplot2)
+library(EcoHydRology)
 ```
+
+```{r}
+if ( require(EcoHydRology) ) {
+  detach("package:dplyr", unload = TRUE)
+  detach("package:EcoHydRology", unload = TRUE)
+  require(dplyr)
+}
+```
+
 
 # Reading data
 ```{r}
-provincial_total_confirmed <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
+# provincial_total_confirmed <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
+provincial_total_confirmed <- read.csv("data/owid-covid-data_SouthAfricaExtracted_big.csv")
 head(provincial_total_confirmed)
 ```
 # Confirmed cases
 
 ```{r}
-7*(log(2)/log(5/1))
+  # Get total confirmed cases per date
+  confirmed <- provincial_total_confirmed %>% 
+  filter(!is.na(total_cases)) %>% 
+  select(date, total_cases) 
+  # mutate(date = dmy(date))
+  head(confirmed)
 ```
 
 ## Calculate doubling rate
@@ -48,11 +64,11 @@ calculate_doubling_rate <- function(num_days, q1, q2) {
 ```
 
 ```{r}
-  # Get total confirmed cases per date
-  confirmed <- provincial_total_confirmed %>% 
-  select(date, total) %>% 
-  mutate(date = dmy(date)) 
-  head(confirmed)
+  # # Get total confirmed cases per date
+  # confirmed <- provincial_total_confirmed %>% 
+  # select(date, total) %>% 
+  # mutate(date = dmy(date)) 
+  # head(confirmed)
   
   # create subset of confirmed to apply doubling rate function to
   num_days <- 7
@@ -60,8 +76,8 @@ calculate_doubling_rate <- function(num_days, q1, q2) {
   
   # add num_days 0s at end
   date <- rep(c(Sys.Date()),num_days)
-  total <- rep(c(0),num_days)
-  data_temp<- data.frame(date, total)
+  total_cases <- rep(c(0),num_days)
+  data_temp<- data.frame(date, total_cases)
   data_temp <- as.data.frame(data_temp)
   confirmed_after_num_days <- rbind(confirmed_after_num_days, data_temp, make.row.names=FALSE)
   tail(confirmed_after_num_days)
