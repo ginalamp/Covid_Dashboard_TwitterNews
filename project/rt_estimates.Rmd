@@ -1,0 +1,32 @@
+---
+title: "RT estimates"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(lubridate) # dates
+library(ggplot2)
+```
+
+```{r}
+rt_data <- read.csv("data/calculated_rt_sa_provincial_cumulative.csv")
+head(rt_data)
+```
+
+```{r}
+rt_summary <- rt_data %>%
+  select(state, date, ML) %>%
+  mutate(date = as.Date(date)) %>%
+  filter(state=="Total RSA")
+head(rt_summary)
+```
+
+```{r}
+ggplot(rt_summary, aes(date, ML)) + 
+  geom_line() +
+  labs(title= "Current Rt estimates for South Africa",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  theme_minimal()
+```
