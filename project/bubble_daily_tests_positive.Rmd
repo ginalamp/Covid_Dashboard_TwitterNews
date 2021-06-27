@@ -1,0 +1,42 @@
+---
+title: "Daily tests and positive cases - bubble"
+output: html_notebook
+---
+
+# TODO
+* Add number of test labels on specific dates
+* Y axis labeling (cap at 60k, but allow graph to continue upward)
+* move caption to left under
+
+```{r}
+library(tidyverse)
+library(lubridate) # dates
+library(ggplot2)
+```
+
+```{r}
+bubble_data <- read.csv("data/owid-covid-data_SouthAfricaExtracted_big.csv")
+head(bubble_data)
+```
+
+```{r}
+bubble_data <- bubble_data %>% 
+  select(date, new_cases, new_tests) %>% 
+  filter(!is.na(new_cases)) %>% 
+  filter(!is.na(new_tests)) %>% 
+  mutate(date = as.Date(date))
+head(bubble_data)
+```
+```{r}
+ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
+    geom_point(alpha=0.5) +
+    scale_size(range = c(.1, 10)) +
+    labs(title= "Daily tests and positive cases",
+     caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+    scale_x_date(date_breaks = "1 month", date_labels = "%d/%m") +
+    theme_minimal() + theme(legend.position="none")
+```
+
+
