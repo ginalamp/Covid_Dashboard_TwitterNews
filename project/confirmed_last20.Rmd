@@ -1,0 +1,52 @@
+---
+title: "Confirmed cases last 20 days"
+output: html_notebook
+---
+# TODO
+* Date labels in reversed order and has 2 extra head and tail dates
+```{r}
+library(tidyverse)
+library(lubridate) # dates
+library(ggplot2)
+library(chron) # reverse date plot
+```
+
+```{r}
+data <- read.csv("data/owid-covid-data_SouthAfricaExtracted_big.csv")
+head(provincial_total_confirmed)
+```
+```{r}
+tail(data$date, n=1)
+```
+
+```{r}
+  # Get total confirmed cases per date
+  confirmed <- data %>% 
+    filter(!is.na(new_cases)) %>% 
+    select(date, new_cases) %>% 
+    mutate(date = as.Date(date)) %>% 
+    filter(date > tail(confirmed$date, n=1) - 20)
+  head(confirmed)
+```
+# Reverse order of dataframe (most recent date at the top)
+* TODO: not plotting right (even when flipping the dates here - the date labels are wrong)
+```{r}
+confirmed <- confirmed %>% map_df(rev) 
+confirmed
+```
+
+```{r}
+ggplot(confirmed, aes(rev(date), new_cases)) + 
+  geom_col(position="dodge") +
+  geom_text(aes(label = new_cases), position = position_dodge(0.9), hjust=-0.1) + # add labels
+  labs(title= "Confirmed infections (last 20 days)",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  scale_x_date(date_breaks = "1 day", date_labels = "%m-%d-%Y") +
+  scale_y_continuous(labels = NULL, breaks = NULL)  +# remove amount ticks
+  coord_flip() +
+  theme_minimal()
+```
+
+
