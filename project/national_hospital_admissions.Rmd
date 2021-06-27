@@ -1,0 +1,38 @@
+---
+title: "National Hospital Admissions"
+output: html_notebook
+---
+
+# TODO
+* Add EPI week x axis label
+* Flip Date x axis label to be at the top
+* Format y-axis numbering
+* Stretch graph horizontally
+```{r}
+library(tidyverse)
+library(lubridate) # dates
+library(ggplot2)
+```
+
+```{r}
+national_hospital_data <- read.csv("data/za_national_hospital_admissions.csv")
+head(national_hospital_data)
+```
+```{r}
+national_hospital_data <- national_hospital_data %>% 
+  mutate(week_start = as.Date(week_start))
+```
+
+```{r}
+ggplot(national_hospital_data, aes(week_start, total_national_hospital_admissions)) + 
+  geom_line() +
+  labs(title= "National Hospital Admissions",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  # scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
+  coord_cartesian(ylim = c(0, 20000)) +
+  scale_x_date(date_breaks = "2 months", date_labels = "%d %b") +
+
+  theme_minimal()
+```
