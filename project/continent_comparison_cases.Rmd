@@ -1,0 +1,46 @@
+---
+title: "Continent comparison: new daily confirmed Covid-19 cases: 7-day average"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(lubridate) # dates
+library(ggplot2)
+```
+
+```{r}
+continent_data <- read.csv("data/new_cases_world.csv")
+head(continent_data)
+```
+```{r}
+continent_data <- continent_data %>% 
+  select(date, World, Europe, North.America, South.America, Asia, Africa, Oceania) %>% 
+  mutate(date = as.Date(date))
+continent_data
+```
+```{r}
+  rolling_avg <- continent_data %>%
+    mutate(rolling_avg_world = roll_mean(World, n=7, fill = NA, align = "right")) %>% 
+    mutate(rolling_avg_europe = roll_mean(Europe, n=7, fill = NA, align = "right")) %>% 
+    mutate(rolling_avg_north_america = roll_mean(North.America, n=7, fill = NA, align = "right")) %>% 
+    mutate(rolling_avg_south_america = roll_mean(South.America, n=7, fill = NA, align = "right")) %>% 
+    mutate(rolling_avg_asia = roll_mean(Asia, n=7, fill = NA, align = "right")) %>% 
+    mutate(rolling_avg_africa = roll_mean(Africa, n=7, fill = NA, align = "right")) %>% 
+    mutate(rolling_avg_oceania = roll_mean(Oceania, n=7, fill = NA, align = "right"))
+```
+
+```{r}
+ggplot(rolling_avg, aes(date)) + 
+  geom_line(aes(y = rolling_avg_world, colour = "World")) +
+  geom_line(aes(y = rolling_avg_europe, colour = "Europe")) +
+  geom_line(aes(y = rolling_avg_north_america, colour = "North America")) +
+  geom_line(aes(y = rolling_avg_south_america, colour = "South America")) +
+  geom_line(aes(y = rolling_avg_asia, colour = "Asia")) +
+  geom_line(aes(y = rolling_avg_africa, colour = "Africa")) +
+  geom_line(aes(y = rolling_avg_oceania, colour = "Oceania")) +
+  labs(title= "New daily confirmed Covid-19 cases: 7-day average",
+     caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+  theme_minimal()
+```
