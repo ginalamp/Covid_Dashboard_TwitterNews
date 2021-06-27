@@ -49,8 +49,8 @@ head(provincial_total_confirmed)
   # Get total confirmed cases per date
   confirmed <- provincial_total_confirmed %>% 
   filter(!is.na(total_cases)) %>% 
-  select(date, total_cases) 
-  # mutate(date = dmy(date))
+  select(date, total_cases) %>% 
+  mutate(date = as.Date(date))
   head(confirmed)
 ```
 
@@ -71,7 +71,7 @@ calculate_doubling_rate <- function(num_days, q1, q2) {
   # head(confirmed)
   
   # create subset of confirmed to apply doubling rate function to
-  num_days <- 7
+  num_days <- 100
   confirmed_after_num_days <- confirmed %>% tail(-num_days)
   
   # add num_days 0s at end
@@ -87,7 +87,7 @@ calculate_doubling_rate <- function(num_days, q1, q2) {
   # head(confirmed)
 ```
 ```{r}
-  confirmed$doubling_rate <- with(confirmed, calculate_doubling_rate(num_days, confirmed$total, confirmed_after_num_days$total))
+  confirmed$doubling_rate <- with(confirmed, calculate_doubling_rate(num_days, confirmed$total_cases, confirmed_after_num_days$total_cases))
   confirmed  <- confirmed %>% head(-num_days)
   head(confirmed)
 ```
