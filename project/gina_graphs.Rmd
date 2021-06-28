@@ -87,8 +87,8 @@ test_day_update
 
 # Daily confirmed cases
 final TODO: 
-* Add lockdown levels
-* Format dates and values
+* Format legend better
+* Increase graph width
 * format y-axis integer representation
 
 ## Daily confirmed cases: base graph
@@ -130,7 +130,7 @@ segment8 = data.frame(time = seq(national_lockdown$date_start[8], national_lockd
 segment9 = data.frame(time = seq(national_lockdown$date_start[9], national_lockdown$date_end[9], by = "1 day"))
 
 # lockdown level colours
-level_colours <- c("Level 1"="grey","Level 2"="grey47", "Level 3"= "grey41", "Level 4"="grey35", "Level 5"="grey29")
+level_colours <- c("Level 1"="#bcbef5","Level 2"="#999ad1", "Level 3"= "#7476b5", "Level 4"="#444687", "Level 5"="#1e206e")
 
 # plot
 ggplot(confirmed_summary, aes(date)) +
@@ -138,47 +138,49 @@ ggplot(confirmed_summary, aes(date)) +
   geom_segment(data = segment1,
           aes(x = time, xend = time,
               y = 0, yend = Inf),
-            show.legend = FALSE, colour="grey29") +
+            show.legend = TRUE, colour=level_colours["Level 5"]) +
   geom_segment(data = segment2,
           aes(x = time, xend = time,
               y = 0, yend = Inf),
-            show.legend = FALSE, colour="grey35") +
+            show.legend = FALSE, colour=level_colours["Level 4"]) +
   geom_segment(data = segment3,
         aes(x = time, xend = time,
             y = 0, yend = Inf),
-          show.legend = FALSE, colour="grey41") +
+          show.legend = FALSE, colour=level_colours["Level 3"]) +
   geom_segment(data = segment4,
         aes(x = time, xend = time,
             y = 0, yend = Inf),
-          show.legend = FALSE, colour="grey47") +
+          show.legend = FALSE, colour=level_colours["Level 2"]) +
   geom_segment(data = segment5,
         aes(x = time, xend = time,
             y = 0, yend = Inf),
-          show.legend = FALSE, colour="grey") +
+          show.legend = FALSE, colour=level_colours["Level 1"]) +
   geom_segment(data = segment6,
         aes(x = time, xend = time,
             y = 0, yend = Inf),
-          show.legend = FALSE, colour="grey41") +
+          show.legend = FALSE, colour=level_colours["Level 3"]) +
   geom_segment(data = segment7,
         aes(x = time, xend = time,
             y = 0, yend = Inf),
-          show.legend = FALSE, colour="grey") +
+          show.legend = FALSE, colour=level_colours["Level 1"]) +
   geom_segment(data = segment8,
         aes(x = time, xend = time,
             y = 0, yend = Inf),
-          show.legend = FALSE, colour="grey47") +
+          show.legend = FALSE, colour=level_colours["Level 2"]) +
   geom_segment(data = segment9,
       aes(x = time, xend = time,
           y = 0, yend = Inf),
-        show.legend = FALSE, colour="grey41") +
+        show.legend = FALSE, colour=level_colours["Level 3"]) +
   # active cases and rolling average
-  geom_col(aes(y = daily_confirmed, colour = "Active Cases", fill="green"), color = "black") +
-  geom_line(aes(y = rolling_avg, colour = "Confirmed Cases"), color = "red") +
-  labs(title= "Cases vs Active cases",
+  geom_col(aes(y = daily_confirmed), color = "#453f3f") +
+  geom_line(aes(y = rolling_avg), color = "yellow") +
+  labs(title= "Daily confirmed cases",
      caption = "Updated: June 2021",
      x = NULL,
      y = NULL) +
-  scale_fill_manual(name="Lockdown Levels", values=level_colours) + # manual legend
+  scale_colour_manual(name="Lockdown levels",values=level_colours) +
+  # scale_fill_manual(name="Lockdown Levels", values=level_colours) + # manual legend
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   theme_minimal()
 ```
 
