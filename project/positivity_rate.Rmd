@@ -1,0 +1,68 @@
+---
+title: "Positivity rate: number: Number of tests vs Positive cases (in June)"
+output: html_notebook
+---
+# TODO
+* combine graph data/axis (like with the total death graph)
+* Add proper legend
+```{r}
+library(tidyverse)
+library(lubridate) # dates
+library(ggplot2)
+library(RcppRoll) # rolling average
+```
+
+```{r}
+positive_rate_data <- read.csv("data/owid-covid-data_SouthAfricaExtracted_big.csv")
+head(positive_rate_data)
+```
+```{r}
+positive_rate_data <- positive_rate_data %>% 
+  select(date, new_tests, positive_rate, tests_per_case) %>% 
+  filter(!is.na(new_tests)) %>% 
+  filter(!is.na(positive_rate)) %>% 
+  filter(!is.na(tests_per_case)) %>%   # check - might be unnecessary
+  mutate(date = as.Date(date)) %>% 
+  filter(date > as.Date("2021-05-20"))
+head(positive_rate_data)
+```
+```{r}
+positive_rate_data <- positive_rate_data %>%
+  mutate(rolling_avg = roll_mean(positive_rate, n=7, fill = NA, align = "right")) %>% 
+  filter(!is.na(rolling_avg))
+
+positive_rate_data
+
+```
+
+```{r}
+ggplot(positive_rate_data, aes(date)) + 
+  # geom_histogram(aes(y = new_tests, bins = 30, fill="white", show.legend = FALSE, size=1.1)) +
+  geom_col(aes(y = new_tests, colour = "Tests conducted"), width=0.5, position=position_dodge(0.5)) +
+  # geom_line(aes(y = rolling_avg, colour = "Confirmed Cases")) +
+  labs(title= "Positivity rate: number: Number of tests vs Positive cases (%)",
+     caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+  scale_color_discrete(name="") + # remove legend title
+  scale_x_date(date_breaks = "1 day", date_labels = "%d/%m") +
+  coord_cartesian(ylim = c(0, 70000)) +
+  theme_minimal() 
+```
+```{r}
+ggplot(positive_rate_data, aes(date)) + 
+  geom_line(aes(y = positive_rate, colour = "Positivity rate")) +
+  geom_line(aes(y = rolling_avg, colour = "7-day rolling average")) +
+  labs(title= "Positivity rate: number: Number of tests vs Positive cases (%)",
+     caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+  scale_color_discrete(name="") + # remove legend title
+  scale_x_date(date_breaks = "2 days", date_labels = "%d/%m") +
+  coord_cartesian(ylim = c(0, 0.3)) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1L), breaks=seq(0, 0.3, by=0.02)) +
+  theme_minimal() 
+```
+
+
+
