@@ -32,6 +32,10 @@ head(provincial_total_confirmed)
 # provincial deaths, and recoveries
 provincial_recoveries_data<- read.csv("data/covid19za_provincial_cumulative_timeline_recoveries.csv")
 head(provincial_recoveries_data)
+
+# lockdown levels
+national_lockdown<- read.csv("data/national_lockdown_govza.csv")
+head(national_lockdown)
 ```
 
 
@@ -108,9 +112,20 @@ confirmed_rolling_average <- confirmed %>%
 confirmed_summary <- confirmed_summary %>% 
   inner_join(confirmed_rolling_average, by = "date")
 
+# lockdown levels
+national_lockdown <- national_lockdown %>% 
+  mutate(date_start = as.Date(date_start)) %>% 
+  mutate(date_end = as.Date(date_end)) 
+head(national_lockdown$date_start[1])
+color_dat = data.frame(time = seq(national_lockdown$date_start[1], national_lockdown$date_end[1], by = "1 day") )
+
 # plot
-ggplot(confirmed_summary, aes(date)) + 
-  geom_col(aes(y = daily_confirmed, colour = "Active Cases"), color = "lightblue") + 
+ggplot(confirmed_summary, aes(date)) +
+  geom_segment(data = color_dat,
+          aes(x = time, xend = time,
+              y = 0, yend = Inf),
+            show.legend = FALSE, colour="grey") +
+  geom_col(aes(y = daily_confirmed, colour = "Active Cases"), color = "lightblue") +
   geom_line(aes(y = rolling_avg, colour = "Confirmed Cases"), color = "black") +
   labs(title= "Cases vs Active cases",
      caption = "Updated: June 2021",
