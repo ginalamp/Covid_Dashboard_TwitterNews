@@ -9,11 +9,7 @@ Johanna Engelhard and Gina Lamprecht
 
 Data still needed:
 
-* lockdown level information
 * check timelines
-* population per province
-* hospital admissions for complete timeline
-* excess deaths (SA, provinces, and metros)
 * table mapping province abbreviation to full name (could do this by hand?)
 
 Notes on Data that we have:
@@ -33,6 +29,11 @@ Additional (extra) - if the big file doesn't cover it well enough
 * [Excess Mortality github global](https://github.com/owid/covid-19-data/blob/master/public/data/excess_mortality/README.md)
 * [Excess Mortality South Africa](https://data.humdata.org/dataset/financial-times-excess-mortality-during-covid-19-pandemic-data)
 
+# Graph Formatting
+* [General good resource](http://zevross.com/blog/2014/08/04/beautiful-plotting-in-r-a-ggplot2-cheatsheet-3/)
+* [Add commas to y-axis labels](https://stackoverflow.com/questions/37713351/formatting-ggplot2-axis-labels-with-commas-and-k-mm-if-i-already-have-a-y-sc)
+* [Add specific date labels](https://www.r-graph-gallery.com/279-plotting-time-series-with-ggplot2.html)
+* [Set x/y axis cartesian limits](https://ggplot2.tidyverse.org/reference/lims.html)
 
 ## Background research
 [Excess mortality](https://ourworldindata.org/excess-mortality-covid)
