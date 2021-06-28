@@ -35,6 +35,6 @@ ggplot(rt_summary, aes(date, rolling_avg)) +
        x = NULL,
        y = NULL) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
-  coord_cartesian(ylim = c(0, 3))
+  coord_cartesian(ylim = c(0, 3)) +
   theme_minimal()
 ```
