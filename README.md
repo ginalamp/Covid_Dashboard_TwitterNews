@@ -30,6 +30,7 @@ Additional (extra) - if the big file doesn't cover it well enough
 * [Excess Mortality South Africa](https://data.humdata.org/dataset/financial-times-excess-mortality-during-covid-19-pandemic-data)
 
 # Graph Formatting
+* [Flexdashboard](https://pkgs.rstudio.com/flexdashboard/) - [Basic Row and Cols](https://blog.rstudio.com/2016/05/17/flexdashboard-easy-interactive-dashboards-for-r/)
 * [General good resource](http://zevross.com/blog/2014/08/04/beautiful-plotting-in-r-a-ggplot2-cheatsheet-3/)
 * [Add commas to y-axis labels](https://stackoverflow.com/questions/37713351/formatting-ggplot2-axis-labels-with-commas-and-k-mm-if-i-already-have-a-y-sc)
 * [Add specific date labels](https://www.r-graph-gallery.com/279-plotting-time-series-with-ggplot2.html)
