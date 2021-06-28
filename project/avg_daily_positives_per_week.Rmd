@@ -2,19 +2,19 @@
 title: "R Notebook"
 output: html_notebook
 ---
-```{r Setup}
+```{r Setup, echo=FALSE, include=FALSE}
 library(tidyverse)
 library(lubridate)
 library(RcppRoll)
 
 ```
 
-```{r Data: Confirmed Cases}
+```{r Data: Confirmed Cases, echo=FALSE, include=FALSE}
 data <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
 head(data)
 ```
 
-```{r}
+```{r, echo=FALSE, include=FALSE}
 daily_cases <- data %>%
   mutate(date = dmy(date)) %>%
   mutate(total_cases = total) %>%
@@ -23,7 +23,7 @@ daily_cases <- data %>%
 
 head(daily_cases)
 ```
-```{r}
+```{r, echo=FALSE, include=FALSE}
 # trying to calculate average of daily cases per week
 
 # add rolling average to the data
@@ -39,7 +39,7 @@ weekly_avg_daily_cases <- weekly_avg_daily_cases[c(TRUE, rep(FALSE, 6)),]
 weekly_avg_daily_cases
 ```
 
-```{r}
+```{r, echo=FALSE}
 ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
   geom_col() +
   labs(title= "Average daily positives per week",
@@ -49,6 +49,8 @@ ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
   #geom_text(aes(label = rolling_avg), hjust = 0) +
   scale_x_date(labels = NULL) +
   coord_flip() +  
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(hjust = 0),
+        panel.grid = element_blank())
 ```
 

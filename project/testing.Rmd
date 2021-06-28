@@ -3,18 +3,18 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-```{r}
+```{r, echo=FALSE, include=FALSE}
 library(tidyverse)
 library(lubridate)
 library(zoo)
 library(RcppRoll)
 ```
 
-```{r Data: testing}
+```{r Data: testing, echo=FALSE, include=FALSE}
 data <- read.csv("data/covid19za_timeline_testing.csv")
 head(data)
 ```
-```{r tidying data}
+```{r tidying data, echo=FALSE, include=FALSE}
 testing <- data %>%
   mutate(date = dmy(date)) %>%
   mutate(daily_tests=cumulative_tests-lag(cumulative_tests,default=0)) %>%
@@ -23,7 +23,7 @@ testing <- data %>%
 
 head(testing)
 ```
-```{r eval=FALSE}
+```{r, eval=FALSE, echo=FALSE, include=FALSE}
 # trying to calculate average of daily tests per week
 testing <- testing %>% 
   filter(!is.na(daily_tests))   # take out NA values
@@ -34,7 +34,7 @@ weekly  # average daily tests per week
 
 ```
 
-```{r eval=FALSE}
+```{r, eval=FALSE, echo=FALSE, include=FALSE}
 # trying to calculate average of daily tests per week
 avg <- testing %>%
   group_by(year(date), week(date)) %>%
@@ -60,7 +60,7 @@ ggplot(avg, aes(x = week, tests)) +
 
 ```
 
-```{r}
+```{r, echo=FALSE, include=FALSE}
 # trying to calculate average of daily tests per week
 
 # add rolling average to the data
@@ -75,7 +75,7 @@ testing_data <- testing_avg %>%
 testing_data <- testing_data[c(TRUE, rep(FALSE, 6)),]
 testing_data
 ```
-```{r}
+```{r, echo=FALSE}
 # plot data
 ggplot(testing_data, aes(x = rev(date), rolling_avg)) + 
   geom_col() +
@@ -86,14 +86,16 @@ ggplot(testing_data, aes(x = rev(date), rolling_avg)) +
   #geom_text(aes(label = rolling_avg), hjust = 0) +
   scale_x_date(labels = NULL) +
   coord_flip() +  
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(hjust = 0),
+        panel.grid = element_blank())
 
 # TODO: fix dates (axis ticks reverse) and fix sizing
 ```
 
 
 
-```{r}
+```{r, echo=FALSE, include=FALSE}
 tests <- data %>%
   mutate(date = dmy(date)) %>%
   select(date, cumulative_tests, cumulative_tests_private, cumulative_tests_public) %>%
@@ -102,7 +104,7 @@ tests <- data %>%
   filter(!is.na(cumulative_tests_private))
 tail(tests)
 ```
-```{r}
+```{r, eval=FALSE, echo=FALSE, include=FALSE}
 total <- tail(tests, 1) %>%
   mutate(total_tests = cumulative_tests, total_private_tests = cumulative_tests_private) %>%
   mutate(total_public_tests = cumulative_tests_public) %>%
@@ -112,7 +114,7 @@ total <- tail(tests, 1) %>%
   mutate(percentage = round(100*value/head(total, 1)$value, 1))
 total
 ```
-```{r eval=FALSE}
+```{r, eval=FALSE, echo=FALSE, include=FALSE}
 library(ggpmisc)
 ggplot() +
   annotate(geom = "table", x=0, y=0, label = list(total)) +
