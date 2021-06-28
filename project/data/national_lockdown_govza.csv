@@ -1,7 +1,7 @@
 ,date_start,date_end,national_lockdown_level,source
 ,2020-03-26,2020-04-30,5,“https://www.gov.za/covid-19/about/about-alert-system”
-,2020-05-01,2020-01-05,4,“https://www.gov.za/covid-19/about/about-alert-system”
-,2020-01-06,2020-08-17,3,“https://www.gov.za/covid-19/about/about-alert-system”
+,2020-05-01,2020-05-31,4,“https://www.gov.za/covid-19/about/about-alert-system”
+,2020-06-01,2020-08-17,3,“https://www.gov.za/covid-19/about/about-alert-system”
 ,2020-08-18,2020-09-20,2,“https://www.gov.za/covid-19/about/about-alert-system”
 ,2020-09-21,2020-12-28,1,“https://www.gov.za/covid-19/about/about-alert-system”
 ,2020-12-29,2021-02-28,3,“https://www.gov.za/covid-19/about/about-alert-system”
