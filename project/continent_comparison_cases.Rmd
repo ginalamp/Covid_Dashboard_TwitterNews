@@ -6,6 +6,7 @@ output: html_notebook
 library(tidyverse)
 library(lubridate) # dates
 library(ggplot2)
+library(RcppRoll) # rolling average
 ```
 
 ```{r}
