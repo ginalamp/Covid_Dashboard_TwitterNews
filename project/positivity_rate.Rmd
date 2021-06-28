@@ -3,7 +3,7 @@ title: "Positivity rate: number: Number of tests vs Positive cases (in June)"
 output: html_notebook
 ---
 # TODO
-* combine graph data/axis (like with the total death graph)
+* produce non-pdf result
 * Add proper legend
 ```{r}
 library(tidyverse)
@@ -32,7 +32,6 @@ positive_rate_data <- positive_rate_data %>%
   filter(!is.na(rolling_avg))
 
 positive_rate_data
-
 ```
 
 ```{r}
@@ -63,6 +62,122 @@ ggplot(positive_rate_data, aes(date)) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1L), breaks=seq(0, 0.3, by=0.02)) +
   theme_minimal() 
 ```
+# Combine Graphs
+```{r, echo=FALSE}
+# plot new tests
+p1 <- ggplot(positive_rate_data, aes(date)) + 
+  # geom_histogram(aes(y = new_tests, bins = 30, fill="white", show.legend = FALSE, size=1.1)) +
+  geom_col(aes(y = new_tests, colour = "Tests conducted"), width=0.5, position=position_dodge(0.5)) +
+  # geom_line(aes(y = rolling_avg, colour = "Confirmed Cases")) +
+  labs(title= "Positivity rate: number: Number of tests vs Positive cases (%)",
+     caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+  scale_color_discrete(name="") + # remove legend title
+  scale_x_date(date_breaks = "1 day", date_labels = "%d/%m") +
+  coord_cartesian(ylim = c(0, 70000)) +
+  theme_minimal() +  
+  theme(panel.grid.minor = element_blank(), 
+  panel.grid.major = element_blank())
 
+p1
+```
+```{r, echo=FALSE}
+# plot positive rate and rolling average
+p2 <- ggplot(positive_rate_data, aes(date)) + 
+  geom_line(aes(y = positive_rate, colour = "Positivity rate")) +
+  geom_line(aes(y = rolling_avg, colour = "7-day rolling average")) +
+  labs(title= "Positivity rate: number: Number of tests vs Positive cases (%)",
+     caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+  scale_color_discrete(name="") + # remove legend title
+  scale_x_date(date_breaks = "2 days", date_labels = "%d/%m") +
+  coord_cartesian(ylim = c(0, 0.3)) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1L), breaks=seq(0, 0.3, by=0.02)) +
+  theme_minimal() +  
+  theme(panel.grid.minor = element_blank(), 
+  panel.grid.major = element_blank()) 
+
+p2
+```
+```{r, echo=FALSE, include=FALSE}
+# overlay death and cfr plots
+
+# adapted from https://drawar.github.io/posts/dual-y-axis-ggplot2/
+
+# Get the plot grobs
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(p2)
+
+# Get the locations of the plot panels in g1.
+pp <- c(subset(g1$layout, name == "panel", se = t:r))
+
+library(gtable)
+library(grid)
+# Overlap panel for second plot on that of the first plot
+g1 <- gtable_add_grob(g1, g2$grobs[[which(g2$layout$name == "panel")]], pp$t, pp$l, pp$b, pp$l)
+
+# ggplot contains many labels that are themselves complex grob; 
+# usually a text grob surrounded by margins.
+# When moving the grobs from, say, the left to the right of a plot,
+# make sure the margins and the justifications are swapped around.
+# The function below does the swapping.
+# Taken from the cowplot package:
+# https://github.com/wilkelab/cowplot/blob/master/R/switch_axis.R 
+hinvert_title_grob <- function(grob){
+
+# Swap the widths
+widths <- grob$widths
+grob$widths[1] <- widths[3]
+grob$widths[3] <- widths[1]
+grob$vp[[1]]$layout$widths[1] <- widths[3]
+grob$vp[[1]]$layout$widths[3] <- widths[1]
+
+# Fix the justification
+grob$children[[1]]$hjust <- 1 - grob$children[[1]]$hjust 
+grob$children[[1]]$vjust <- 1 - grob$children[[1]]$vjust 
+grob$children[[1]]$x <- unit(1, "npc") - grob$children[[1]]$x
+grob
+}
+
+# Get the y axis from g2 (axis line, tick marks, and tick mark labels)
+index <- which(g2$layout$name == "axis-l")  # Which grob
+yaxis <- g2$grobs[[index]]                  # Extract the grob
+
+
+# Second, swap tick marks and tick mark labels
+ticks <- yaxis$children[[2]]
+ticks$widths <- rev(ticks$widths)
+ticks$grobs <- rev(ticks$grobs)
+
+# Third, move the tick marks
+# Tick mark lengths can change. 
+# A function to get the original tick mark length
+# Taken from the cowplot package:
+# https://github.com/wilkelab/cowplot/blob/master/R/switch_axis.R 
+plot_theme <- function(p) {
+plyr::defaults(p$theme, theme_get())
+}
+
+tml <- plot_theme(p1)$axis.ticks.length   # Tick mark length
+#ticks$grobs[[1]]$x <- ticks$grobs[[1]]$x - unit(1, "npc") + tml
+
+# Fourth, swap margins and fix justifications for the tick mark labels
+ticks$grobs[[2]] <- hinvert_title_grob(ticks$grobs[[2]])
+
+# Fifth, put ticks back into yaxis
+yaxis$children[[2]] <- ticks
+
+# Put the transformed yaxis on the right side of g1
+g1 <- gtable_add_cols(g1, g2$widths[g2$layout[index, ]$l], pp$r)
+g1 <- gtable_add_grob(g1, yaxis, pp$t, pp$r + 1, pp$b, pp$r + 1, clip = "off", name = "axis-r")
+
+# Turn off clipping in the plot panel
+g1$layout[which(g1$layout$name == "panel"), ]$clip = "off"
+
+# Print to PDF
+ggsave("positivity_rate.pdf", g1, width=15, height=5)
+```
 
 
