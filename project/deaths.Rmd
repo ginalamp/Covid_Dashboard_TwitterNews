@@ -4,16 +4,16 @@ output: html_notebook
 ---
 
 
-```{r}
+```{r, echo=FALSE, include=FALSE}
 library(tidyverse)
 library(lubridate)
 ```
 
-```{r Data: deaths}
+```{r Data: deaths, echo=FALSE, include=FALSE}
 data <- read.csv("data/covid19za_provincial_cumulative_timeline_deaths.csv")
 head(data)
 ```
-```{r tidying}
+```{r tidying, echo=FALSE, include=FALSE}
 deaths <- data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
 deaths <- deaths %>% 
   select(date, province, deaths, total)  %>% 
@@ -22,24 +22,32 @@ deaths <- deaths %>%
 
 head(deaths)
 ```
-```{r total and daily deaths}
+```{r total and daily deaths, echo=FALSE, include=FALSE}
 deaths_summary <- data %>%
   mutate(date = dmy(date)) %>%
   mutate(daily_deaths=total-lag(total,default=0)) %>%
   mutate(total_deaths = total) %>%
   select(date, daily_deaths, total_deaths)
 ```
+```{r}
+ticks <- seq(as.Date("2020-04-01"), by="month", len=15)
+```
 
-```{r plot daily deaths}
+```{r plot daily deaths, echo=FALSE}
 ggplot(deaths_summary, aes(date, daily_deaths)) + 
   geom_col() +
+  scale_x_date(breaks = ticks, labels = paste("1", month(ticks, label = TRUE)), minor_breaks = NULL) + 
+  scale_y_continuous(minor_breaks = NULL) +
   labs(title= "Daily deaths",
        caption = "Updated: June 2021",
        x = NULL,
        y = NULL) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(hjust = 0),
+        panel.grid.major.x = element_blank())
+
 ```
-```{r}
+```{r, echo=FALSE, include=FALSE}
 # total confirmed cases in SA
 cases <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
 cases <- cases %>%
@@ -49,7 +57,7 @@ cases <- cases %>%
 head(cases)
 
 ```
-```{r}
+```{r, echo=FALSE, include=FALSE}
 # add confirmed cases and fatality rate to deaths df 
 deaths_summary <- deaths_summary %>%
   left_join(cases, by="date") %>%
@@ -59,7 +67,7 @@ head(deaths_summary)
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 # plot total deaths
 p1 <- ggplot() + 
   geom_point(data=deaths_summary, aes(date, total_deaths), color="blue") +
@@ -73,7 +81,7 @@ p1 <- ggplot() +
 
 p1
 ```
-```{r}
+```{r, echo=FALSE}
 # plot fatality rate
 p2 <- ggplot(data=deaths_summary, aes(date, fatality_rate)) + 
   geom_point() +
@@ -88,7 +96,7 @@ p2 <- ggplot(data=deaths_summary, aes(date, fatality_rate)) +
 
 p2
 ```
-```{r}
+```{r, echo=FALSE, include=FALSE}
 # overlay death and cfr plots
 
 # adapted from https://drawar.github.io/posts/dual-y-axis-ggplot2/
@@ -183,7 +191,7 @@ g1$layout[which(g1$layout$name == "panel"), ]$clip = "off"
 ggsave("deaths_and_fatality.pdf", g1, width=5, height=5)
 ```
 
-```{r total deaths per province}
+```{r total deaths per province, echo=FALSE, include=FALSE}
 total_deaths <- tail(data, 1) %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
 total_deaths <- total_deaths %>% 
   select(date, province, deaths, total)  %>% 
@@ -194,19 +202,22 @@ total_deaths <- total_deaths %>%
 total_deaths$province <- factor(total_deaths$province, levels = total_deaths$province)
 total_deaths
 ```
-```{r plot deaths by province}
+```{r plot deaths by province, echo=FALSE}
 ggplot(total_deaths, aes(province, deaths)) + 
   geom_col() +
   geom_text(aes(label = deaths), vjust = -1) +
   scale_x_discrete() +
-  scale_y_continuous(labels = NULL) +
+  scale_y_continuous(labels = NULL, breaks = NULL) +
   labs(title= "Deaths by Province",
        caption = "Updated: June 2021",
        x = NULL,
        y = NULL) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(hjust = 0),
+        panel.grid.major.x = element_blank())
+
 ```
-```{r}
+```{r, echo=FALSE, include=FALSE}
 
 total_deaths <- total_deaths %>%  
   mutate(code = province) %>%  # format so the column names are the same to be able to join the dataframes
@@ -216,7 +227,7 @@ total_deaths <- total_deaths %>%
 total_deaths
 ```
 
-```{r deaths per province per 100k}
+```{r deaths per province per 100k, echo=FALSE, include=FALSE}
 province_population <- read.csv("data/province_population.csv")
 province_population
 
@@ -234,15 +245,17 @@ total_deaths$code <- factor(total_deaths$code, levels = total_deaths$code)
 total_deaths
 ```
 
-```{r plot deaths by province per 100k}
+```{r plot deaths by province per 100k, echo=FALSE}
 ggplot(total_deaths, aes(code, deaths_per_100k)) + 
   geom_col() +
   geom_text(aes(label = deaths_per_100k), vjust = -1) +
   scale_x_discrete() +
-  scale_y_continuous(labels = NULL) +
+  scale_y_continuous(labels = NULL, breaks = NULL) +
   labs(title= "Deaths by Province (per 100k)",
        caption = "Updated: June 2021",
        x = NULL,
        y = NULL) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(hjust = 0),
+        panel.grid.major.x = element_blank())
 ```
