@@ -25,7 +25,7 @@ tail(data$date, n=1)
     filter(!is.na(new_cases)) %>% 
     select(date, new_cases) %>% 
     mutate(date = as.Date(date)) %>% 
-    filter(date > tail(confirmed$date, n=1) - 20)
+    filter(date > tail(confirmed$date, n=1) - 20) # get last 20 days since data updated
   head(confirmed)
 ```
 # Reverse order of dataframe (most recent date at the top)
