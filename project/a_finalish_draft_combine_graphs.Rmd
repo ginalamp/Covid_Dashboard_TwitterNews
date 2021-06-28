@@ -1,0 +1,228 @@
+---
+title: "Final-ish Project Graphs"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    source_code: embed
+    vertical_layout: scroll
+  html_document:
+    df_print: paged
+---
+# Corona Dashboard
+```{r import libraries}
+library(tidyverse)
+library(lubridate) # dates
+library(chron) # reverse date plot
+library(formattable) # round numbers
+library(ggplot2)
+library(scales)
+library(RcppRoll) # rolling average
+library(flexdashboard) # html dashboard formatting
+```
+
+
+<!-- Set colours according to Stellenbosch Branding manual-->
+<!-- http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf -->
+```{r set colours}
+maroon <- "#60223b"
+mustard <- "#F1B434"
+darkgrey <- "#333333"
+lightgrey <- "#8c979a"
+black <- "#000000"
+engineering_yellow <- "#eaaa00"
+arts_orange <- "#FF8F1C"
+military_salmon <- "#e56a54"
+science_red <- "#cb333b"
+law_winered <- "#9e2629"
+theology_purple <- "#84329B"
+education_darkblue <- "#326295"
+ems_lightblue <- "#2dccd3"
+agri_green <- "#509e2f"
+med_bluegreen <- "#006163"
+```
+
+<!-- Read data -->
+```{r read data}
+# general (cumulative) information regarding tests, deaths, and recoveries. Complete timeline.
+tests_deaths_recoveries_data <- read.csv("data/covid19za_timeline_testing.csv")
+
+# total (cumulative) number of confirmed cases by province
+provincial_total_confirmed <- read.csv("data/covid19za_provincial_cumulative_timeline_confirmed.csv")
+
+# provincial deaths, and recoveries
+provincial_recoveries_data<- read.csv("data/covid19za_provincial_cumulative_timeline_recoveries.csv")
+
+# lockdown levels
+national_lockdown<- read.csv("data/national_lockdown_govza.csv")
+
+# death data
+death_data <- read.csv("data/covid19za_provincial_cumulative_timeline_deaths.csv")
+
+# owid SA extracted (big) data
+owid_sa_data <- read.csv("data/owid-covid-data_SouthAfricaExtracted_big.csv")
+```
+
+<!-- Wrangle data -->
+```{r value box death and recovered}
+# total deaths
+total_deaths <- max(tests_deaths_recoveries_data$deaths, na.rm = TRUE)
+
+# get last day's number of deaths increase
+last_death_cols <- tail(tests_deaths_recoveries_data$deaths, n=2)
+death_day_update <- last_death_cols[2] - last_death_cols[1]
+
+# total recovered
+total_recovered <- max(tests_deaths_recoveries_data$recovered, na.rm = TRUE)
+
+# percentage recovered
+percentage_recovered <- total_recovered / (total_recovered + total_deaths) * 100
+```
+
+```{r value box active and confirmed cases}
+# total confirmed cases
+total_confirmed <- max(provincial_total_confirmed$total, na.rm = TRUE)
+
+# get last day's number of confirmed increase
+last_confirmed_cols <- tail(provincial_total_confirmed$total, n=2)
+confirmed_day_update <- last_confirmed_cols[2] - last_confirmed_cols[1]
+
+# active cases = confirmed cases  - recoveries - deaths
+total_active <- total_confirmed - total_recovered - total_deaths
+```
+
+```{r value box tests}
+# get number of tests
+total_tests <- max(tests_deaths_recoveries_data$cumulative_tests, na.rm = TRUE)
+# get last day's number of tests increase
+last_tests_cols <- tail(tests_deaths_recoveries_data$cumulative_tests, n=2)
+test_day_update <- last_tests_cols[2] - last_tests_cols[1]
+```
+
+```{r bubble new tests and cases}
+bubble_data <- owid_sa_data %>% 
+  select(date, new_cases, new_tests) %>% 
+  filter(!is.na(new_cases)) %>% 
+  filter(!is.na(new_tests)) %>% 
+  mutate(date = as.Date(date))
+```
+
+```{r last 20 days new cases}
+# Get total confirmed cases per date
+confirmed <- owid_sa_data %>% 
+  filter(!is.na(new_cases)) %>% 
+  select(date, new_cases) %>% 
+  mutate(date = as.Date(date)) %>% 
+  filter(date > as.Date("2021-06-01"))
+confirmed <- confirmed %>% map_df(rev) 
+```
+
+<!-- Plot data -->
+Row {data-width=400}
+-----------------------------------------------------------------------
+
+### confirmed cases {.value-box}
+
+```{r plot confirmed cases box}
+valueBox(
+  value = paste(format(total_confirmed, big.mark = ","), " (+ ", confirmed_day_update,")", sep = ""),
+  caption = "CONFIRMED CASES",
+  icon = "fas fa-user-md",
+  color = maroon
+)
+```
+
+
+
+### total deaths {.value-box}
+
+```{r plot total deaths box}
+valueBox(
+  value = paste(format(total_deaths, big.mark = ","), " (+ ", death_day_update,")", sep = ""),
+  caption = "DEATHS",
+  icon = "fas fa-user-md",
+  color = science_red
+)
+```
+
+
+
+### total tests {.value-box}
+
+```{r plot total tests box}
+valueBox(
+  value = paste(format(total_tests, big.mark = ","), " (+ ", test_day_update,")", sep = ""),
+  caption = "TESTS",
+  icon = "fas fa-user-md",
+  color = med_bluegreen
+)
+```
+
+Row {data-width=400}
+-------------------------------------
+### active cases {.value-box}
+
+```{r plot active cases box}
+valueBox(
+  value = paste(format(total_active, big.mark = ","), "", sep = " "),
+  caption = "ACTIVE CASES",
+  icon = "fas fa-user-md",
+  color = mustard
+)
+```
+
+### recovered {.value-box}
+
+```{r plot recovered box}
+valueBox(
+  value = paste(format(total_recovered, big.mark = ","), " (", round(percentage_recovered, 1),"%)", sep = ""),
+  caption = "RECOVERED",
+  icon = "fas fa-user-md",
+  color = agri_green
+)
+```
+
+Row {data-width=400}
+-------------------------------------
+### **Daily tests and positive cases**
+```{r plot new tests and cases bubble graph}
+ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
+    geom_point(alpha=0.5) +
+    scale_size(range = c(.1, 10)) +
+    labs(caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+    scale_x_date(date_breaks = "1 month", date_labels = "%d/%m") +
+    theme_minimal() + theme(legend.position="none")
+```
+
+
+<!-- Row {data-width=400} -->
+<!-- ------------------------------------- -->
+### **Confirmed infections (last 20 days)**
+```{r plot confirmed cases - last 20 days}
+ggplot(confirmed, aes(rev(date), new_cases)) + 
+  geom_col(position="dodge") +
+  geom_text(aes(label = new_cases), position = position_dodge(0.9), hjust=-0.1) + # add labels
+  labs(caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  scale_x_date(date_breaks = "1 day", date_labels = "%m-%d-%Y") +
+  scale_y_continuous(labels = NULL, breaks = NULL)  +# remove amount ticks
+  coord_flip() +
+  theme_minimal()
+```
+
+
+<!-- Other non-code stuff -->
+# Project Writeup
+Explain overall code here
+
+# Background Research
+
+* Excess deaths
+* Doubling rate
+
+# Sources
+* TODO
+
+
