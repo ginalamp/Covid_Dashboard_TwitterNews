@@ -34,6 +34,7 @@ Additional (extra) - if the big file doesn't cover it well enough
 * [Add commas to y-axis labels](https://stackoverflow.com/questions/37713351/formatting-ggplot2-axis-labels-with-commas-and-k-mm-if-i-already-have-a-y-sc)
 * [Add specific date labels](https://www.r-graph-gallery.com/279-plotting-time-series-with-ggplot2.html)
 * [Set x/y axis cartesian limits](https://ggplot2.tidyverse.org/reference/lims.html)
+* [Create manual legend](https://stackoverflow.com/questions/17148679/construct-a-manual-legend-for-a-complicated-plot)
 
 ## Background research
 [Excess mortality](https://ourworldindata.org/excess-mortality-covid)
