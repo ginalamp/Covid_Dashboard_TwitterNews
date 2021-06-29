@@ -783,16 +783,15 @@ Row {data-width=data_width_standard}
 -------------------------------------
 ### **Daily case trends**
 ```{r fig.height=4, fig.width=12}
-# TODO: replace province code with full province name
-# TODO: add start and end date
 ggplot(cases_last_8_mths, aes(date, rolling_avg)) + 
   geom_line(color = theology_purple) + 
   scale_y_continuous(labels = NULL, breaks = NULL) +
-  scale_x_date(breaks = NULL) +
+  scale_x_date(date_breaks = "2 months", date_labels = "%b") +
   facet_wrap(~ province, nrow = 2) +
   labs(subtitle= "UPDATED These charts show the seven-day average of daily new cases for the past eight months. The seven-day average is used to even out spikes in daily cases.",
        x = NULL,
-       y = NULL)
+       y = NULL) +
+  custom_theme()
 ```
 
 
