@@ -1,5 +1,5 @@
 ---
-title: "Final-ish Project Graphs"
+title: "Corona Dashboard"
 author: "Johanna Engelhard and Gina Lamprecht"
 output:
   flexdashboard::flex_dashboard:
@@ -95,12 +95,6 @@ education_darkblue <- "#326295"
 ems_lightblue <- "#2dccd3"
 agri_green <- "#509e2f" # recovered / vaccinations
 med_bluegreen <- "#006163"
-
-# TODO: not working
-# set default plotting default different colours
-graph_colours <- options(
-  ggplot2.discrete.color = list(c(maroon, mustard, arts_orange, law_winered, theology_purple, education_darkblue, agri_green, med_bluegreen))
-)
 ```
 
 ```{r set data width}
@@ -110,8 +104,6 @@ data_width_standard <- 400
 
 <!-- Read data -->
 ```{r read data}
-# TODO: clean this up (remove duplicate data read ins)
-
 # general (cumulative) information regarding tests, deaths, and recoveries. Complete timeline.
 tests_deaths_recoveries_data <- read.csv("data/covid19za_timeline_testing.csv")
 
@@ -233,7 +225,9 @@ cases_last_8_mths <- cases_provincial %>%
   filter(date >= ymd("2020-11-12"))
 ```
 
-```{r total deaths and fatality rate}
+```{r total deaths and fatality rate - generates PDF}
+# generates a PDF with the deaths and fatality rate graph (output image added to dashboard in Data Visualisation section)
+
 # total confirmed cases in SA
 confirmed_cases <- provincial_total_confirmed %>%
   mutate(date = dmy(date)) %>%
@@ -303,11 +297,6 @@ grob
 # Get the y axis from g2 (axis line, tick marks, and tick mark labels)
 index <- which(g2$layout$name == "axis-l")  # Which grob
 yaxis <- g2$grobs[[index]]                  # Extract the grob
-
-# yaxis is a complex of grobs containing the axis line, the tick marks, and the tick mark labels.
-# The relevant grobs are contained in axis$children:
-#   axis$children[[1]] contains the axis line;
-#   axis$children[[2]] contains the tick marks and tick mark labels.
 
 # Second, swap tick marks and tick mark labels
 ticks <- yaxis$children[[2]]
@@ -441,7 +430,6 @@ weekly_avg_daily_cases <- weekly_avg_daily_cases %>%
 tests_per_positive <- testing_avg %>% 
   inner_join(weekly_avg_daily_cases, by="date") %>% 
   select(date, testing_rolling_avg, confirmed_rolling_avg)
-# %>%   drop_na(date, testing_rolling_avg, confirmed_rolling_avg) # avg daily test per week has NA at start
 tests_per_positive$ratio <- with(tests_per_positive, testing_rolling_avg / confirmed_rolling_avg)
 ```
 
@@ -463,12 +451,13 @@ confirmed_20 <- owid_sa_data %>%
 confirmed_20 <- confirmed_20 %>% map_df(rev) 
 ```
 
-```{r positivity rate}
+```{r positivity rate - generated PDF}
+# generates a PDF with the positivity rate graph (output image added to dashboard in Data Visualisation section)
 positive_rate_data <- owid_sa_data %>% 
   select(date, new_tests, positive_rate, tests_per_case) %>% 
   filter(!is.na(new_tests)) %>% 
   filter(!is.na(positive_rate)) %>% 
-  filter(!is.na(tests_per_case)) %>%   # check - might be unnecessary
+  filter(!is.na(tests_per_case)) %>% 
   mutate(date = as.Date(date)) %>% 
   filter(date > as.Date("2021-05-20"))
 
@@ -478,7 +467,6 @@ positive_rate_data <- positive_rate_data %>%
 
 # plot new tests
 p1 <- ggplot(positive_rate_data, aes(date)) + 
-  # geom_histogram(aes(y = new_tests, bins = 30, fill="white", show.legend = FALSE, size=1.1)) +
   geom_col(aes(y = new_tests, colour = "Tests conducted"), width=0.5, position=position_dodge(0.5)) +
   # geom_line(aes(y = rolling_avg, colour = "Confirmed Cases")) +
   labs(title= "Positivity rate: number: Number of tests vs Positive cases (%)",
@@ -641,7 +629,6 @@ active_confirmed_summary <- active_df %>%
 
 ```{r confirmed vs active per province (confirmed, death, recovery data used)}
 # provincial deaths
-# TODO: combine this with other death data
 provincial_deaths <- death_data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
 provincial_deaths <- provincial_deaths %>%
   select(date, province, deaths, total)  %>%
@@ -772,7 +759,7 @@ excess_deaths_provinces$province <- factor(excess_deaths_provinces$province, lev
 ```
 
 ```{r excess deaths (metros)}
-# missing covid deaths per metro for comparison
+# NOTE: missing covid deaths per metro for comparison
 
 excess_deaths_metros <- excess_deahts_metros_data %>%
   mutate(date = ymd(date)) %>%
@@ -841,7 +828,6 @@ rolling_avg_continent <- continent_data %>%
 ```
 
 ```{r private vs public tests}
-# TODO: format table nicely (values and names)
 tests <- testing_data %>%
   mutate(date = dmy(date)) %>%
   select(date, cumulative_tests, cumulative_tests_private, cumulative_tests_public) %>%
@@ -880,8 +866,6 @@ valueBox(
 )
 ```
 
-
-
 ### total deaths {.value-box}
 
 ```{r plot total deaths box}
@@ -892,8 +876,6 @@ valueBox(
   color = science_red
 )
 ```
-
-
 
 ### total tests {.value-box}
 
@@ -962,13 +944,9 @@ Row {data-width=data_width_standard}
 -------------------------------------
 ### **Daily confirmed cases**
 ```{r fig.width=10, fig.height=6}
-# TODO: Format legend better
-
 # lockdown level colours
 level_colours <- c("Level 1"="#bcbef5","Level 2"="#999ad1", "Level 3"= "#7476b5", "Level 4"="#444687", "Level 5"="#1e206e")
-# level_colours <- c("Level 1"=engineering_yellow,"Level 2"=arts_orange, "Level 3"= military_salmon, "Level 4"=science_red, "Level 5"=law_winered)
 
-# plot
 ggplot(confirmed_summary, aes(date)) +
   # lockdown segments
   geom_segment(data = segment1,
@@ -1015,7 +993,6 @@ ggplot(confirmed_summary, aes(date)) +
      x = NULL,
      y = NULL) +
   scale_colour_manual(name="Lockdown levels",values=level_colours) +
-  # scale_fill_manual(name="Lockdown Levels", values=level_colours) + # manual legend
   scale_x_date(date_breaks = "1 month", date_labels = "%d %b") +
   scale_y_continuous(label=comma) +
   custom_line_light_grid()
@@ -1026,7 +1003,6 @@ Row {data-width=data_width_standard}
 -------------------------------------
 ### **Active case total by day**
 ```{r}
-#TODO: Gap in active cases
 ggplot(active_confirmed_summary, aes(date, total_active)) + 
   geom_col(color=arts_orange, fill=arts_orange) +
   labs(caption = "Updated: 21 June 2021",
@@ -1037,9 +1013,6 @@ ggplot(active_confirmed_summary, aes(date, total_active)) +
   custom_line_light_grid()
 ```
 
-
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Daily deaths**
 ```{r}
 ticks <- seq(as.Date("2020-04-01"), by="month", len=15)
@@ -1091,14 +1064,10 @@ ggplot(active_confirmed_summary, aes(date)) +
   custom_line_theme()
 ```
 
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Total Deaths**
 <!-- Add screenshot of generated total deaths vs fatality graph -->
 ![](./output/deaths_and_fatality.png)
 
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Doubling Rates**
 ```{r}
 ggplot(confirmed_deaths_doubling, aes(date)) + 
@@ -1127,9 +1096,6 @@ ggplot(total_deaths_province, aes(province, deaths)) +
   theme(panel.grid.major.x = element_blank())
 ```
 
-
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Deaths by Province (per 100k)**
 ```{r fig.height=6}
 ggplot(total_deaths_100k, aes(code, deaths_per_100k)) + 
@@ -1144,9 +1110,6 @@ ggplot(total_deaths_100k, aes(code, deaths_per_100k)) +
   theme(panel.grid.major.x = element_blank())
 ```
 
-
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Prov Infections per 100,000 Population**
 ```{r fig.width=14}
 ggplot(total_cases_100k, aes(province, cases_per_100k)) + 
@@ -1167,7 +1130,6 @@ Row {data-width=data_width_standard}
 -------------------------------------
 ### **Confirmed and Active Cases by Province**
 ```{r fig.height=4, fig.width=12}
-# TODO: Add labels (total active per province)
 ggplot(provincial_active, aes(date)) + 
   geom_line(aes(y = cases, colour = "Confirmed Cases"), color = theology_purple) + 
   geom_line(aes(y = active, colour = "Active Cases"), color = arts_orange) +
@@ -1200,8 +1162,6 @@ ggplot(testing_avg, aes(x = date, rolling_avg)) +
   theme(panel.grid = element_blank())
 ```
 
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Average daily positives per week**
 ```{r fig.width = 10, fig.height=12}
 ggplot(weekly_avg_daily_cases, aes(date, rolling_avg)) +
@@ -1236,12 +1196,8 @@ ggplot(tests_per_positive, aes(date, ratio)) +
   theme(panel.grid = element_blank())
 ```
 
-
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Daily tests and positive cases**
 ```{r fig.width = 8}
-# TODO: Y axis labeling (cap at 60k, but allow graph to continue upward)
 ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
     geom_point(alpha=0.5, color=theology_purple) +
     geom_text(aes(label = paste("10/07\n", format(new_cases, big.mark = ","))), 
@@ -1289,23 +1245,17 @@ Row {data-width=data_width_standard}
 -------------------------------------
 ### **National Hospital Admissions**
 ```{r fig.width=8}
-# TODO: Add EPI week x axis label
-# TODO: Flip Date x axis label to be at the top
 ggplot(national_hospital_data, aes(week_start, total_national_hospital_admissions)) + 
   geom_line(color=med_bluegreen, size=1) +
   labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
-  # scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
   coord_cartesian(ylim = c(0, 20000)) +
   scale_x_date(date_breaks = "2 months", date_labels = "%d %b") +
   scale_y_continuous(label=comma) +
-  # theme(panel.grid.major.y = element_line(colour = "lightgrey")) + custom_theme()
   custom_with_light_grid()
 ```
 
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Public vs. Private Tests**
 ```{r plot private vs public tests}
   g <- tableGrob(total_private_public, rows = NULL)
@@ -1320,12 +1270,8 @@ ggplot(national_hospital_data, aes(week_start, total_national_hospital_admission
   grid.arrange(g)
 ```
 
-
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Current Rt estimates for South Africa**
 ```{r fig.width=8}
-# TODO: add 90% credible interval
 ggplot(rt_summary, aes(date, rolling_avg)) + 
   geom_line(color=maroon, size=1) +
   geom_text(aes(label = paste("26 June \nRt =", round(rolling_avg, 2))), 
@@ -1361,9 +1307,6 @@ ggplot() +
 )
 ```
 
-
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Excess Deaths (Provinces)**
 ```{r fig.height=6}
 ggplot() + 
@@ -1381,9 +1324,6 @@ ggplot() +
 ```
 
 
-
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
 ### **Excess Deaths (Metros)**
 ```{r}
 ggplot() + 
