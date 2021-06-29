@@ -909,17 +909,17 @@ Row {data-width=data_width_standard}
 -------------------------------------
 ### **Average daily tests per week**
 ```{r fig.width = 10, fig.height=12}
-# TODO: reverse dates, add labels and fix sizing
-
-ggplot(testing_avg, aes(x = rev(date), rolling_avg)) + 
+ggplot(testing_avg, aes(x = date, rolling_avg)) + 
   geom_col(fill = med_bluegreen) +
   labs(caption = "Updated: June 2021",
        x = "Week",
        y = NULL) +
-  geom_text(aes(label = rolling_avg), hjust = 0) +
-  scale_x_date(labels = NULL, breaks = NULL) +
-  coord_flip() +  
-  custom_theme() +
+  geom_text(aes(label = rolling_avg), position = position_dodge(0.9), hjust=-0.1) + # add labels
+  scale_x_date(date_breaks = "1 week", date_labels = "%d %b") +
+  scale_y_continuous(labels = NULL, breaks = NULL)  + # remove unnecessary ticks
+  scale_color_manual(values = c(theology_purple)) +
+  coord_flip() +
+  custom_line_theme() +
   theme(panel.grid = element_blank())
 ```
 
@@ -927,17 +927,17 @@ ggplot(testing_avg, aes(x = rev(date), rolling_avg)) +
 <!-- ------------------------------------- -->
 ### **Average daily positives per week**
 ```{r fig.width = 10, fig.height=12}
-# TODO: reverse dates, add labels and fix sizing
-
-ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
+ggplot(weekly_avg_daily_cases, aes(date, rolling_avg)) +
   geom_col(fill = theology_purple) +
   labs(caption = "Updated: June 2021",
        x = "Week",
        y = NULL) +
-  geom_text(aes(label = rolling_avg), hjust = 0) +
-  scale_x_date(labels = NULL) +
-  coord_flip() +  
-  theme_minimal() +
+  geom_text(aes(label = rolling_avg), position = position_dodge(0.9), hjust=-0.1) + # add labels
+  scale_x_date(date_breaks = "1 week", date_labels = "%d %b") +
+  scale_y_continuous(labels = NULL, breaks = NULL)  + # remove unnecessary ticks
+  scale_color_manual(values = c(theology_purple)) +
+  coord_flip() +
+  custom_line_theme() +
   theme(panel.grid = element_blank())
 ```
 
@@ -950,8 +950,8 @@ ggplot(tests_per_positive, aes(date, ratio)) +
   labs(caption = "Updated: June 2021",
        x = "Week",
        y = NULL) +
-  geom_text(aes(label = round(ratio, 2)), hjust = 0) +
-  scale_x_date(date_breaks = "1 week", date_labels = "%m-%d-%Y") +
+  geom_text(aes(label = round(ratio, 2)), position = position_dodge(0.9), hjust=-0.1) + # add labels
+  scale_x_date(date_breaks = "1 week", date_labels = "%d %b") +
   scale_y_continuous(labels = NULL, breaks = NULL)  + # remove unnecessary ticks
   scale_color_manual(values = c(theology_purple)) +
   coord_flip() +
