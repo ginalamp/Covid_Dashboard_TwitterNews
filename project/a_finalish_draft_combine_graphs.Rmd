@@ -182,7 +182,7 @@ total_deaths_province <- tail(death_data, 1) %>%
 total_deaths_province <- total_deaths_province %>% 
   select(date, province, deaths, total)  %>% 
   filter(province != 'UNKNOWN') %>% 
-  mutate(date = dmy(date)) %>%
+  mutate(date = dmy(date)) %>% 
   arrange(desc(deaths))
 
 total_deaths_province$province <- factor(total_deaths_province$province, levels = total_deaths_province$province)
@@ -266,7 +266,6 @@ confirmed_summary <- confirmed_summary %>%
 national_lockdown <- national_lockdown %>% 
   mutate(date_start = as.Date(date_start)) %>% 
   mutate(date_end = as.Date(date_end)) 
-head(national_lockdown$date_start[2])
 
 # lockdown segments
 segment1 = data.frame(time = seq(national_lockdown$date_start[1], national_lockdown$date_end[1], by = "1 day"))
@@ -298,6 +297,40 @@ active_confirmed_summary <- active_df %>%
   select(date, total_active, total_confirmed, daily_confirmed, total_deaths, daily_deaths) %>%
   mutate(daily_active=total_active-lag(total_active,default=0))
 ```
+
+```{r confirmed vs active per province (confirmed, death, recovery data used)}
+# provincial deaths
+# TODO: combine this with other death data
+provincial_deaths <- death_data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
+provincial_deaths <- provincial_deaths %>%
+  select(date, province, deaths, total)  %>%
+  filter(province != 'UNKNOWN') %>%
+  mutate(date = dmy(date))
+
+# provincial recoveries
+provincial_recoveries <- provincial_recoveries_data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "recoveries")
+provincial_recoveries <- provincial_recoveries %>%
+  group_by(province) %>%
+  select(date, province, recoveries, total)  %>%
+  filter(province != 'UNKNOWN') %>%
+  mutate(date = dmy(date)) %>% 
+  summarise(date = date, recoveries = recoveries)
+
+# inner_join() joins based on matching keys (we only want overlapping dates)
+provincial_active <- cases %>% 
+  inner_join(provincial_recoveries, by = c("province", "date")) %>% 
+  inner_join(provincial_deaths, by = c("province", "date"))
+
+# get active cases per province
+provincial_active$active <- with(provincial_active, cases - recoveries - deaths)
+provincial_active <- provincial_active %>%
+  select(date, province, cases, recoveries, deaths, active)
+# province_names <- c('EASTERN CAPE', 'FREE STATE','GAUTENG','KWAZULU NATAL', 'LIMPOPO', 'MPUMALANGA', 'NORTHERN CAPE', 'NORTH WEST', 'WESTERN CAPE')
+# pn <- data.frame("province", province_names)
+# provincial_active$province <- pn
+head(provincial_active)
+```
+
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Plot data -->
@@ -596,7 +629,20 @@ ggplot(total_cases_100k, aes(province, cases_per_100k)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Confirmed and Active Cases by Province**
-<!-- TODO insert here -->
+```{r fig.width=10}
+# TODO: Add labels (total active and confirmed per province)
+# TODO: Convert province codes to nice province names
+ggplot(provincial_active, aes(date)) + 
+  geom_line(aes(y = cases, colour = "Confirmed Cases"), color = theology_purple) + 
+  geom_line(aes(y = active, colour = "Active Cases"), color = arts_orange) +
+  scale_y_continuous(breaks = seq(0, 1000000, by = 1000000), limits = c(0, 5000000), labels = NULL) +
+  scale_x_date(labels = NULL) +
+  facet_wrap(~ province, nrow = 2) +
+  labs(caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+  custom_line_theme()
+```
 
 Row {data-width=data_width_standard}
 -------------------------------------
