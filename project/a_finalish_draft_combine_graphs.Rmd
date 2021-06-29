@@ -143,6 +143,24 @@ deaths_summary <- death_data %>%
   select(date, daily_deaths, total_deaths)
 ```
 
+```{r line faceted daily case trends}
+cases <- provincial_total_confirmed %>% 
+  pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), 
+               names_to = "province", values_to = "cases")
+cases <- cases %>% 
+  select(date, province, cases, total)  %>% 
+  filter(province != 'UNKNOWN') %>% 
+  mutate(date = dmy(date)) %>%
+  # calculate daily cases per province
+  group_by(province) %>%
+  mutate(daily_cases=cases-lag(cases,default=0)) %>%
+  # calculate 7-day rolling average of daily cases
+  mutate(rolling_avg = roll_mean(daily_cases, n=7, fill = NA, align = "right"))
+
+cases_last_8_mths <- cases %>%
+  filter(date >= ymd("2020-11-12"))
+```
+
 ```{r bar deaths by province}
 total_deaths_province <- tail(death_data, 1) %>% 
   pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), 
@@ -174,6 +192,22 @@ total_deaths_100k <- total_deaths_100k %>%
 total_deaths_100k$province <- factor(total_deaths_100k$province, levels = total_deaths_100k$province)
 total_deaths_100k$code <- factor(total_deaths_100k$code, levels = total_deaths_100k$code)
 
+```
+
+```{r bar provincial infections per 100k}
+total_cases_100k <- tail(cases, 9) # cumulative cases per province up to 21 June 2021
+# add province populations to province cases
+total_cases_100k <- total_cases_100k %>%
+  ungroup() %>%
+  mutate(code = province) %>%
+  select(code, cases) %>%
+  left_join(province_population, by = "code") %>% 
+  select(code, province, cases, population) %>%
+  # calculate infections per 100k population
+  mutate(cases_per_100k = round(100000 * cases / population, digits=2)) %>% 
+  arrange(cases_per_100k)
+
+total_cases_100k$province <- factor(total_cases_100k$province, levels = total_cases_100k$province) # keep order when plotting
 ```
 
 ```{r bubble new tests and cases}
@@ -421,7 +455,19 @@ ggplot(deaths_summary, aes(date, daily_deaths)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Daily case trends**
-<!-- TODO insert here -->
+```{r}
+# TODO: replace province code with full province name
+# TODO: add start and end date
+ggplot(cases_last_8_mths, aes(date, rolling_avg)) + 
+  geom_line(color = theology_purple) + 
+  scale_y_continuous(labels = NULL, breaks = NULL) +
+  scale_x_date(breaks = NULL) +
+  facet_wrap(~ province, nrow = 2) +
+  labs(subtitle= "UPDATED These charts show the seven-day average of daily new cases for the past eight months. The seven-day average is used to even out spikes in daily cases.",
+       x = NULL,
+       y = NULL)
+```
+
 
 Row {data-width=data_width_standard}
 -------------------------------------
@@ -475,7 +521,20 @@ ggplot(total_deaths_100k, aes(code, deaths_per_100k)) +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Prov Infections per 100,000 Population**
-<!-- TODO insert here -->
+```{r}
+ggplot(total_cases_100k, aes(province, cases_per_100k)) + 
+  geom_col(fill = theology_purple) +
+  geom_text(aes(label = format(cases_per_100k, big.mark=",")), hjust = 0) +
+  scale_x_discrete() +
+  scale_y_continuous(labels = NULL) +
+  labs(caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  coord_flip() +
+  custom_theme() +
+  theme(panel.grid = element_blank())
+```
+
 
 Row {data-width=data_width_standard}
 -------------------------------------
