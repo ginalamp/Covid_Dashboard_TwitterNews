@@ -113,6 +113,9 @@ testing_data <- read.csv("data/covid19za_timeline_testing.csv")
 
 # national hospital data
 national_hospital_data <- read.csv("data/za_national_hospital_admissions.csv")
+
+# reproduction rate data
+rt_data <- read.csv("data/calculated_rt_sa_provincial_cumulative.csv")
 ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -361,15 +364,30 @@ provincial_active <- cases %>%
 provincial_active$active <- with(provincial_active, cases - recoveries - deaths)
 provincial_active <- provincial_active %>%
   select(date, province, cases, recoveries, deaths, active)
+
+# attempt to replace names with "nicer" names - problem with grouping
 # province_names <- c('EASTERN CAPE', 'FREE STATE','GAUTENG','KWAZULU NATAL', 'LIMPOPO', 'MPUMALANGA', 'NORTHERN CAPE', 'NORTH WEST', 'WESTERN CAPE')
 # pn <- data.frame("province", province_names)
 # provincial_active$province <- pn
-head(provincial_active)
+# head(provincial_active)
 ```
 
-```{r national hospital data}
+```{r national hospital admissions}
 national_hospital_data <- national_hospital_data %>% 
   mutate(week_start = as.Date(week_start))
+```
+
+```{r reproduction estimates for south africa }
+rt_summary <- rt_data %>%
+  select(state, date, ML) %>%
+  mutate(date = as.Date(date)) %>%
+  filter(state=="Total RSA")
+
+rolling_avg_rt <- rt_summary %>%
+  mutate(rolling_avg = roll_mean(ML, n=7, fill = NA, align = "right"))
+
+rt_summary <- rt_summary %>% 
+  inner_join(rolling_avg_rt, by = "date")
 ```
 
 
@@ -781,7 +799,20 @@ ggplot(national_hospital_data, aes(week_start, total_national_hospital_admission
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Current Rt estimates for South Africa**
-<!-- TODO insert here -->
+```{r}
+# TODO: add 90% credible interval
+# TODO; add current Rt value label
+ggplot(rt_summary, aes(date, rolling_avg)) + 
+  geom_line(color=maroon, size=1) +
+  labs(subtitle= "Visit reproduction.live for detailed Rt estimates",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
+  scale_y_continuous(labels = scales::number_format(accuracy = 0.1), breaks = seq(0, 3, by = 0.5)) +
+  coord_cartesian(ylim = c(0, 3)) +
+  custom_with_light_grid()
+```
 
 Row {data-width=data_width_standard}
 -------------------------------------
