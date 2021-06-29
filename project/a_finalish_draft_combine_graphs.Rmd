@@ -123,11 +123,21 @@ test_day_update <- last_tests_cols[2] - last_tests_cols[1]
 ```
 
 ```{r bar and line daily and total vaccinations}
+# calculate daily vaccinations
 vaccinations <- vaccinations_data %>%
   mutate(date = dmy(date)) %>%
-  mutate(daily=vaccinations-lag(vaccinations,default=0)) %>% # calculate daily vaccinations
+  mutate(daily=vaccinations-lag(vaccinations,default=0)) %>% 
   mutate(total = vaccinations) %>%
   select(date, daily, total)
+```
+
+```{r bar daily deaths}
+# calculate daily deaths
+deaths_summary <- death_data %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily_deaths=total-lag(total,default=0)) %>%
+  mutate(total_deaths = total) %>%
+  select(date, daily_deaths, total_deaths)
 ```
 
 ```{r bubble new tests and cases}
@@ -234,7 +244,6 @@ ggplot(vaccinations, aes(date, daily)) +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Total vaccinations**
-<!-- TODO insert here -->
 ```{r}
 # TODO: add dates to x axis
 ggplot(vaccinations, aes(date, total)) + 
@@ -261,7 +270,19 @@ Row {data-width=data_width_standard}
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Daily deaths**
-<!-- TODO insert here -->
+```{r}
+ticks <- seq(as.Date("2020-04-01"), by="month", len=15)
+ggplot(deaths_summary, aes(date, daily_deaths)) + 
+  geom_col(color = law_winered) +
+  scale_x_date(breaks = ticks, labels = paste("1", month(ticks, label = TRUE)), minor_breaks = NULL) + 
+  scale_y_continuous(minor_breaks = NULL) +
+  labs(caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  custom_theme() +
+  theme(panel.grid.major.x = element_blank())
+
+```
 
 Row {data-width=data_width_standard}
 -------------------------------------
