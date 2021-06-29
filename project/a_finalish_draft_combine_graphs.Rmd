@@ -933,7 +933,7 @@ Row {data-width=400}
 ```{r}
 # missing vaccinations for last 7 days to side of graph
 ggplot(vaccinations, aes(date, daily)) + 
-  geom_col(color=agri_green) +
+  geom_col(fill=agri_green) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   scale_y_continuous(breaks=c(0, 50000, 100000), labels = comma, minor_breaks = NULL) +
   labs(caption = "Updated: 21 June 2021",
@@ -962,8 +962,8 @@ Row {data-width=data_width_standard}
 # TODO: Format legend better
 
 # lockdown level colours
-# level_colours <- c("Level 1"="#bcbef5","Level 2"="#999ad1", "Level 3"= "#7476b5", "Level 4"="#444687", "Level 5"="#1e206e")
-level_colours <- c("Level 1"=engineering_yellow,"Level 2"=arts_orange, "Level 3"= military_salmon, "Level 4"=science_red, "Level 5"=law_winered)
+level_colours <- c("Level 1"="#bcbef5","Level 2"="#999ad1", "Level 3"= "#7476b5", "Level 4"="#444687", "Level 5"="#1e206e")
+# level_colours <- c("Level 1"=engineering_yellow,"Level 2"=arts_orange, "Level 3"= military_salmon, "Level 4"=science_red, "Level 5"=law_winered)
 
 # plot
 ggplot(confirmed_summary, aes(date)) +
@@ -1006,8 +1006,8 @@ ggplot(confirmed_summary, aes(date)) +
         show.legend = FALSE, colour=level_colours["Level 3"]) +
   # active cases and rolling average
   geom_col(aes(y = daily_confirmed), color = maroon) +
-  geom_line(aes(y = rolling_avg), color = ems_lightblue, size=1) +
-  labs(subtitle= "This chart shows the daily confirmed cases since March 2020. The levels refer to the lockdown levels. Blue line is the 7-day rolling average.",
+  geom_line(aes(y = rolling_avg), color = lightgrey, size=1) +
+  labs(subtitle= "This chart shows the daily confirmed cases since March 2020. The levels refer to the lockdown levels. Grey line is the 7-day rolling average.",
      caption = "Updated: 21 June 2021",
      x = NULL,
      y = NULL) +
@@ -1015,7 +1015,7 @@ ggplot(confirmed_summary, aes(date)) +
   # scale_fill_manual(name="Lockdown Levels", values=level_colours) + # manual legend
   scale_x_date(date_breaks = "1 month", date_labels = "%d %b") +
   scale_y_continuous(label=comma) +
-  theme_minimal()
+  custom_line_light_grid()
 ```
 
 
@@ -1025,13 +1025,13 @@ Row {data-width=data_width_standard}
 ```{r}
 #TODO: Gap in active cases
 ggplot(active_confirmed_summary, aes(date, total_active)) + 
-  geom_col(color=arts_orange) +
+  geom_col(color=arts_orange, fill=arts_orange) +
   labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   scale_y_continuous(label=comma, breaks = seq(0, 250000, by = 100000)) +
-  custom_theme()
+  custom_line_light_grid()
 ```
 
 
@@ -1060,7 +1060,7 @@ ggplot(cases_last_8_mths, aes(date, rolling_avg)) +
   scale_y_continuous(labels = NULL, breaks = NULL) +
   scale_x_date(date_breaks = "2 months", date_labels = "%b") +
   facet_wrap(~ province, nrow = 2) +
-  labs(subtitle= "UPDATED These charts show the seven-day average of daily new cases for the past eight months. The seven-day average is used to even out spikes in daily cases.",
+  labs(subtitle= "These charts show the 7-day average of daily new cases for the past 8 months. The 7-day average is used to even out spikes in daily cases.",
        x = NULL,
        y = NULL) +
   custom_theme()
@@ -1215,8 +1215,8 @@ ggplot(weekly_avg_daily_cases, aes(date, rolling_avg)) +
   theme(panel.grid = element_blank())
 ```
 
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
+Row {data-width=data_width_standard}
+-------------------------------------
 ### **No of tests per positive case (weekly)**
 ```{r fig.width = 10, fig.height=12}
 ggplot(tests_per_positive, aes(date, ratio)) +
@@ -1234,8 +1234,8 @@ ggplot(tests_per_positive, aes(date, ratio)) +
 ```
 
 
-Row {data-width=data_width_standard}
--------------------------------------
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
 ### **Daily tests and positive cases**
 ```{r fig.width = 8}
 # TODO: Y axis labeling (cap at 60k, but allow graph to continue upward)
@@ -1318,10 +1318,10 @@ ggplot(national_hospital_data, aes(week_start, total_national_hospital_admission
 ```
 
 
-Row {data-width=data_width_standard}
--------------------------------------
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
 ### **Current Rt estimates for South Africa**
-```{r}
+```{r fig.width=8}
 # TODO: add 90% credible interval
 ggplot(rt_summary, aes(date, rolling_avg)) + 
   geom_line(color=maroon, size=1) +
