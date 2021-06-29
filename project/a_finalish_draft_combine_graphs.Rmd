@@ -958,13 +958,13 @@ Row {data-width=data_width_standard}
 # TODO: Y axis labeling (cap at 60k, but allow graph to continue upward)
 ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
     geom_point(alpha=0.5, color=theology_purple) +
-    geom_text(aes(label = format(new_cases, big.mark = ",")), 
+    geom_text(aes(label = paste("10/07\n", format(new_cases, big.mark = ","))), 
               data = filter(bubble_data, date == ymd("2020-07-10")), size = 4) +
-    geom_text(aes(label = format(new_cases, big.mark = ",")), 
+    geom_text(aes(label = paste("03/08\n", format(new_cases, big.mark = ","))), 
               data = filter(bubble_data, date == ymd("2020-08-03")), size = 4) +
-    geom_text(aes(label = format(new_cases, big.mark = ",")), 
+    geom_text(aes(label = paste("25/12\n", format(new_cases, big.mark = ","))), 
               data = filter(bubble_data, date == ymd("2020-12-25")), size = 4) +
-    geom_text(aes(label = format(new_cases, big.mark = ",")), 
+    geom_text(aes(label = paste("09/01\n", format(new_cases, big.mark = ","))), 
               data = filter(bubble_data, date == ymd("2021-01-09")), size = 4) +
     scale_size(range = c(.1, 10)) +
     scale_x_date(date_breaks = "1 month", date_labels = "%d/%m") +
@@ -1043,6 +1043,8 @@ Row {data-width=data_width_standard}
 # TODO; add current Rt value label
 ggplot(rt_summary, aes(date, rolling_avg)) + 
   geom_line(color=maroon, size=1) +
+  geom_text(aes(label = paste("26 June \nRt =", round(rolling_avg, 2))), 
+            data = tail(rt_summary, 1), nudge_y = 0.3) +
   labs(subtitle= "Visit reproduction.live for detailed Rt estimates",
        caption = "Updated: June 2021",
        x = NULL,
