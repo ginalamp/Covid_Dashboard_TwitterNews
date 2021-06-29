@@ -434,6 +434,12 @@ provincial_active <- provincial_active %>%
   select(date, province, cases, recoveries, deaths, active)
 
 # attempt to replace names with "nicer" names - problem with grouping
+province_names <- province_population %>%
+  select(code, province)
+provincial_active <- provincial_active %>%
+  mutate(code = province) %>%
+  select(!province) %>%
+  left_join(province_names, by = "code")
 # province_names <- c('EASTERN CAPE', 'FREE STATE','GAUTENG','KWAZULU NATAL', 'LIMPOPO', 'MPUMALANGA', 'NORTHERN CAPE', 'NORTH WEST', 'WESTERN CAPE')
 # pn <- data.frame("province", province_names)
 # provincial_active$province <- pn
@@ -882,19 +888,21 @@ ggplot(total_cases_100k, aes(province, cases_per_100k)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Confirmed and Active Cases by Province**
-```{r fig.width=9}
+```{r fig.height=4, fig.width=12}
 # TODO: Add labels (total active and confirmed per province)
 # TODO: Convert province codes to nice province names
 ggplot(provincial_active, aes(date)) + 
   geom_line(aes(y = cases, colour = "Confirmed Cases"), color = theology_purple) + 
   geom_line(aes(y = active, colour = "Active Cases"), color = arts_orange) +
-  scale_y_continuous(breaks = seq(0, 1000000, by = 1000000), limits = c(0, 5000000), labels = NULL) +
-  scale_x_date(labels = NULL) +
+  geom_text(aes(y = cases, label = format(cases, big.mark = ",")), 
+            data = tail(provincial_active, 9), nudge_y = 300000, nudge_x = -40) +
+  scale_y_continuous(breaks = NULL, limits = c(0, 2500000), labels = NULL) +
+  scale_x_date(labels = NULL, breaks = NULL) +
   facet_wrap(~ province, nrow = 2) +
   labs(caption = "Updated: June 2021",
      x = NULL,
      y = NULL) +
-  custom_line_theme()
+  custom_theme()
 ```
 
 Row {data-width=data_width_standard}
