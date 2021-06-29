@@ -29,7 +29,8 @@ custom_theme <- function () {
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
             legend.position="none", # no legend
-            plot.title = element_text(size = 10, hjust = 0)
+            plot.title = element_text(size = 10, hjust = 0),
+            plot.caption = element_text(hjust = 0)
         )
 }
 ```
@@ -78,6 +79,9 @@ death_data <- read.csv("data/covid19za_provincial_cumulative_timeline_deaths.csv
 
 # owid SA extracted (big) data
 owid_sa_data <- read.csv("data/owid-covid-data_SouthAfricaExtracted_big.csv")
+
+# vaccinations data
+vaccinations_data <- read.csv("data/covid19za_timeline_vaccination.csv")
 ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -116,6 +120,14 @@ total_tests <- max(tests_deaths_recoveries_data$cumulative_tests, na.rm = TRUE)
 # get last day's number of tests increase
 last_tests_cols <- tail(tests_deaths_recoveries_data$cumulative_tests, n=2)
 test_day_update <- last_tests_cols[2] - last_tests_cols[1]
+```
+
+```{r bar and line daily and total vaccinations}
+vaccinations <- vaccinations_data %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily=vaccinations-lag(vaccinations,default=0)) %>% # calculate daily vaccinations
+  mutate(total = vaccinations) %>%
+  select(date, daily, total)
 ```
 
 ```{r bubble new tests and cases}
@@ -206,7 +218,17 @@ valueBox(
 Row {data-width=400}
 -------------------------------------
 ### **Daily vaccinations**
-<!-- TODO insert here -->
+```{r}
+ggplot(vaccinations, aes(date, daily)) + 
+  geom_col() +
+  scale_x_date(breaks = NULL) +
+  scale_y_continuous(breaks=c(0, 50000, 100000), labels = comma, minor_breaks = NULL) +
+  labs(title= "Daily Vaccinations",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  custom_theme()
+```
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
