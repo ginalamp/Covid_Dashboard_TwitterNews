@@ -32,6 +32,7 @@ head(death_data)
 
 ## Provincial confirmed
 ```{r}
+# cases
 provincial_confirmed <-  provincial_total_confirmed %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "confirmed")
 provincial_confirmed <- provincial_confirmed %>%
   select(date, province, confirmed, total)  %>%
@@ -57,6 +58,7 @@ head(provincial_recoveries)
 
 ## Provincial deaths
 ```{r tidying}
+# total_deaths_province
 provincial_deaths <- death_data %>% pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths")
 provincial_deaths <- provincial_deaths %>%
   select(date, province, deaths, total)  %>%
