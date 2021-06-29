@@ -906,7 +906,7 @@ Row {data-width=data_width_standard}
 # TODO: reverse dates, add labels and fix sizing
 
 ggplot(testing_avg, aes(x = rev(date), rolling_avg)) + 
-  geom_col() +
+  geom_col(fill = med_bluegreen) +
   labs(caption = "Updated: June 2021",
        x = "Week",
        y = NULL) +
@@ -924,7 +924,7 @@ ggplot(testing_avg, aes(x = rev(date), rolling_avg)) +
 # TODO: reverse dates, add labels and fix sizing
 
 ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
-  geom_col() +
+  geom_col(fill = theology_purple) +
   labs(caption = "Updated: June 2021",
        x = "Week",
        y = NULL) +
