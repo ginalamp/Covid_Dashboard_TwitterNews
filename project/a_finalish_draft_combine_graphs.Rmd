@@ -670,20 +670,20 @@ ggplot(vaccinations, aes(date, daily)) +
   geom_col(color=agri_green) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   scale_y_continuous(breaks=c(0, 50000, 100000), labels = comma, minor_breaks = NULL) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   custom_with_light_grid()
 ```
 
 ### **Total vaccinations**
-```{r}
+```{r fig.width=10}
 ggplot(vaccinations, aes(date, total)) + 
   geom_line(color=agri_green, size=1) +
   scale_y_continuous(labels = comma, minor_breaks = NULL) +
   scale_x_date(date_breaks = "1 month", date_labels = "%d/%m") +
   geom_text(aes(label = total), data = tail(vaccinations, 1), nudge_y = 100000) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   custom_line_light_grid()
@@ -742,7 +742,7 @@ ggplot(confirmed_summary, aes(date)) +
   geom_col(aes(y = daily_confirmed), color = maroon) +
   geom_line(aes(y = rolling_avg), color = ems_lightblue, size=1) +
   labs(subtitle= "This chart shows the daily confirmed cases since March 2020. The levels refer to the lockdown levels. Blue line is the 7-day rolling average.",
-     caption = "Updated: June 2021",
+     caption = "Updated: 21 June 2021",
      x = NULL,
      y = NULL) +
   scale_colour_manual(name="Lockdown levels",values=level_colours) +
@@ -760,7 +760,7 @@ Row {data-width=data_width_standard}
 #TODO: Gap in active cases
 ggplot(active_confirmed_summary, aes(date, total_active)) + 
   geom_col(color=arts_orange) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
@@ -778,7 +778,7 @@ ggplot(deaths_summary, aes(date, daily_deaths)) +
   geom_col(fill = law_winered, color = law_winered) +
   scale_x_date(breaks = ticks, labels = paste("1", month(ticks, label = TRUE)), minor_breaks = NULL) + 
   scale_y_continuous(minor_breaks = NULL) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   custom_theme() +
@@ -815,7 +815,7 @@ ggplot(active_confirmed_summary, aes(date)) +
             data = tail(active_confirmed_summary, 1), nudge_y = 50000) +
   labs(x = NULL,
      y = NULL,
-     caption = "Updated: June 2021") +
+     caption = "Updated: 21 June 2021") +
   scale_colour_manual(name="",values="level_colours") +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   scale_y_continuous(label=comma) +
@@ -843,7 +843,7 @@ ggplot(total_deaths_province, aes(province, deaths)) +
   geom_text(aes(label = deaths), vjust = -1) +
   scale_x_discrete() +
   scale_y_continuous(labels = NULL, breaks = NULL) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   custom_theme() +
@@ -860,7 +860,7 @@ ggplot(total_deaths_100k, aes(code, deaths_per_100k)) +
   geom_text(aes(label = deaths_per_100k), vjust = -1) +
   scale_x_discrete() +
   scale_y_continuous(labels = NULL, breaks = NULL) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   custom_theme() +
@@ -877,7 +877,7 @@ ggplot(total_cases_100k, aes(province, cases_per_100k)) +
   geom_text(aes(label = format(cases_per_100k, big.mark=",")), hjust = 0) +
   scale_x_discrete() +
   scale_y_continuous(labels = NULL) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   coord_flip() +
@@ -900,7 +900,7 @@ ggplot(provincial_active, aes(date)) +
   scale_y_continuous(breaks = NULL, limits = c(0, 2500000), labels = NULL) +
   scale_x_date(labels = NULL, breaks = NULL) +
   facet_wrap(~ province, nrow = 2) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
      x = NULL,
      y = NULL) +
   custom_theme()
@@ -912,7 +912,7 @@ Row {data-width=data_width_standard}
 ```{r fig.width = 10, fig.height=12}
 ggplot(testing_avg, aes(x = date, rolling_avg)) + 
   geom_col(fill = med_bluegreen) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = "Week",
        y = NULL) +
   geom_text(aes(label = rolling_avg), position = position_dodge(0.9), hjust=-0.1) + # add labels
@@ -930,7 +930,7 @@ ggplot(testing_avg, aes(x = date, rolling_avg)) +
 ```{r fig.width = 10, fig.height=12}
 ggplot(weekly_avg_daily_cases, aes(date, rolling_avg)) +
   geom_col(fill = theology_purple) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = "Week",
        y = NULL) +
   geom_text(aes(label = rolling_avg), position = position_dodge(0.9), hjust=-0.1) + # add labels
@@ -948,7 +948,7 @@ ggplot(weekly_avg_daily_cases, aes(date, rolling_avg)) +
 ```{r fig.width = 10, fig.height=12}
 ggplot(tests_per_positive, aes(date, ratio)) +
   geom_col(fill=med_bluegreen) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = "Week",
        y = NULL) +
   geom_text(aes(label = round(ratio, 2)), position = position_dodge(0.9), hjust=-0.1) + # add labels
@@ -983,7 +983,7 @@ ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
     labs(title = "Number of tests per day",
          x = NULL, 
          y = NULL, 
-         caption = element_text("Updated: June 2021")) +
+         caption = element_text("Updated: 21 June 2021")) +
     custom_with_light_grid()
 ```
 
@@ -994,7 +994,7 @@ Row {data-width=data_width_standard}
 ggplot(confirmed_20, aes(x=date, y=new_cases)) + 
   geom_col(position="dodge", fill=theology_purple) +
   geom_text(aes(label = new_cases), position = position_dodge(0.9), hjust=-0.1) + # add labels
-  labs(caption = "Updated: 22 June 2021",
+  labs(caption = "Updated: 21 22 June 2021",
        x = NULL,
        y = NULL) +
   scale_x_date(date_breaks = "1 day", date_labels = "%m-%d-%Y") +
@@ -1018,7 +1018,7 @@ Row {data-width=data_width_standard}
 # TODO: Flip Date x axis label to be at the top
 ggplot(national_hospital_data, aes(week_start, total_national_hospital_admissions)) + 
   geom_line(color=med_bluegreen, size=1) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   # scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
@@ -1057,7 +1057,7 @@ ggplot(rt_summary, aes(date, rolling_avg)) +
   geom_text(aes(label = paste("26 June \nRt =", round(rolling_avg, 2))), 
             data = tail(rt_summary, 1), nudge_y = 0.3) +
   labs(subtitle= "Visit reproduction.live for detailed Rt estimates",
-       caption = "Updated: June 2021",
+       caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
@@ -1078,7 +1078,7 @@ ggplot() +
   geom_text(aes(x=period, y = deaths_SA$covid_deaths, 
                 label=format(deaths_SA$covid_deaths, big.mark = ",")), vjust=7) +
   scale_y_continuous(breaks = c(0, 100000, 200000), labels = comma, limits = c(0, 200000)) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   scale_color_manual(values = c(education_darkblue, law_winered)) +
@@ -1101,7 +1101,7 @@ ggplot() +
   scale_x_discrete() +
   scale_y_continuous(breaks = c(0, 20000, 40000), labels = comma) +
   labs(subtitle = "Data for week ending 19 June 2021",
-       caption = "Updated: June 2021",
+       caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   custom_theme() +
@@ -1121,7 +1121,7 @@ ggplot() +
   scale_x_discrete() +
   scale_y_continuous(breaks = seq(0, 15000, by = 5000), limits = c(0, 15000), labels = comma) +
   labs(subtitle = "Data for week ending 19 June 2021",
-       caption = "Updated: June 2021",
+       caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
   custom_theme() +
@@ -1142,7 +1142,7 @@ ggplot(rolling_avg_continent, aes(date)) +
   geom_line(aes(y = rolling_avg_asia, colour = "Asia")) +
   geom_line(aes(y = rolling_avg_africa, colour = "Africa")) +
   geom_line(aes(y = rolling_avg_oceania, colour = "Oceania")) +
-  labs(caption = "Updated: June 2021",
+  labs(caption = "Updated: 21 June 2021",
      x = NULL,
      y = NULL) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b") +
