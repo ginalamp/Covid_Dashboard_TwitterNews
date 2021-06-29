@@ -157,7 +157,7 @@ continent_data <- read.csv("data/new_cases_world.csv")
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 ```{r value box death and recovered}
 # total deaths
-total_deaths <- max(tests_deaths_recoveries_data$deaths, na.rm = TRUE)
+grand_total_deaths <- max(tests_deaths_recoveries_data$deaths, na.rm = TRUE)
 
 # get last day's number of deaths increase
 last_death_cols <- tail(tests_deaths_recoveries_data$deaths, n=2)
@@ -167,7 +167,7 @@ death_day_update <- last_death_cols[2] - last_death_cols[1]
 total_recovered <- max(tests_deaths_recoveries_data$recovered, na.rm = TRUE)
 
 # percentage recovered
-percentage_recovered <- total_recovered / (total_recovered + total_deaths) * 100
+percentage_recovered <- total_recovered / (total_recovered + grand_total_deaths) * 100
 ```
 
 ```{r value box active and confirmed cases}
@@ -179,7 +179,7 @@ last_confirmed_cols <- tail(provincial_total_confirmed$total, n=2)
 confirmed_day_update <- last_confirmed_cols[2] - last_confirmed_cols[1]
 
 # active cases = confirmed cases  - recoveries - deaths
-total_active <- total_confirmed - total_recovered - total_deaths
+total_active <- total_confirmed - total_recovered - grand_total_deaths
 ```
 
 ```{r value box tests}
@@ -558,6 +558,41 @@ total_excess_deaths_metros <- excess_deaths_metros %>%
 total_excess_deaths_metros$metro <- factor(total_excess_deaths_metros$metro, levels = total_excess_deaths_metros$metro)
 ```
 
+
+```{r confirmed and death doubling rate}
+# doubling rate formula
+calculate_doubling_rate <- function(num_days, q1, q2) {
+  doubling_rate <- num_days*(log(2)/(log(q2/q1)))
+  return(doubling_rate)
+}
+
+  # Get total confirmed/death cases per date
+  confirmed_deaths_doubling <- owid_sa_data %>% 
+  filter(!is.na(total_cases)) %>% 
+  select(date, total_cases, total_deaths) %>% 
+  mutate(date = as.Date(date))
+  
+  # create subset of confirmed/death to apply doubling rate function to
+  num_days <- 7
+  after_num_days <- confirmed_deaths_doubling %>% tail(-num_days)
+  
+  # add num_days temp rows at end
+  date <- rep(c(Sys.Date()), num_days)
+  total_cases <- rep(c(0), num_days)
+  total_deaths <- rep(c(0), num_days)
+  data_temp <- data.frame(date, total_cases, total_deaths)
+  data_temp <- as.data.frame(data_temp)
+  after_num_days <- rbind(after_num_days, data_temp, make.row.names=FALSE)
+  
+  # calculate confirmed doubling rate
+  confirmed_deaths_doubling$confirmed_doubling_rate <- with(confirmed_deaths_doubling, calculate_doubling_rate(num_days, confirmed_deaths_doubling$total_cases, after_num_days$total_cases))
+  # calculate deaths doubling rate
+  confirmed_deaths_doubling$deaths_doubling_rate <- with(confirmed_deaths_doubling, calculate_doubling_rate(num_days, confirmed_deaths_doubling$total_deaths, after_num_days$total_deaths))
+  # remove num_days 0s at end
+  confirmed_deaths_doubling <- confirmed_deaths_doubling %>% head(-num_days)
+```
+
+
 ```{r continental comparison of confirmed cases}
 continent_data <- continent_data %>% 
   select(date, World, Europe, North.America, South.America, Asia, Africa, Oceania) %>% 
@@ -619,7 +654,7 @@ valueBox(
 
 ```{r plot total deaths box}
 valueBox(
-  value = paste(format(total_deaths, big.mark = ","), " (+ ", death_day_update,")", sep = ""),
+  value = paste(format(grand_total_deaths, big.mark = ","), " (+ ", death_day_update,")", sep = ""),
   caption = "DEATHS",
   icon = "fas fa-user-md",
   color = science_red
@@ -828,12 +863,21 @@ ggplot(active_confirmed_summary, aes(date)) +
 <!-- ------------------------------------- -->
 ### **Total Deaths**
 <!-- Add screenshot of generated total deaths vs fatality graph -->
-![](./deaths_and_fatality.png)
+![](./output/deaths_and_fatality.png)
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Doubling Rates**
-<!-- TODO insert here -->
+```{r}
+ggplot(confirmed_deaths_doubling, aes(date)) + 
+  geom_line(aes(y = confirmed_doubling_rate), color = theology_purple, size=1) +
+  geom_line(aes(y = deaths_doubling_rate), color = law_winered, size=1) +
+  labs(title= "NOTE: not the same as graph on mediahack dashboard",
+       caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  custom_line_light_grid()
+```
 
 Row {data-width=data_width_standard}
 -------------------------------------
@@ -1007,7 +1051,7 @@ Row {data-width=data_width_standard}
 -------------------------------------
 ### **Positivity Rate: Number of Tests vs Positive Cases (%)**
 <!-- Add screenshot of generated positivity rate graph -->
-![](./positivity_rate.jpg)
+![](./output/positivity_rate.jpg)
 
 Row {data-width=data_width_standard}
 -------------------------------------
