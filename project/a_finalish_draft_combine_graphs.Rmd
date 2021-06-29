@@ -140,6 +140,39 @@ deaths_summary <- death_data %>%
   select(date, daily_deaths, total_deaths)
 ```
 
+```{r bar deaths by province}
+total_deaths <- tail(death_data, 1) %>% 
+  pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), 
+               names_to = "province", values_to = "deaths")
+total_deaths <- total_deaths %>% 
+  select(date, province, deaths, total)  %>% 
+  filter(province != 'UNKNOWN') %>% 
+  mutate(date = dmy(date)) %>%
+  arrange(desc(deaths))
+
+total_deaths$province <- factor(total_deaths$province, levels = total_deaths$province)
+```
+
+```{r bar deaths by province per 100k}
+total_deaths_100k <- total_deaths %>%  
+  mutate(code = province) %>%  # format so the column names are the same to be able to join the dataframes
+  mutate(provincial_deaths = deaths) %>%
+  select(!province) %>%
+  select(!deaths)
+
+# join dataframes so total_deaths includes province populations
+total_deaths_100k <- total_deaths_100k %>%
+  left_join(province_population, by = "code") 
+# add deaths per 100k
+total_deaths_100k <- total_deaths_100k %>%
+  mutate(deaths_per_100k = round(100000 * provincial_deaths / population, digits=2)) %>%
+  arrange(desc(provincial_deaths))
+
+total_deaths_100k$province <- factor(total_deaths_100k$province, levels = total_deaths_100k$province)
+total_deaths_100k$code <- factor(total_deaths_100k$code, levels = total_deaths_100k$code)
+
+```
+
 ```{r bubble new tests and cases}
 bubble_data <- owid_sa_data %>% 
   select(date, new_cases, new_tests) %>% 
