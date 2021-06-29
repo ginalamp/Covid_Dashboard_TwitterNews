@@ -63,7 +63,7 @@ law_winered <- "#9e2629" # deaths
 theology_purple <- "#84329B" # confirmed cases
 education_darkblue <- "#326295"
 ems_lightblue <- "#2dccd3"
-agri_green <- "#509e2f"
+agri_green <- "#509e2f" # recovered / vaccinations
 med_bluegreen <- "#006163"
 ```
 
@@ -431,7 +431,18 @@ ggplot(confirmed_summary, aes(date)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Active case total by day**
-<!-- TODO insert here -->
+```{r}
+#TODO: Gap in active cases
+ggplot(active_confirmed_summary, aes(date, total_active)) + 
+  geom_col(color=arts_orange) +
+  labs(caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
+  scale_y_continuous(label=comma, breaks = seq(0, 250000, by = 100000)) +
+  custom_theme()
+```
+
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
@@ -467,7 +478,7 @@ ggplot(active_confirmed_summary, aes(date)) +
   geom_line(aes(y = total_active), color=arts_orange) + 
   labs(x = NULL,
      y = NULL,
-     caption = element_text("Updated: June 2021")) +
+     caption = "Updated: June 2021") +
   scale_colour_manual(name="",values="level_colours") +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   scale_y_continuous(label=comma) +
