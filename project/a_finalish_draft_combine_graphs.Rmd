@@ -53,6 +53,20 @@ custom_line_theme <- function () {
             plot.caption = element_text(size = 8, hjust = 0)
         )
 }
+
+# line with light grid and legend
+custom_line_light_grid <- function () {
+  theme_minimal(base_size=12, base_family="Avenir") +
+    theme (
+      panel.grid.major.y = element_line(colour = "lightgrey"),
+      panel.grid.major.x = element_blank(),
+      panel.background  = element_blank(),
+      panel.grid.minor = element_blank(),
+      plot.title = element_text(size = 10, hjust = 0),
+      plot.caption = element_text(size = 8, hjust = 0),
+      legend.title = element_blank() # remove legend title
+    )
+}
 ```
 
 <!-- Set colours according to Stellenbosch Branding manual-->
@@ -73,6 +87,12 @@ education_darkblue <- "#326295"
 ems_lightblue <- "#2dccd3"
 agri_green <- "#509e2f" # recovered / vaccinations
 med_bluegreen <- "#006163"
+
+# TODO: not working
+# set default plotting default different colours
+graph_colours <- options(
+  ggplot2.discrete.color = list(c(maroon, mustard, arts_orange, law_winered, theology_purple, education_darkblue, agri_green, med_bluegreen))
+)
 ```
 
 ```{r set data width}
@@ -113,6 +133,9 @@ national_hospital_data <- read.csv("data/za_national_hospital_admissions.csv")
 
 # reproduction rate data
 rt_data <- read.csv("data/calculated_rt_sa_provincial_cumulative.csv")
+
+# continental data containing confirmed cases for each country and continent
+continent_data <- read.csv("data/new_cases_world.csv")
 ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -363,6 +386,21 @@ rolling_avg_rt <- rt_summary %>%
 
 rt_summary <- rt_summary %>% 
   inner_join(rolling_avg_rt, by = "date")
+```
+
+```{r}
+continent_data <- continent_data %>% 
+  select(date, World, Europe, North.America, South.America, Asia, Africa, Oceania) %>% 
+  mutate(date = as.Date(date))
+
+rolling_avg_continent <- continent_data %>%
+  mutate(rolling_avg_world = roll_mean(World, n=7, fill = NA, align = "right")) %>% 
+  mutate(rolling_avg_europe = roll_mean(Europe, n=7, fill = NA, align = "right")) %>% 
+  mutate(rolling_avg_north_america = roll_mean(North.America, n=7, fill = NA, align = "right")) %>% 
+  mutate(rolling_avg_south_america = roll_mean(South.America, n=7, fill = NA, align = "right")) %>% 
+  mutate(rolling_avg_asia = roll_mean(Asia, n=7, fill = NA, align = "right")) %>% 
+  mutate(rolling_avg_africa = roll_mean(Africa, n=7, fill = NA, align = "right")) %>% 
+  mutate(rolling_avg_oceania = roll_mean(Oceania, n=7, fill = NA, align = "right"))
 ```
 
 
@@ -795,7 +833,24 @@ Row {data-width=data_width_standard}
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **New daily confirmed Covid-19 cases: 7-day average**
-<!-- TODO insert here -->
+
+```{r fig.width=9}
+ggplot(rolling_avg_continent, aes(date)) + 
+  geom_line(aes(y = rolling_avg_world, colour = "World")) +
+  geom_line(aes(y = rolling_avg_europe, colour = "Europe")) +
+  geom_line(aes(y = rolling_avg_north_america, colour = "North America")) +
+  geom_line(aes(y = rolling_avg_south_america, colour = "South America")) +
+  geom_line(aes(y = rolling_avg_asia, colour = "Asia")) +
+  geom_line(aes(y = rolling_avg_africa, colour = "Africa")) +
+  geom_line(aes(y = rolling_avg_oceania, colour = "Oceania")) +
+  labs(caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b") +
+  scale_y_continuous(labels = scales::number_format(accuracy = NULL)) +
+  scale_color_manual(values = c(med_bluegreen, arts_orange, mustard, theology_purple, education_darkblue, agri_green, law_winered)) +
+  custom_line_light_grid()
+```
 
 
 Row {data-width=200}
