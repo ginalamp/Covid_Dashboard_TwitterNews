@@ -6,6 +6,7 @@ renv/
 
 # Added: Rmd html generation
 *.nb.html
+*.html
 
 # History files
 .Rhistory
