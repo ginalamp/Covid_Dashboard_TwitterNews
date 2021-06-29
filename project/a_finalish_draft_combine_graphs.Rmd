@@ -1170,6 +1170,7 @@ The theme of the project is very relevant and appropriate, so we learned about t
 **If we had more time...**
 
 Some features that we would've liked to add include:
+
 1. Having reactive graphs (instead of static images)
 2. Further tackle the challenges that we were facing (doubling rates, pdf generation, lockdown legend, South African metro excess deaths)
 
