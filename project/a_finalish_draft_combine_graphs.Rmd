@@ -99,6 +99,9 @@ owid_sa_data <- read.csv("data/owid-covid-data_SouthAfricaExtracted_big.csv")
 
 # vaccinations data
 vaccinations_data <- read.csv("data/covid19za_timeline_vaccination.csv")
+
+# covid tests data
+testing_data <- read.csv("data/covid19za_timeline_testing.csv")
 ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -162,16 +165,20 @@ cases <- provincial_total_confirmed %>%
   pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), 
                names_to = "province", values_to = "cases")
 cases <- cases %>% 
-  select(date, province, cases, total)  %>% 
-  filter(province != 'UNKNOWN') %>% 
+  mutate(code = province) %>%
+  select(date, code, cases, total)  %>% 
+  filter(code != 'UNKNOWN') %>% 
   mutate(date = dmy(date)) %>%
   # calculate daily cases per province
-  group_by(province) %>%
+  group_by(code) %>%
   mutate(daily_cases=cases-lag(cases,default=0)) %>%
   # calculate 7-day rolling average of daily cases
   mutate(rolling_avg = roll_mean(daily_cases, n=7, fill = NA, align = "right"))
 
-cases_last_8_mths <- cases %>%
+cases_provincial <- cases %>%
+  left_join(province_population, by = "code") %>%
+  select(date, code, province, cases, daily_cases, rolling_avg, total)
+cases_last_8_mths <- cases_provincial %>%
   filter(date >= ymd("2020-11-12"))
 ```
 
@@ -213,7 +220,6 @@ total_cases_100k <- tail(cases, 9) # cumulative cases per province up to 21 June
 # add province populations to province cases
 total_cases_100k <- total_cases_100k %>%
   ungroup() %>%
-  mutate(code = province) %>%
   select(code, cases) %>%
   left_join(province_population, by = "code") %>% 
   select(code, province, cases, population) %>%
@@ -222,6 +228,24 @@ total_cases_100k <- total_cases_100k %>%
   arrange(cases_per_100k)
 
 total_cases_100k$province <- factor(total_cases_100k$province, levels = total_cases_100k$province) # keep order when plotting
+```
+
+```{r avg daily tests per week}
+testing <- testing_data %>%
+  mutate(date = dmy(date)) %>%
+  # calculate daily tests
+  mutate(daily_tests=cumulative_tests-lag(cumulative_tests,default=0)) %>%
+  mutate(week = week(date)) %>%
+  select(date, week, daily_tests, cumulative_tests)
+
+# add rolling average to the data
+testing_avg <- testing %>%
+  mutate(rolling_avg = roll_mean(daily_tests, n=7, fill = NA, align = "right")) %>%
+  mutate(rolling_avg = round(rolling_avg)) %>%
+# reduce data to start in April 2020 and include weekly average
+  filter(date - ymd("2020-4-9") >= 0)
+
+testing_avg <- testing_avg[c(TRUE, rep(FALSE, 6)),]
 ```
 
 ```{r bubble new tests and cases}
@@ -318,6 +342,7 @@ provincial_recoveries <- provincial_recoveries %>%
 
 # inner_join() joins based on matching keys (we only want overlapping dates)
 provincial_active <- cases %>% 
+  mutate(province = code) %>%
   inner_join(provincial_recoveries, by = c("province", "date")) %>% 
   inner_join(provincial_deaths, by = c("province", "date"))
 
@@ -647,7 +672,20 @@ ggplot(provincial_active, aes(date)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Average daily tests per week**
-<!-- TODO insert here -->
+```{r}
+# TODO: reverse dates, add labels and fix sizing
+
+ggplot(testing_avg, aes(x = date, rolling_avg)) + 
+  geom_col() +
+  labs(caption = "Updated: June 2021",
+       x = "Week",
+       y = NULL) +
+  #geom_text(aes(label = rolling_avg), hjust = 0) +
+  scale_x_date(labels = NULL, breaks = NULL) +
+  coord_flip() +  
+  custom_theme() +
+  theme(panel.grid = element_blank())
+```
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
