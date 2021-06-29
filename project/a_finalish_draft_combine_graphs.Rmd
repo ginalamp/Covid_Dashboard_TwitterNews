@@ -292,6 +292,25 @@ testing_avg <- testing %>%
 testing_avg <- testing_avg[c(TRUE, rep(FALSE, 6)),]
 ```
 
+```{r avg daily positives per week}
+daily_cases <- provincial_total_confirmed %>%
+  mutate(date = dmy(date)) %>%
+  mutate(total_cases = total) %>%
+  select(date, total_cases) %>%
+  mutate(daily_cases=total_cases-lag(total_cases,default=0))
+
+# add rolling average to the data
+daily_cases_avg <- daily_cases %>%
+  mutate(rolling_avg = roll_mean(daily_cases, n=7, fill = NA, align = "right")) %>%
+  mutate(rolling_avg = round(rolling_avg))
+  
+# reduce data to start in April 2020 and include weekly average
+weekly_avg_daily_cases <- daily_cases_avg %>%
+  filter(date - ymd("2020-4-9") >= 0)
+
+weekly_avg_daily_cases <- weekly_avg_daily_cases[c(TRUE, rep(FALSE, 6)),]
+```
+
 ```{r bubble new tests and cases}
 bubble_data <- owid_sa_data %>% 
   select(date, new_cases, new_tests) %>% 
@@ -861,7 +880,21 @@ ggplot(testing_avg, aes(x = date, rolling_avg)) +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Average daily positives per week**
-<!-- TODO insert here -->
+```{r}
+# TODO: reverse dates, add labels and fix sizing
+
+ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
+  geom_col() +
+  labs(caption = "Updated: June 2021",
+       x = "Week",
+       y = NULL) +
+  #geom_text(aes(label = rolling_avg), hjust = 0) +
+  scale_x_date(labels = NULL) +
+  coord_flip() +  
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+```
+
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
