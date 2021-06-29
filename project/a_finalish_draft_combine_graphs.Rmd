@@ -1005,6 +1005,7 @@ Row {data-width=data_width_standard}
 -------------------------------------
 ### **Positivity Rate: Number of Tests vs Positive Cases (%)**
 <!-- TODO insert here -->
+![](./positivity_rate.jpg)
 
 Row {data-width=data_width_standard}
 -------------------------------------
