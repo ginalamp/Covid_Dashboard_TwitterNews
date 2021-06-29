@@ -19,6 +19,7 @@ library(ggplot2)
 library(scales) # add commas to axis
 library(RcppRoll) # rolling average
 library(flexdashboard) # html dashboard formatting
+library(readxl)
 ```
 
 <!-- Custom themes -->
@@ -136,6 +137,12 @@ national_hospital_data <- read.csv("data/za_national_hospital_admissions.csv")
 
 # reproduction rate data
 rt_data <- read.csv("data/calculated_rt_sa_provincial_cumulative.csv")
+
+# weekly excess deaths per province 
+excess_deaths_provinces_data <- read_xlsx("data/weekly_excess_deaths_provinces.xlsx")
+
+# weekly excess deaths per metro 
+excess_deahts_metros_data <- read_xlsx("data/weekly_excess_deaths_metros.xlsx")
 
 # continental data containing confirmed cases for each country and continent
 continent_data <- read.csv("data/new_cases_world.csv")
@@ -411,6 +418,98 @@ rolling_avg_rt <- rt_summary %>%
 
 rt_summary <- rt_summary %>% 
   inner_join(rolling_avg_rt, by = "date")
+```
+
+```{r excess deaths (south africa)}
+excess_deaths_provinces_data <- excess_deaths_provinces_data %>%
+  mutate(date = ymd(date))
+
+# look at the three time intervals
+may3_june5 <- excess_deaths_provinces_data %>%
+  filter(date <= ymd("2021-06-05")) %>%
+  select(date, RSA)
+
+may3_june12 <- excess_deaths_provinces_data %>%
+  filter(date <= ymd("2021-06-12")) %>%
+  select(date, RSA)
+
+may3_june19 <- excess_deaths_provinces_data %>%
+  filter(date <= ymd("2021-06-19")) %>%
+  select(date, RSA)
+
+# excess deaths for given time periods
+interval1 <- sum(may3_june5$RSA)
+interval2 <- sum(may3_june12$RSA)
+interval3 <- sum(may3_june19$RSA)
+interval <- c(round(interval1), round(interval2), round(interval3))
+
+period <- c("3 May-5 June", "3 May-12 June", "3 May-19 June")
+date <- c(ymd("2021-06-05"), ymd("2021-06-12"), ymd("2021-06-19"))
+
+# excess deaths (south africa)
+excess_deaths_SA <- data.frame(date, period, interval) %>%
+  mutate(total_deaths = interval) %>%
+  select(date, period, total_deaths)
+
+# covid deaths (south africa)
+covid_deaths_SA <- death_data %>%
+  mutate(date = dmy(date)) %>%
+  mutate(covid_deaths = total) %>%
+  select(date, covid_deaths) %>%
+  filter(date %in% c(ymd("2021-06-05"), ymd("2021-06-12"), ymd("2021-06-19")))
+
+# join excess deaths and covid deaths
+deaths_SA <- excess_deaths_SA %>%
+  left_join(covid_deaths_SA, by = "date")
+
+deaths_SA$period <- factor(deaths_SA$period, levels = deaths_SA$period) # to keep the ordering when plotting
+```
+
+```{r excess deaths (provinces)}
+excess_deaths <- excess_deaths_provinces_data %>%
+  select(!RSA) %>% # take out RSA so it's only provinces
+  pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC'), names_to = "province", values_to = "exs_deaths") %>%
+  filter(!is.na(exs_deaths)) # take out NA values
+
+# group by province and sum excess deaths to find out the total cumulative excess deaths per province
+total_excess_deaths <- excess_deaths %>%
+  group_by(province) %>%
+  summarise_at(vars(exs_deaths), list(total_exs_deaths = sum)) %>%
+  mutate(total_exs_deaths = round(total_exs_deaths)) %>%
+  arrange(desc(total_exs_deaths))
+
+# covid deaths per province
+covid_deaths <- death_data %>% 
+  pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths") %>% 
+  select(date, province, deaths)  %>% 
+  filter(province != 'UNKNOWN') %>% 
+  mutate(date = dmy(date)) %>%
+  filter(date == dmy("19-06-2021")) # only interested in the total covid deaths up to 19 June
+
+# combine excess deaths with covid deaths for comparison (by province)
+excess_deaths_provinces <- total_excess_deaths %>%
+  inner_join(covid_deaths, by = 'province')
+
+excess_deaths_provinces$province <- factor(excess_deaths_provinces$province, levels = excess_deaths_provinces$province) # to keep the ordering when plotting
+
+```
+
+```{r excess deaths (metros)}
+# TODO: add covid deaths per metro for comparison
+
+excess_deaths_metros <- excess_deahts_metros_data %>%
+  mutate(date = ymd(date)) %>%
+  pivot_longer(c('BUF', 'CPT', 'EKU', 'ETH', 'JHN', 'MAN', 'NMA', 'TSH'), names_to = "metro", values_to = "exs_deaths") %>%
+  filter(!is.na(exs_deaths)) 
+
+# group by metro and sum excess deaths to find out the total cumulative excess deaths per metro
+total_excess_deaths_metros <- excess_deaths_metros %>%
+  group_by(metro) %>%
+  summarise_at(vars(exs_deaths), list(total_exs_deaths = sum)) %>%
+  mutate(total_exs_deaths = round(total_exs_deaths)) %>%
+  arrange(desc(total_exs_deaths))
+
+total_excess_deaths_metros$metro <- factor(total_excess_deaths_metros$metro, levels = total_excess_deaths_metros$metro) # to keep the ordering when plotting
 ```
 
 ```{r}
@@ -855,18 +954,60 @@ ggplot(rt_summary, aes(date, rolling_avg)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Excess Deaths (South Africa)**
-<!-- TODO insert here -->
+```{r}
+ggplot() + 
+  geom_col(deaths_SA, mapping = aes(period, total_deaths)) +
+  geom_col(deaths_SA, mapping = aes(period, covid_deaths), fill = law_winered) +
+  geom_text(aes(x=period, y = deaths_SA$total_deaths, 
+                label=format(deaths_SA$total_deaths, big.mark = ",")), vjust=-1) +
+  geom_text(aes(x=period, y = deaths_SA$covid_deaths, 
+                label=format(deaths_SA$covid_deaths, big.mark = ",")), vjust=7) +
+  scale_y_continuous(breaks = c(0, 100000, 200000), labels = comma, limits = c(0, 200000)) +
+  labs(caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  custom_theme() +
+  theme(panel.grid.major.x = element_blank())
+```
+
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Excess Deaths (Provinces)**
-<!-- TODO insert here -->
+```{r}
+ggplot() + 
+  geom_col(excess_deaths_provinces, mapping = aes(province, total_exs_deaths)) +
+  geom_col(excess_deaths_provinces, mapping = aes(province, deaths), fill = law_winered) +
+  geom_text(aes(x=excess_deaths_provinces$province, y = excess_deaths_provinces$total_exs_deaths, 
+                label=format(excess_deaths_provinces$total_exs_deaths, big.mark = ",")), vjust=-1) +
+  scale_x_discrete() +
+  scale_y_continuous(breaks = c(0, 20000, 40000), labels = comma) +
+  labs(caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  custom_theme() +
+  theme(panel.grid.major.x = element_blank())
+```
+
 
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Excess Deaths (Metros)**
-<!-- TODO insert here -->
+```{r}
+ggplot() + 
+  geom_col(total_excess_deaths_metros, mapping = aes(metro, total_exs_deaths)) +
+  geom_text(aes(x=total_excess_deaths_metros$metro, y = total_excess_deaths_metros$total_exs_deaths, 
+                label=format(total_excess_deaths_metros$total_exs_deaths, big.mark = ",")), vjust=-1) +
+  scale_x_discrete() +
+  scale_y_continuous(breaks = seq(0, 15000, by = 5000), limits = c(0, 15000), labels = comma) +
+  labs(caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  custom_theme() +
+  theme(panel.grid.major.x = element_blank())
+```
+
 
 Row {data-width=data_width_standard}
 -------------------------------------
