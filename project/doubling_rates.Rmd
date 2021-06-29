@@ -25,15 +25,6 @@ source: [Doubling Time and its Interpretation for COVID 19 Cases](http://njcmind
 library(tidyverse)
 library(lubridate) # dates
 library(ggplot2)
-library(EcoHydRology)
-```
-
-```{r}
-if ( require(EcoHydRology) ) {
-  detach("package:dplyr", unload = TRUE)
-  detach("package:EcoHydRology", unload = TRUE)
-  require(dplyr)
-}
 ```
 
 
@@ -45,15 +36,6 @@ head(provincial_total_confirmed)
 ```
 # Confirmed cases
 
-```{r}
-  # Get total confirmed cases per date
-  confirmed <- provincial_total_confirmed %>% 
-  filter(!is.na(total_cases)) %>% 
-  select(date, total_cases) %>% 
-  mutate(date = as.Date(date))
-  head(confirmed)
-```
-
 ## Calculate doubling rate
 ```{r}
 # calculate 7-day doubling rate
@@ -64,14 +46,15 @@ calculate_doubling_rate <- function(num_days, q1, q2) {
 ```
 
 ```{r}
-  # # Get total confirmed cases per date
-  # confirmed <- provincial_total_confirmed %>% 
-  # select(date, total) %>% 
-  # mutate(date = dmy(date)) 
-  # head(confirmed)
+  # Get total confirmed cases per date
+  confirmed <- provincial_total_confirmed %>% 
+  filter(!is.na(total_cases)) %>% 
+  select(date, total_cases) %>% 
+  mutate(date = as.Date(date))
+  head(confirmed)
   
   # create subset of confirmed to apply doubling rate function to
-  num_days <- 100
+  num_days <- 7
   confirmed_after_num_days <- confirmed %>% tail(-num_days)
   
   # add num_days 0s at end
@@ -80,16 +63,10 @@ calculate_doubling_rate <- function(num_days, q1, q2) {
   data_temp<- data.frame(date, total_cases)
   data_temp <- as.data.frame(data_temp)
   confirmed_after_num_days <- rbind(confirmed_after_num_days, data_temp, make.row.names=FALSE)
-  tail(confirmed_after_num_days)
   
-  # confirmed$doubling_rate <- with(confirmed, calculate_doubling_rate(num_days, confirmed$total, confirmed_after_num_days$total))
-  # confirmed  <- confirmed %>% head(-num_days)
-  # head(confirmed)
-```
-```{r}
+  # remove num_days 0s at end
   confirmed$doubling_rate <- with(confirmed, calculate_doubling_rate(num_days, confirmed$total_cases, confirmed_after_num_days$total_cases))
-  confirmed  <- confirmed %>% head(-num_days)
-  head(confirmed)
+  confirmed <- confirmed %>% head(-num_days)
 ```
 
 
