@@ -761,7 +761,7 @@ ggplot(deaths_summary, aes(date, daily_deaths)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Daily case trends**
-```{r}
+```{r fig.height=4, fig.width=12}
 # TODO: replace province code with full province name
 # TODO: add start and end date
 ggplot(cases_last_8_mths, aes(date, rolling_avg)) + 
@@ -807,7 +807,7 @@ ggplot(active_confirmed_summary, aes(date)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Deaths by Province**
-```{r}
+```{r fig.height=6}
 ggplot(total_deaths_province, aes(province, deaths)) + 
   geom_col(fill = law_winered) +
   geom_text(aes(label = deaths), vjust = -1) +
@@ -824,7 +824,7 @@ ggplot(total_deaths_province, aes(province, deaths)) +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Deaths by Province (per 100k)**
-```{r}
+```{r fig.height=6}
 ggplot(total_deaths_100k, aes(code, deaths_per_100k)) + 
   geom_col(fill = law_winered) +
   geom_text(aes(label = deaths_per_100k), vjust = -1) +
@@ -841,7 +841,7 @@ ggplot(total_deaths_100k, aes(code, deaths_per_100k)) +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Prov Infections per 100,000 Population**
-```{r}
+```{r fig.width=14}
 ggplot(total_cases_100k, aes(province, cases_per_100k)) + 
   geom_col(fill = theology_purple) +
   geom_text(aes(label = format(cases_per_100k, big.mark=",")), hjust = 0) +
@@ -877,15 +877,15 @@ ggplot(provincial_active, aes(date)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Average daily tests per week**
-```{r}
+```{r fig.width = 10, fig.height=12}
 # TODO: reverse dates, add labels and fix sizing
 
-ggplot(testing_avg, aes(x = date, rolling_avg)) + 
+ggplot(testing_avg, aes(x = rev(date), rolling_avg)) + 
   geom_col() +
   labs(caption = "Updated: June 2021",
        x = "Week",
        y = NULL) +
-  #geom_text(aes(label = rolling_avg), hjust = 0) +
+  geom_text(aes(label = rolling_avg), hjust = 0) +
   scale_x_date(labels = NULL, breaks = NULL) +
   coord_flip() +  
   custom_theme() +
@@ -895,7 +895,7 @@ ggplot(testing_avg, aes(x = date, rolling_avg)) +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Average daily positives per week**
-```{r}
+```{r fig.width = 10, fig.height=12}
 # TODO: reverse dates, add labels and fix sizing
 
 ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
@@ -903,7 +903,7 @@ ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
   labs(caption = "Updated: June 2021",
        x = "Week",
        y = NULL) +
-  #geom_text(aes(label = rolling_avg), hjust = 0) +
+  geom_text(aes(label = rolling_avg), hjust = 0) +
   scale_x_date(labels = NULL) +
   coord_flip() +  
   theme_minimal() +
@@ -913,16 +913,17 @@ ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **No of tests per positive case (weekly)**
-```{r}
+```{r fig.width = 10, fig.height=12}
 ggplot(tests_per_positive, aes(rev(date), ratio)) +
   geom_col() +
   labs(caption = "Updated: June 2021",
        x = "Week",
        y = NULL) +
-  #geom_text(aes(label = rolling_avg), hjust = 0) +
+  geom_text(aes(label = round(ratio, 2)), hjust = 0) +
   scale_x_date(labels = NULL) +
   coord_flip() +
-  custom_theme()
+  custom_theme() +
+  theme(panel.grid = element_blank())
 ```
 
 
@@ -1032,7 +1033,7 @@ ggplot() +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Excess Deaths (Provinces)**
-```{r}
+```{r fig.height=6}
 ggplot() + 
   geom_col(excess_deaths_provinces, mapping = aes(province, total_exs_deaths)) +
   geom_col(excess_deaths_provinces, mapping = aes(province, deaths), fill = law_winered) +
