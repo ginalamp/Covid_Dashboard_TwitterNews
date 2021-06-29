@@ -661,13 +661,13 @@ Row {data-width=400}
 # TODO: add dates to x axis
 # TODO: add vaccinations for last 7 days to side of graph
 ggplot(vaccinations, aes(date, daily)) + 
-  geom_col() +
-  scale_x_date(breaks = NULL) +
+  geom_col(color=agri_green) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   scale_y_continuous(breaks=c(0, 50000, 100000), labels = comma, minor_breaks = NULL) +
   labs(caption = "Updated: June 2021",
        x = NULL,
        y = NULL) +
-  custom_theme()
+  custom_with_light_grid()
 ```
 
 <!-- Row {data-width=data_width_standard} -->
