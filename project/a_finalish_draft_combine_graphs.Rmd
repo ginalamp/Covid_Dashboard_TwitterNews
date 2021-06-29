@@ -47,8 +47,8 @@ engineering_yellow <- "#eaaa00"
 arts_orange <- "#FF8F1C"
 military_salmon <- "#e56a54"
 science_red <- "#cb333b"
-law_winered <- "#9e2629"
-theology_purple <- "#84329B"
+law_winered <- "#9e2629" # deaths
+theology_purple <- "#84329B" # confirmed cases
 education_darkblue <- "#326295"
 ems_lightblue <- "#2dccd3"
 agri_green <- "#509e2f"
@@ -341,8 +341,9 @@ Row {data-width=data_width_standard}
 ### **Confirmed infections (last 20 days)**
 ```{r fig.width=15}
 # TODO: not plotting right (even when flipping the dates here - the date labels are wrong)
-ggplot(confirmed, aes(x=rev(date), y=new_cases, fill=military_salmon)) + 
-  geom_col(position="dodge") +
+# TODO: theology_purple colour not showing
+ggplot(confirmed, aes(x=rev(date), y=new_cases, fill=theology_purple)) + 
+  geom_col(position="dodge", color=theology_purple) +
   geom_text(aes(label = new_cases), position = position_dodge(0.9), hjust=-0.1) + # add labels
   labs(caption = "Updated: June 2021",
        x = NULL,

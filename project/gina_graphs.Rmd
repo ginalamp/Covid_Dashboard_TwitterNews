@@ -172,8 +172,8 @@ ggplot(confirmed_summary, aes(date)) +
           y = 0, yend = Inf),
         show.legend = FALSE, colour=level_colours["Level 3"]) +
   # active cases and rolling average
-  geom_col(aes(y = daily_confirmed), color = "#453f3f") +
-  geom_line(aes(y = rolling_avg), color = "yellow") +
+  geom_col(aes(y = daily_confirmed), color = "#800000") +
+  geom_line(aes(y = rolling_avg), color = "grey", size=1) +
   labs(title= "Daily confirmed cases",
      caption = "Updated: June 2021",
      x = NULL,
@@ -281,21 +281,6 @@ ggplot(active_confirmed_summary, aes(date, total_active)) +
        y = NULL) +
   theme_minimal()
 ```
-
-# Doubling rates (help plz)
-TODO
-* Not entirely sure how to calculate this (I think we need to calculate the number of days it takes for the confirmed cases and the deaths to double - unsure about timeline)
-
-<!-- ```{r} -->
-<!-- ggplot(active_confirmed_summary, aes(date)) +  -->
-<!--   geom_line(aes(y = daily_deaths, colour = "Death")) +  -->
-<!--   geom_line(aes(y = daily_confirmed, colour = "Confirmed Cases")) + -->
-<!--   labs(title= "Doubling rates", -->
-<!--      caption = "Updated: June 2021", -->
-<!--      x = NULL, -->
-<!--      y = NULL) + -->
-<!--   theme_minimal() -->
-<!-- ``` -->
 
 
 
