@@ -290,7 +290,7 @@ Row {data-width=data_width_standard}
 # TODO: Add number of test labels on specific dates
 # TODO: Y axis labeling (cap at 60k, but allow graph to continue upward)
 ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
-    geom_point(alpha=0.5, color=law_winered) +
+    geom_point(alpha=0.5, color=theology_purple) +
     scale_size(range = c(.1, 10)) +
     scale_x_date(date_breaks = "1 month", date_labels = "%d/%m") +
     scale_y_continuous(label=comma) +
@@ -301,21 +301,23 @@ ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
     custom_theme()
 ```
 
-<!-- Row {data-width=data_width_standard} -->
-<!-- ------------------------------------- -->
+Row {data-width=data_width_standard}
+-------------------------------------
 ### **Confirmed infections (last 20 days)**
 ```{r fig.width=15}
-ggplot(confirmed, aes(rev(date), new_cases)) + 
+# TODO: not plotting right (even when flipping the dates here - the date labels are wrong)
+ggplot(confirmed, aes(x=rev(date), y=new_cases, fill=military_salmon)) + 
   geom_col(position="dodge") +
   geom_text(aes(label = new_cases), position = position_dodge(0.9), hjust=-0.1) + # add labels
   labs(caption = "Updated: June 2021",
        x = NULL,
        y = NULL) +
   scale_x_date(date_breaks = "1 day", date_labels = "%m-%d-%Y") +
-  scale_y_continuous(labels = NULL, breaks = NULL)  +# remove amount ticks
+  scale_y_continuous(labels = NULL, breaks = NULL)  + # remove unnecessary ticks
   coord_flip() +
-  theme_minimal()
+  custom_theme()
 ```
+
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Positivity Rate: Number of Tests vs Positive Cases (%)**
