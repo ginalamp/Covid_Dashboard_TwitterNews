@@ -494,6 +494,24 @@ excess_deaths_provinces$province <- factor(excess_deaths_provinces$province, lev
 
 ```
 
+```{r excess deaths (metros)}
+# TODO: add covid deaths per metro for comparison
+
+excess_deaths_metros <- excess_deahts_metros_data %>%
+  mutate(date = ymd(date)) %>%
+  pivot_longer(c('BUF', 'CPT', 'EKU', 'ETH', 'JHN', 'MAN', 'NMA', 'TSH'), names_to = "metro", values_to = "exs_deaths") %>%
+  filter(!is.na(exs_deaths)) 
+
+# group by metro and sum excess deaths to find out the total cumulative excess deaths per metro
+total_excess_deaths_metros <- excess_deaths_metros %>%
+  group_by(metro) %>%
+  summarise_at(vars(exs_deaths), list(total_exs_deaths = sum)) %>%
+  mutate(total_exs_deaths = round(total_exs_deaths)) %>%
+  arrange(desc(total_exs_deaths))
+
+total_excess_deaths_metros$metro <- factor(total_excess_deaths_metros$metro, levels = total_excess_deaths_metros$metro) # to keep the ordering when plotting
+```
+
 ```{r}
 continent_data <- continent_data %>% 
   select(date, World, Europe, North.America, South.America, Asia, Africa, Oceania) %>% 
@@ -976,7 +994,20 @@ ggplot() +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Excess Deaths (Metros)**
-<!-- TODO insert here -->
+```{r}
+ggplot() + 
+  geom_col(total_excess_deaths_metros, mapping = aes(metro, total_exs_deaths)) +
+  geom_text(aes(x=total_excess_deaths_metros$metro, y = total_excess_deaths_metros$total_exs_deaths, 
+                label=format(total_excess_deaths_metros$total_exs_deaths, big.mark = ",")), vjust=-1) +
+  scale_x_discrete() +
+  scale_y_continuous(breaks = seq(0, 15000, by = 5000), limits = c(0, 15000), labels = comma) +
+  labs(caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  custom_theme() +
+  theme(panel.grid.major.x = element_blank())
+```
+
 
 Row {data-width=data_width_standard}
 -------------------------------------
