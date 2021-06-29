@@ -20,6 +20,9 @@ library(scales) # add commas to axis
 library(RcppRoll) # rolling average
 library(flexdashboard) # html dashboard formatting
 library(readxl)
+library(gtable) # plot table
+library(gridExtra) # plot table
+library(grid) # plot table
 ```
 
 <!-- Custom themes -->
@@ -546,7 +549,7 @@ total_excess_deaths_metros <- excess_deaths_metros %>%
 total_excess_deaths_metros$metro <- factor(total_excess_deaths_metros$metro, levels = total_excess_deaths_metros$metro) # to keep the ordering when plotting
 ```
 
-```{r}
+```{r continental comparison of confirmed cases}
 continent_data <- continent_data %>% 
   select(date, World, Europe, North.America, South.America, Asia, Africa, Oceania) %>% 
   mutate(date = as.Date(date))
@@ -561,6 +564,28 @@ rolling_avg_continent <- continent_data %>%
   mutate(rolling_avg_oceania = roll_mean(Oceania, n=7, fill = NA, align = "right"))
 ```
 
+```{r private vs public tests}
+# TODO: format table nicely (values and names)
+tests <- testing_data %>%
+  mutate(date = dmy(date)) %>%
+  select(date, cumulative_tests, cumulative_tests_private, cumulative_tests_public) %>%
+  mutate(daily_private=cumulative_tests_private-lag(cumulative_tests_private,default=0)) %>%
+  mutate(daily_public=cumulative_tests_public-lag(cumulative_tests_public,default=0)) %>%
+  filter(!is.na(cumulative_tests_private))
+
+total_private_public <- tail(tests, 1) %>%
+  mutate(total_tests = cumulative_tests, total_private_tests = cumulative_tests_private) %>%
+  mutate(total_public_tests = cumulative_tests_public) %>%
+  mutate(new_private = daily_private, new_public = daily_public) %>%
+  select(total_tests, total_public_tests, total_private_tests, new_public, new_private) %>%
+  pivot_longer(c('total_tests', 'total_public_tests', 'total_private_tests', 'new_public', 'new_private'))
+
+total_private_public <- total_private_public %>%
+  mutate(percentage = round(100*value/head(total_private_public, 1)$value, 1))
+
+total_private_public$percentage[4] = round(100*total_private_public$value[4]/(total_private_public$value[4]+total_private_public$value[5]), 1)
+total_private_public$percentage[5] = round(100*total_private_public$value[5]/(total_private_public$value[4]+total_private_public$value[5]), 1)
+```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Plot data -->
@@ -990,7 +1015,19 @@ ggplot(national_hospital_data, aes(week_start, total_national_hospital_admission
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Public vs. Private Tests**
-<!-- TODO insert here -->
+```{r plot private vs public tests}
+  g <- tableGrob(total_private_public, rows = NULL)
+  # add table borders
+  g <- gtable_add_grob(g,
+          grobs = rectGrob(gp = gpar(fill = NA, lwd = 2)),
+          t = 2, b = nrow(g), l = 1, r = ncol(g))
+  g <- gtable_add_grob(g,
+          grobs = rectGrob(gp = gpar(fill = NA, lwd = 2)),
+          t = 1, l = 1, r = ncol(g))
+  # plot
+  grid.arrange(g)
+```
+
 
 Row {data-width=data_width_standard}
 -------------------------------------
@@ -1133,6 +1170,7 @@ The theme of the project is very relevant and appropriate, so we learned about t
 **If we had more time...**
 
 Some features that we would've liked to add include:
+
 1. Having reactive graphs (instead of static images)
 2. Further tackle the challenges that we were facing (doubling rates, pdf generation, lockdown legend, South African metro excess deaths)
 
