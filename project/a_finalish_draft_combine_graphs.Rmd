@@ -1209,32 +1209,44 @@ Our first point of action was to gather the data. For this, we needed to ask som
 
 After understanding our initial problem, we went ahead and gathered as much of our needed data as we could. We divided the graph's amongst the two of us using an online spreadsheet (allowing for self-allocation and process tracking), and used a GitHub repo for version control.
 
+Once we had our allocations, it was relatively simple to work on our individual graphs without causing git conflicts. We decided to work in seperate notebooks to further enable this. It also allowed us to help each other if one of us got stuck. Data wrangling took quite some time, as we needed to understand the data (and get more data than initially thought). Incomplete data was a main cause for this re-doing.
 
-#### Extra features
+After we created our base graphs, we did an additional allocation for each person to specialise in formatting certain parts of the graphs to add the final touches (for example, one person formatting all the date axis, and another adding labels to all of the graphs that needed it).
+
+
+**Design decisions and Extra features**
 * We used [Stellenbosch University's Branding Manual](http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf) to generate the colours used in this dashboard.
 * We used the [flexdashboard](https://pkgs.rstudio.com/flexdashboard/) format to beautifully arange our graphs in a real dashboard-like manner.
+* We formatted some of the dates in a nicer way than the original dashboards (tending to use the month name instead of the %d/%m format). We thought that this would allow for a better user experience.
+
 
 ### Reflection
-
-**Challenges**
-
-1. We struggled with replicating the Doubling Rates graph for the Confirmed cases and Deaths. We used [this](http://njcmindia.org/uploads/11-3_141-143.pdf) resource (amongst others) to understand Doubling Rates, but our graph came out quite differently to the one on the [dashboard](https://mediahack.co.za/datastories/coronavirus/dashboard/) we tried to replicate. 
-2. When creating two graphs with different x-axis scales (Positivity rate and Total deaths), we were only able to generate pdf's with the correct graph as we needed to combine different scales for the x-axis.
-3. For the lockdown levels we struggled with adding a matching legend.
-4. We couldn't find South African metropolitan population data, and as such were not able to implement the excess mortality in South African metros.
-
-**Learned**
-
-This project catalyzed a lot of learning. It is one thing to theoretically know what to do, and another to put it into practice. We learned a lot about data wrangling and ways to visualise what we wish to communicate. It was also a good lesson to really see the 80-20 principle come into play when it comes to the time spent gathering, cleaning, and wrangling data in comparison to actually plotting it.
-
-The theme of the project is very relevant and appropriate, so we learned about the current state of the pandemic in our country. It also gave us additional insight into what certain terms mean, such as the doubling rate, and excess mortality.
 
 **If we had more time...**
 
 Some features that we would've liked to add include:
 
 1. Having reactive graphs (instead of static images)
-2. Further tackle the challenges that we were facing (doubling rates, pdf generation, lockdown legend, South African metro excess deaths)
+2. Further tackle the challenges that we were facing
+3. Create a scraping script that fetches the data used in this dashboard automatically, to update on regular intervals.
+
+**Challenges, workarounds, and unimplemented features**
+
+1. We struggled with replicating the Doubling Rates graph for the Confirmed cases and Deaths. We used [this](http://njcmindia.org/uploads/11-3_141-143.pdf) resource (amongst others) to understand Doubling Rates, but our graph came out quite differently to the one on the [dashboard](https://mediahack.co.za/datastories/coronavirus/dashboard/) we tried to replicate. 
+2. When creating two graphs with different x-axis scales (Positivity rate and Total deaths), we were only able to generate pdf's with the correct graph as we needed to combine different scales for the x-axis. As such, we added snapshots of the generated graphs to the dashboard.
+3. For the lockdown levels we struggled with adding a matching legend as each sequence was a separate graph.
+4. We couldn't find South African metropolitan population data, and as such were not able to implement the excess mortality in South African metros.
+5. We ran out of time to apply the 90% accuracy to the Rt estimates.
+6. We did not reverse the order of the dates plotted in *Average daily tests per week*, *Average daily positives per week*, *No of tests per positive case (weekly)*, and *Confirmed infections (last 20 days)* graphs. This was due to being unable to reverse the date labels as well, and thus the date label did not correspond with the graph column. As such, we made the decision to rather be accurate and kept the dates in the default order.
+7. We did not plot the EPI week for the *National Hospital Admissions*, but we did plot the dates.
+8. The *Public vs. Private Tests* table is not as nicely formatted as we would've liked. We ran out of time to enhance this.
+
+**Learning experience**
+
+This project catalyzed a lot of learning. It is one thing to theoretically know what to do, and another to put it into practice. We learned a lot about data wrangling and ways to visualise what we wish to communicate. It was also a good lesson to really see the 80-20 principle come into play when it comes to the time spent gathering, cleaning, and wrangling data in comparison to actually plotting it.
+
+The theme of the project is very relevant and appropriate, so we learned about the current state of the pandemic in our country. It also gave us additional insight into what certain terms mean, such as the doubling rate, and excess mortality.
+
 
 # Sources
 **Main data sources:**
