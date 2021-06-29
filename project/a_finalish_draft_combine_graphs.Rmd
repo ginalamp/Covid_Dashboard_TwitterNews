@@ -826,7 +826,8 @@ ggplot(active_confirmed_summary, aes(date)) +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Total Deaths**
-<!-- TODO insert here -->
+<!-- Add screenshot of generated total deaths vs fatality graph -->
+![](./deaths_and_fatality.png)
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
