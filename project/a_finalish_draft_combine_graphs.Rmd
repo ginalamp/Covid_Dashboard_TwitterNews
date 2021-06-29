@@ -219,12 +219,13 @@ Row {data-width=400}
 -------------------------------------
 ### **Daily vaccinations**
 ```{r}
+# TODO: add dates to x axis
+# TODO: add vaccinations for last 7 days to side of graph
 ggplot(vaccinations, aes(date, daily)) + 
   geom_col() +
   scale_x_date(breaks = NULL) +
   scale_y_continuous(breaks=c(0, 50000, 100000), labels = comma, minor_breaks = NULL) +
-  labs(title= "Daily Vaccinations",
-       caption = "Updated: June 2021",
+  labs(caption = "Updated: June 2021",
        x = NULL,
        y = NULL) +
   custom_theme()
@@ -234,6 +235,18 @@ ggplot(vaccinations, aes(date, daily)) +
 <!-- ------------------------------------- -->
 ### **Total vaccinations**
 <!-- TODO insert here -->
+```{r}
+# TODO: add dates to x axis
+ggplot(vaccinations, aes(date, total)) + 
+  geom_line() +
+  scale_y_continuous(labels = comma, minor_breaks = NULL) +
+  scale_x_date(breaks = NULL) + 
+  geom_text(aes(label = total), data = tail(vaccinations, 1), nudge_y = 100000) +
+  labs(caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  custom_theme()
+```
 
 Row {data-width=data_width_standard}
 -------------------------------------
