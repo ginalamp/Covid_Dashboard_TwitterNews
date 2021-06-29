@@ -9,6 +9,9 @@ output:
   html_document:
     df_print: paged
 ---
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Setup -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
 # COVID-19 Dashboard
 ```{r import libraries}
 library(tidyverse)
@@ -153,7 +156,7 @@ continent_data <- read.csv("data/new_cases_world.csv")
 ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Wrangle data -->
+<!-- Data wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 ```{r value box death and recovered}
 # total deaths
@@ -861,7 +864,7 @@ total_private_public$percentage[5] = round(100*total_private_public$value[5]/(to
 ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Plot data -->
+<!-- Data Visualisation -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 Row {data-width=400}
 -----------------------------------------------------------------------
@@ -1425,29 +1428,43 @@ If you have any comments, suggestions or ideas, please feel free to contact us: 
 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Other non-code stuff -->
+<!-- Project Write-up -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-# Project Writeup
+# Project Write-up
 
 ### Overview
 The purpose of this project was to recreate the [Mediahack Coronavirus in South Africa](https://mediahack.co.za/datastories/coronavirus/dashboard/) dashboard using R programming language.
 
-**Process**
+Our code has three main sections: setup, data wrangling, data visualisation, and this write-up. 
+
+* Setup: contains all code needed to set up the notebook, such as formatting and theme setting. 
+* Data wrangling: contains all code used to wrangle the imported data in such a way that we produce the graphs that is available on our dashboard.
+* Data visualisation: contains all the code used to plot the data visualised.
+* Project write-up: contains this explanation, and some of the sources that we found useful.
+
+**Help Doc**
+
+To generate the .html file of this notebook, simply type `Ctrl+Shift+K` within this notebook. 
+
+If any errors should pop up, it is likely that you do not have one or more of the libaries installed. Please make sure that you install the necessary libraries produced in the prompt. The list of the libraries used in this project is indicated near the top of this notebook.
+
+**Implementation process**
 
 Our first point of action was to gather the data. For this, we needed to ask some important questions such as "What data is needed?", "Where do we get the data?", "What format do we need the data", and "How much data do we need?".
 
 After understanding our initial problem, we went ahead and gathered as much of our needed data as we could. We divided the graph's amongst the two of us using an online spreadsheet (allowing for self-allocation and process tracking), and used a GitHub repo for version control.
 
-Once we had our allocations, it was relatively simple to work on our individual graphs without causing git conflicts. We decided to work in seperate notebooks to further enable this. It also allowed us to help each other if one of us got stuck. Data wrangling took quite some time, as we needed to understand the data (and get more data than initially thought). Incomplete data was a main cause for this re-doing.
+Once we had our allocations, it was relatively simple to work on our individual graphs without causing git conflicts. We decided to work in seperate notebooks to further enable this. It also allowed us to help each other if one of us got stuck. Data wrangling took quite some time, as we needed to understand the data (and get more data than initially thought). Incomplete data was a main cause for this re-doing. Due to limited time, we weren't able to ensure that all the data collected ends on the same date, but all of the data was collected within a week.
 
 After we created our base graphs, we did an additional allocation for each person to specialise in formatting certain parts of the graphs to add the final touches (for example, one person formatting all the date axis, and another adding labels to all of the graphs that needed it).
 
 
 **Design decisions and Extra features**
+
 * We used [Stellenbosch University's Branding Manual](http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf) to generate the colours used in this dashboard.
 * We used the [flexdashboard](https://pkgs.rstudio.com/flexdashboard/) format to beautifully arange our graphs in a real dashboard-like manner.
 * We formatted some of the dates in a nicer way than the original dashboards (tending to use the month name instead of the %d/%m format). We thought that this would allow for a better user experience.
-
+* For ease of understanding, our code is well commented.
 
 ### Reflection
 
@@ -1498,6 +1515,7 @@ The theme of the project is very relevant and appropriate, so we learned about t
 * [Decimal formatting with scales library](https://scales.r-lib.org/reference/number_format.html)
 * [Set x/y axis cartesian limits](https://ggplot2.tidyverse.org/reference/lims.html)
 * [Create manual legend](https://stackoverflow.com/questions/17148679/construct-a-manual-legend-for- a-complicated-plot)
+* [Manual legend columns with filling](https://stackoverflow.com/questions/58089506/ggplot2-change-  fill-for-color-legend-when-fill-also-used-in-aesthetic)
 
 
 
