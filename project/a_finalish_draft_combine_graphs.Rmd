@@ -54,7 +54,8 @@ custom_line_theme <- function () {
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
             plot.title = element_text(size = 10, hjust = 0),
-            plot.caption = element_text(size = 8, hjust = 0)
+            plot.caption = element_text(size = 8, hjust = 0),
+            legend.title = element_blank() # remove legend title
         )
 }
 
@@ -798,13 +799,10 @@ ggplot(cases_last_8_mths, aes(date, rolling_avg)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Cases vs Active Cases**
-```{r fig.width=8}
-# TODO: add total active and total confirmed number label
-# TODO: Add legend with right colours labelling active and confirmed
-# TODO: Gap in active cases
+```{r fig.width=9.5}
 ggplot(active_confirmed_summary, aes(date)) + 
-  geom_line(aes(y = total_confirmed), color=theology_purple) +
-  geom_line(aes(y = total_active), color=arts_orange) + 
+  geom_line(aes(y = total_confirmed, color="Confirmed cases")) +
+  geom_line(aes(y = total_active, color="Active cases")) + 
   geom_text(aes(y = total_confirmed, label = format(total_confirmed, big.mark = ",")), 
             data = tail(active_confirmed_summary, 1), nudge_y = 50000) +
   geom_text(aes(y = total_active, label = format(total_active, big.mark = ",")), 
@@ -815,6 +813,7 @@ ggplot(active_confirmed_summary, aes(date)) +
   scale_colour_manual(name="",values="level_colours") +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   scale_y_continuous(label=comma) +
+  scale_color_manual(values = c(arts_orange, theology_purple)) +
   custom_line_theme()
 ```
 
@@ -1131,7 +1130,7 @@ ggplot(rolling_avg_continent, aes(date)) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b") +
   scale_y_continuous(labels = scales::number_format(accuracy = NULL)) +
   scale_color_manual(values = c(med_bluegreen, arts_orange, mustard, theology_purple, education_darkblue, agri_green, law_winered)) +
-  custom_line_light_grid()
+    custom_line_light_grid()
 ```
 
 
