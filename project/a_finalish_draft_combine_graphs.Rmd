@@ -19,7 +19,6 @@ library(ggplot2)
 library(scales) # add commas to axis
 library(RcppRoll) # rolling average
 library(flexdashboard) # html dashboard formatting
-library(readxl)
 ```
 
 <!-- Custom themes -->
@@ -137,12 +136,6 @@ national_hospital_data <- read.csv("data/za_national_hospital_admissions.csv")
 
 # reproduction rate data
 rt_data <- read.csv("data/calculated_rt_sa_provincial_cumulative.csv")
-
-# weekly excess deaths per province 
-excess_deaths_provinces_data <- read_xlsx("data/weekly_excess_deaths_provinces.xlsx")
-
-# weekly excess deaths per metro 
-excess_deahts_metros_data <- read_xlsx("data/weekly_excess_deaths_metros.xlsx")
 
 # continental data containing confirmed cases for each country and continent
 continent_data <- read.csv("data/new_cases_world.csv")
@@ -437,98 +430,6 @@ rolling_avg_rt <- rt_summary %>%
 
 rt_summary <- rt_summary %>% 
   inner_join(rolling_avg_rt, by = "date")
-```
-
-```{r excess deaths (south africa)}
-excess_deaths_provinces_data <- excess_deaths_provinces_data %>%
-  mutate(date = ymd(date))
-
-# look at the three time intervals
-may3_june5 <- excess_deaths_provinces_data %>%
-  filter(date <= ymd("2021-06-05")) %>%
-  select(date, RSA)
-
-may3_june12 <- excess_deaths_provinces_data %>%
-  filter(date <= ymd("2021-06-12")) %>%
-  select(date, RSA)
-
-may3_june19 <- excess_deaths_provinces_data %>%
-  filter(date <= ymd("2021-06-19")) %>%
-  select(date, RSA)
-
-# excess deaths for given time periods
-interval1 <- sum(may3_june5$RSA)
-interval2 <- sum(may3_june12$RSA)
-interval3 <- sum(may3_june19$RSA)
-interval <- c(round(interval1), round(interval2), round(interval3))
-
-period <- c("3 May-5 June", "3 May-12 June", "3 May-19 June")
-date <- c(ymd("2021-06-05"), ymd("2021-06-12"), ymd("2021-06-19"))
-
-# excess deaths (south africa)
-excess_deaths_SA <- data.frame(date, period, interval) %>%
-  mutate(total_deaths = interval) %>%
-  select(date, period, total_deaths)
-
-# covid deaths (south africa)
-covid_deaths_SA <- death_data %>%
-  mutate(date = dmy(date)) %>%
-  mutate(covid_deaths = total) %>%
-  select(date, covid_deaths) %>%
-  filter(date %in% c(ymd("2021-06-05"), ymd("2021-06-12"), ymd("2021-06-19")))
-
-# join excess deaths and covid deaths
-deaths_SA <- excess_deaths_SA %>%
-  left_join(covid_deaths_SA, by = "date")
-
-deaths_SA$period <- factor(deaths_SA$period, levels = deaths_SA$period) # to keep the ordering when plotting
-```
-
-```{r excess deaths (provinces)}
-excess_deaths <- excess_deaths_provinces_data %>%
-  select(!RSA) %>% # take out RSA so it's only provinces
-  pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC'), names_to = "province", values_to = "exs_deaths") %>%
-  filter(!is.na(exs_deaths)) # take out NA values
-
-# group by province and sum excess deaths to find out the total cumulative excess deaths per province
-total_excess_deaths <- excess_deaths %>%
-  group_by(province) %>%
-  summarise_at(vars(exs_deaths), list(total_exs_deaths = sum)) %>%
-  mutate(total_exs_deaths = round(total_exs_deaths)) %>%
-  arrange(desc(total_exs_deaths))
-
-# covid deaths per province
-covid_deaths <- death_data %>% 
-  pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), names_to = "province", values_to = "deaths") %>% 
-  select(date, province, deaths)  %>% 
-  filter(province != 'UNKNOWN') %>% 
-  mutate(date = dmy(date)) %>%
-  filter(date == dmy("19-06-2021")) # only interested in the total covid deaths up to 19 June
-
-# combine excess deaths with covid deaths for comparison (by province)
-excess_deaths_provinces <- total_excess_deaths %>%
-  inner_join(covid_deaths, by = 'province')
-
-excess_deaths_provinces$province <- factor(excess_deaths_provinces$province, levels = excess_deaths_provinces$province) # to keep the ordering when plotting
-
-```
-
-```{r excess deaths (metros)}
-# TODO: add covid deaths per metro for comparison
-
-excess_deaths_metros <- excess_deahts_metros_data %>%
-  mutate(date = ymd(date)) %>%
-  pivot_longer(c('BUF', 'CPT', 'EKU', 'ETH', 'JHN', 'MAN', 'NMA', 'TSH'), names_to = "metro", values_to = "exs_deaths") %>%
-  filter(!is.na(exs_deaths)) 
-
-# group by metro and sum excess deaths to find out the total cumulative excess deaths per metro
-total_excess_deaths_metros <- excess_deaths_metros %>%
-  group_by(metro) %>%
-  summarise_at(vars(exs_deaths), list(total_exs_deaths = sum)) %>%
-  mutate(total_exs_deaths = round(total_exs_deaths)) %>%
-  arrange(desc(total_exs_deaths))
-
-total_excess_deaths_metros$metro <- factor(total_excess_deaths_metros$metro, levels = total_excess_deaths_metros$metro) # to keep the ordering when plotting
 ```
 
 ```{r}
@@ -987,60 +888,18 @@ ggplot(rt_summary, aes(date, rolling_avg)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Excess Deaths (South Africa)**
-```{r}
-ggplot() + 
-  geom_col(deaths_SA, mapping = aes(period, total_deaths)) +
-  geom_col(deaths_SA, mapping = aes(period, covid_deaths), fill = law_winered) +
-  geom_text(aes(x=period, y = deaths_SA$total_deaths, 
-                label=format(deaths_SA$total_deaths, big.mark = ",")), vjust=-1) +
-  geom_text(aes(x=period, y = deaths_SA$covid_deaths, 
-                label=format(deaths_SA$covid_deaths, big.mark = ",")), vjust=7) +
-  scale_y_continuous(breaks = c(0, 100000, 200000), labels = comma, limits = c(0, 200000)) +
-  labs(caption = "Updated: June 2021",
-       x = NULL,
-       y = NULL) +
-  custom_theme() +
-  theme(panel.grid.major.x = element_blank())
-```
-
+<!-- TODO insert here -->
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Excess Deaths (Provinces)**
-```{r}
-ggplot() + 
-  geom_col(excess_deaths_provinces, mapping = aes(province, total_exs_deaths)) +
-  geom_col(excess_deaths_provinces, mapping = aes(province, deaths), fill = law_winered) +
-  geom_text(aes(x=excess_deaths_provinces$province, y = excess_deaths_provinces$total_exs_deaths, 
-                label=format(excess_deaths_provinces$total_exs_deaths, big.mark = ",")), vjust=-1) +
-  scale_x_discrete() +
-  scale_y_continuous(breaks = c(0, 20000, 40000), labels = comma) +
-  labs(caption = "Updated: June 2021",
-       x = NULL,
-       y = NULL) +
-  custom_theme() +
-  theme(panel.grid.major.x = element_blank())
-```
-
+<!-- TODO insert here -->
 
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **Excess Deaths (Metros)**
-```{r}
-ggplot() + 
-  geom_col(total_excess_deaths_metros, mapping = aes(metro, total_exs_deaths)) +
-  geom_text(aes(x=total_excess_deaths_metros$metro, y = total_excess_deaths_metros$total_exs_deaths, 
-                label=format(total_excess_deaths_metros$total_exs_deaths, big.mark = ",")), vjust=-1) +
-  scale_x_discrete() +
-  scale_y_continuous(breaks = seq(0, 15000, by = 5000), limits = c(0, 15000), labels = comma) +
-  labs(caption = "Updated: June 2021",
-       x = NULL,
-       y = NULL) +
-  custom_theme() +
-  theme(panel.grid.major.x = element_blank())
-```
-
+<!-- TODO insert here -->
 
 Row {data-width=data_width_standard}
 -------------------------------------
@@ -1074,14 +933,61 @@ If you have any comments, suggestions or ideas, please feel free to contact us: 
 <!-- Other non-code stuff -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 # Project Writeup
-Explain overall code here
 
-# Background Research
+### Overview
+The purpose of this project was to recreate the [Mediahack Coronavirus in South Africa](https://mediahack.co.za/datastories/coronavirus/dashboard/) dashboard using R programming language.
 
-* Excess deaths
-* Doubling rate
+**Process**
+
+Our first point of action was to gather the data. For this, we needed to ask some important questions such as "What data is needed?", "Where do we get the data?", "What format do we need the data", and "How much data do we need?".
+
+After understanding our initial problem, we went ahead and gathered as much of our needed data as we could. We divided the graph's amongst the two of us using an online spreadsheet (allowing for self-allocation and process tracking), and used a GitHub repo for version control.
+
+
+#### Extra features
+* We used [Stellenbosch University's Branding Manual](http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf) to generate the colours used in this dashboard.
+* We used the [flexdashboard](https://pkgs.rstudio.com/flexdashboard/) format to beautifully arange our graphs in a real dashboard-like manner.
+
+### Reflection
+
+**Challenges**
+
+1. We struggled with replicating the Doubling Rates graph for the Confirmed cases and Deaths. We used [this](http://njcmindia.org/uploads/11-3_141-143.pdf) resource (amongst others) to understand Doubling Rates, but our graph came out quite differently to the one on the [dashboard](https://mediahack.co.za/datastories/coronavirus/dashboard/) we tried to replicate. 
+2. When creating two graphs with different x-axis scales (Positivity rate and Total deaths), we were only able to generate pdf's with the correct graph as we needed to combine different scales for the x-axis.
+3. For the lockdown levels we struggled with adding a matching legend.
+4. We couldn't find South African metropolitan population data, and as such were not able to implement the excess mortality in South African metros.
+
+**Learned**
+
+This project catalyzed a lot of learning. It is one thing to theoretically know what to do, and another to put it into practice. We learned a lot about data wrangling and ways to visualise what we wish to communicate. It was also a good lesson to really see the 80-20 principle come into play when it comes to the time spent gathering, cleaning, and wrangling data in comparison to actually plotting it.
+
+The theme of the project is very relevant and appropriate, so we learned about the current state of the pandemic in our country. It also gave us additional insight into what certain terms mean, such as the doubling rate, and excess mortality.
+
+**If we had more time...**
+
+Some features that we would've liked to add include:
+1. Having reactive graphs (instead of static images)
+2. Further tackle the challenges that we were facing (doubling rates, pdf generation, lockdown legend, South African metro excess deaths)
 
 # Sources
-* TODO
+**Main data sources:**
 
+* [rt South Africa](https://github.com/dsfsi/covid19za/blob/master/data/calc/calculated_rt_sa_provincial_cumulative.csv)
+* [Global hospital admissions JSON](https://github.com/owid/covid-19-data/blob/master/public/data/internal/megafile--hospital-admissions.json)
+* [Global github repo](https://github.com/owid/covid-19-data/tree/master/public/data)
+* [South African github repo - most current sources](https://github.com/dsfsi/covid19za)
+* [South Africa bunch of data](https://ourworldindata.org/coronavirus/country/south-africa) 
+* [Covid Lockdown Levels as text - might need scraping](https://www.gov.za/covid-19/about/about-alert-system)
+* [Population per city - needs admin_name grouping and summing](https://simplemaps.com/data/za-cities)
+
+**Some helpful formatting sources:**
+
+* [Flexdashboard](https://pkgs.rstudio.com/flexdashboard/) - [Basic Row and Cols](https://blog.   rstudio.com/2016/05/17/flexdashboard-easy-interactive-dashboards-for-r/)
+* [General good resource](http://zevross.com/blog/2014/08/04/beautiful-plotting-in-r-a-ggplot2-      cheatsheet-3/)
+* [Add commas to y-axis labels](https://stackoverflow.com/questions/37713351/formatting-ggplot2-     axis-labels-with-commas-and-k-mm-if-i-already-have-a-y-sc)
+* [Set y axis breaks](https://stackoverflow.com/questions/22818899/setting-y-axis-breaks-in-ggplot)
+* [Add specific date labels](https://www.r-graph-gallery.com/279-plotting-time-series-with-ggplot2.  html)
+* [Decimal formatting with scales library](https://scales.r-lib.org/reference/number_format.html)
+* [Set x/y axis cartesian limits](https://ggplot2.tidyverse.org/reference/lims.html)
+* [Create manual legend](https://stackoverflow.com/questions/17148679/construct-a-manual-legend-for- a-complicated-plot)
 
