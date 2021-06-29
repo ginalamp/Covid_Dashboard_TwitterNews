@@ -38,6 +38,7 @@ Additional (extra) - if the big file doesn't cover it well enough
 * [Decimal formatting with scales library](https://scales.r-lib.org/reference/number_format.html)
 * [Set x/y axis cartesian limits](https://ggplot2.tidyverse.org/reference/lims.html)
 * [Create manual legend](https://stackoverflow.com/questions/17148679/construct-a-manual-legend-for-a-complicated-plot)
+* [Manual legend columns with filling](https://stackoverflow.com/questions/58089506/ggplot2-change-fill-for-color-legend-when-fill-also-used-in-aesthetic)
 
 ## Background research
 [Excess mortality](https://ourworldindata.org/excess-mortality-covid)
