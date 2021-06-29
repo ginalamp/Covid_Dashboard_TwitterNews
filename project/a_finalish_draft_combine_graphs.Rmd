@@ -945,15 +945,17 @@ ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
 <!-- ------------------------------------- -->
 ### **No of tests per positive case (weekly)**
 ```{r fig.width = 10, fig.height=12}
-ggplot(tests_per_positive, aes(rev(date), ratio)) +
-  geom_col() +
+ggplot(tests_per_positive, aes(date, ratio)) +
+  geom_col(fill=med_bluegreen) +
   labs(caption = "Updated: June 2021",
        x = "Week",
        y = NULL) +
   geom_text(aes(label = round(ratio, 2)), hjust = 0) +
-  scale_x_date(labels = NULL) +
+  scale_x_date(date_breaks = "1 week", date_labels = "%m-%d-%Y") +
+  scale_y_continuous(labels = NULL, breaks = NULL)  + # remove unnecessary ticks
+  scale_color_manual(values = c(theology_purple)) +
   coord_flip() +
-  custom_theme() +
+  custom_line_theme() +
   theme(panel.grid = element_blank())
 ```
 
