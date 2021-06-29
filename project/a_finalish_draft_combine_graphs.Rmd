@@ -24,7 +24,7 @@ library(flexdashboard) # html dashboard formatting
 <!-- Custom themes -->
 ```{r}
 custom_theme <- function () { 
-    theme_minimal(base_size=12, base_family="Avenir")
+    theme_minimal(base_size=12, base_family="Avenir") +
         theme(
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
@@ -34,13 +34,21 @@ custom_theme <- function () {
         )
 }
 
-# with legend, no grids
+custom_with_light_grid <- function () {
+  theme_minimal(base_size=12, base_family="Avenir") +
+  custom_theme() +
+    theme (
+      panel.grid.major.y = element_line(colour = "lightgrey"),
+      panel.grid.major.x = element_blank()
+    )
+}
+
+# with legend, horizontal grids
 custom_line_theme <- function () { 
     theme_minimal(base_size=12, base_family="Avenir")
         theme(
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
-            panel.grid.major = element_blank(),
             plot.title = element_text(size = 10, hjust = 0),
             plot.caption = element_text(size = 8, hjust = 0)
         )
@@ -99,6 +107,9 @@ owid_sa_data <- read.csv("data/owid-covid-data_SouthAfricaExtracted_big.csv")
 
 # vaccinations data
 vaccinations_data <- read.csv("data/covid19za_timeline_vaccination.csv")
+
+# national hospital data
+national_hospital_data <- read.csv("data/za_national_hospital_admissions.csv")
 ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -329,6 +340,11 @@ provincial_active <- provincial_active %>%
 # pn <- data.frame("province", province_names)
 # provincial_active$province <- pn
 head(provincial_active)
+```
+
+```{r national hospital data}
+national_hospital_data <- national_hospital_data %>% 
+  mutate(week_start = as.Date(week_start))
 ```
 
 
@@ -674,7 +690,7 @@ ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
          x = NULL, 
          y = NULL, 
          caption = element_text("Updated: June 2021")) +
-    custom_theme()
+    custom_with_light_grid()
 ```
 
 Row {data-width=data_width_standard}
@@ -703,7 +719,21 @@ Row {data-width=data_width_standard}
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **National Hospital Admissions**
-<!-- TODO insert here -->
+```{r fig.width=8}
+# TODO: Add EPI week x axis label
+# TODO: Flip Date x axis label to be at the top
+ggplot(national_hospital_data, aes(week_start, total_national_hospital_admissions)) + 
+  geom_line(color=med_bluegreen, size=1) +
+  labs(caption = "Updated: June 2021",
+       x = NULL,
+       y = NULL) +
+  # scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
+  coord_cartesian(ylim = c(0, 20000)) +
+  scale_x_date(date_breaks = "2 months", date_labels = "%d %b") +
+  scale_y_continuous(label=comma) +
+  # theme(panel.grid.major.y = element_line(colour = "lightgrey")) + custom_theme()
+  custom_with_light_grid()
+```
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
