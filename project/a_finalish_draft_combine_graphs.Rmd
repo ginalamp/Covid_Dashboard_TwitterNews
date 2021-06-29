@@ -289,7 +289,8 @@ testing_avg <- testing %>%
 # reduce data to start in April 2020 and include weekly average
   filter(date - ymd("2020-4-9") >= 0)
 
-testing_avg <- testing_avg[c(TRUE, rep(FALSE, 6)),]
+testing_avg <- testing_avg %>%
+  filter(as.numeric(date - ymd("2020-4-9")) %% 7 == 0)
 ```
 
 ```{r avg daily positives per week}
@@ -308,7 +309,21 @@ daily_cases_avg <- daily_cases %>%
 weekly_avg_daily_cases <- daily_cases_avg %>%
   filter(date - ymd("2020-4-9") >= 0)
 
-weekly_avg_daily_cases <- weekly_avg_daily_cases[c(TRUE, rep(FALSE, 6)),]
+weekly_avg_daily_cases <- weekly_avg_daily_cases %>%
+  filter(as.numeric(date - ymd("2020-4-9")) %% 7 == 0)
+```
+
+```{r num tests per positive case weekly}
+testing_avg <- testing_avg %>%
+  mutate(testing_rolling_avg = rolling_avg)
+weekly_avg_daily_cases <- weekly_avg_daily_cases %>%
+  mutate(confirmed_rolling_avg = rolling_avg)
+
+tests_per_positive <- testing_avg %>% 
+  inner_join(weekly_avg_daily_cases, by="date") %>% 
+  select(date, testing_rolling_avg, confirmed_rolling_avg)
+# %>%   drop_na(date, testing_rolling_avg, confirmed_rolling_avg) # avg daily test per week has NA at start
+tests_per_positive$ratio <- with(tests_per_positive, testing_rolling_avg / confirmed_rolling_avg)
 ```
 
 ```{r bubble new tests and cases}
@@ -898,7 +913,18 @@ ggplot(weekly_avg_daily_cases, aes(rev(date), rolling_avg)) +
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
 ### **No of tests per positive case (weekly)**
-<!-- TODO insert here -->
+```{r}
+ggplot(tests_per_positive, aes(rev(date), ratio)) +
+  geom_col() +
+  labs(caption = "Updated: June 2021",
+       x = "Week",
+       y = NULL) +
+  #geom_text(aes(label = rolling_avg), hjust = 0) +
+  scale_x_date(labels = NULL) +
+  coord_flip() +
+  custom_theme()
+```
+
 
 Row {data-width=data_width_standard}
 -------------------------------------
