@@ -1,6 +1,6 @@
 ---
 title: "Final-ish Project Graphs"
-subtitle: "Gina Lamprecht and Johanna Engelhard"
+author: "Johanna Engelhard and Gina Lamprecht"
 output:
   flexdashboard::flex_dashboard:
     orientation: rows
@@ -53,6 +53,11 @@ ems_lightblue <- "#2dccd3"
 agri_green <- "#509e2f"
 med_bluegreen <- "#006163"
 ```
+
+```{r set data width}
+data_width_standard <- 400
+```
+
 
 <!-- Read data -->
 ```{r read data}
@@ -200,8 +205,90 @@ valueBox(
 
 Row {data-width=400}
 -------------------------------------
+### **Daily vaccinations**
+<!-- TODO insert here -->
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **Total vaccinations**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **Daily confirmed cases**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **Active case total by day**
+<!-- TODO insert here -->
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **Daily deaths**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **Daily case trends**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **Cases vs Active Cases**
+<!-- TODO insert here -->
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **Total Deaths**
+<!-- TODO insert here -->
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **Doubling Rates**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **Deaths by Province**
+<!-- TODO insert here -->
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **Deaths by Province (per 100k)**
+<!-- TODO insert here -->
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **Prov Infections per 100,000 Population**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **Confirmed and Active Cases by Province**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **Average daily tests per week**
+<!-- TODO insert here -->
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **Average daily positives per week**
+<!-- TODO insert here -->
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **No of tests per positive case (weekly)**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
 ### **Daily tests and positive cases**
 ```{r fig.width = 8}
+# TODO: Add number of test labels on specific dates
+# TODO: Y axis labeling (cap at 60k, but allow graph to continue upward)
 ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
     geom_point(alpha=0.5, color=law_winered) +
     scale_size(range = c(.1, 10)) +
@@ -214,8 +301,8 @@ ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
     custom_theme()
 ```
 
-Row {data-width=400}
--------------------------------------
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
 ### **Confirmed infections (last 20 days)**
 ```{r fig.width=15}
 ggplot(confirmed, aes(rev(date), new_cases)) + 
@@ -229,6 +316,52 @@ ggplot(confirmed, aes(rev(date), new_cases)) +
   coord_flip() +
   theme_minimal()
 ```
+Row {data-width=data_width_standard}
+-------------------------------------
+### **Positivity Rate: Number of Tests vs Positive Cases (%)**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **National Hospital Admissions**
+<!-- TODO insert here -->
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **Public vs. Private Tests**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **Current Rt estimates for South Africa**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **Excess Deaths (South Africa)**
+<!-- TODO insert here -->
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **Excess Deaths (Provinces)**
+<!-- TODO insert here -->
+
+
+<!-- Row {data-width=data_width_standard} -->
+<!-- ------------------------------------- -->
+### **Excess Deaths (Metros)**
+<!-- TODO insert here -->
+
+Row {data-width=data_width_standard}
+-------------------------------------
+### **New daily confirmed Covid-19 cases: 7-day average**
+<!-- TODO insert here -->
+
+
+Row {data-width=200}
+-------------------------------------
+If you have any comments, suggestions or ideas, please feel free to contact us: ginalamp@sun.ac.za or 22098038@sun.ac.za
+
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Other non-code stuff -->
