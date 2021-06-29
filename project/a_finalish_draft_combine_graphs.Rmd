@@ -128,13 +128,52 @@ bubble_data <- owid_sa_data %>%
 
 ```{r last 20 days new cases}
 # Get total confirmed cases per date
-confirmed <- owid_sa_data %>% 
+confirmed_20 <- owid_sa_data %>% 
   filter(!is.na(new_cases)) %>% 
   select(date, new_cases) %>% 
   mutate(date = as.Date(date)) %>% 
   filter(date > as.Date("2021-06-01"))
-confirmed <- confirmed %>% map_df(rev) 
+confirmed_20 <- confirmed_20 %>% map_df(rev) 
 ```
+
+```{r daily confirmed cases with lockdown and 7-day average}
+confirmed_lockdown <- provincial_total_confirmed %>% 
+  select(date, total) %>% 
+  mutate(date = dmy(date)) 
+
+# get daily confirmed cases
+confirmed_summary <- provincial_total_confirmed %>%
+  select(date, total) %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily_confirmed=total-lag(total,default=0))
+names(confirmed_summary)[names(confirmed_summary) == 'total'] <- 'total_confirmed'
+
+# 7-day rolling average
+confirmed_rolling_average <- confirmed_lockdown %>%
+  mutate(daily_cases=total-lag(total,default=0)) %>%
+  mutate(rolling_avg = roll_mean(daily_cases, n=7, fill = NA, align = "right"))
+
+confirmed_summary <- confirmed_summary %>% 
+  inner_join(confirmed_rolling_average, by = "date")
+
+# lockdown levels
+national_lockdown <- national_lockdown %>% 
+  mutate(date_start = as.Date(date_start)) %>% 
+  mutate(date_end = as.Date(date_end)) 
+head(national_lockdown$date_start[2])
+
+# lockdown segments
+segment1 = data.frame(time = seq(national_lockdown$date_start[1], national_lockdown$date_end[1], by = "1 day"))
+segment2 = data.frame(time = seq(national_lockdown$date_start[2], national_lockdown$date_end[2], by = "1 day"))
+segment3 = data.frame(time = seq(national_lockdown$date_start[3], national_lockdown$date_end[3], by = "1 day"))
+segment4 = data.frame(time = seq(national_lockdown$date_start[4], national_lockdown$date_end[4], by = "1 day"))
+segment5 = data.frame(time = seq(national_lockdown$date_start[5], national_lockdown$date_end[5], by = "1 day"))
+segment6 = data.frame(time = seq(national_lockdown$date_start[6], national_lockdown$date_end[6], by = "1 day"))
+segment7 = data.frame(time = seq(national_lockdown$date_start[7], national_lockdown$date_end[7], by = "1 day"))
+segment8 = data.frame(time = seq(national_lockdown$date_start[8], national_lockdown$date_end[8], by = "1 day"))
+segment9 = data.frame(time = seq(national_lockdown$date_start[9], national_lockdown$date_end[9], by = "1 day"))
+```
+
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Plot data -->
@@ -216,7 +255,66 @@ Row {data-width=400}
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Daily confirmed cases**
-<!-- TODO insert here -->
+```{r fig.width=10, fig.height=6}
+# TODO: Format legend better
+
+# lockdown level colours
+# level_colours <- c("Level 1"="#bcbef5","Level 2"="#999ad1", "Level 3"= "#7476b5", "Level 4"="#444687", "Level 5"="#1e206e")
+level_colours <- c("Level 1"=engineering_yellow,"Level 2"=arts_orange, "Level 3"= military_salmon, "Level 4"=science_red, "Level 5"=law_winered)
+
+# plot
+ggplot(confirmed_summary, aes(date)) +
+  # lockdown segments
+  geom_segment(data = segment1,
+          aes(x = time, xend = time,
+              y = 0, yend = Inf),
+            show.legend = TRUE, colour=level_colours["Level 5"]) +
+  geom_segment(data = segment2,
+          aes(x = time, xend = time,
+              y = 0, yend = Inf),
+            show.legend = FALSE, colour=level_colours["Level 4"]) +
+  geom_segment(data = segment3,
+        aes(x = time, xend = time,
+            y = 0, yend = Inf),
+          show.legend = FALSE, colour=level_colours["Level 3"]) +
+  geom_segment(data = segment4,
+        aes(x = time, xend = time,
+            y = 0, yend = Inf),
+          show.legend = FALSE, colour=level_colours["Level 2"]) +
+  geom_segment(data = segment5,
+        aes(x = time, xend = time,
+            y = 0, yend = Inf),
+          show.legend = FALSE, colour=level_colours["Level 1"]) +
+  geom_segment(data = segment6,
+        aes(x = time, xend = time,
+            y = 0, yend = Inf),
+          show.legend = FALSE, colour=level_colours["Level 3"]) +
+  geom_segment(data = segment7,
+        aes(x = time, xend = time,
+            y = 0, yend = Inf),
+          show.legend = FALSE, colour=level_colours["Level 1"]) +
+  geom_segment(data = segment8,
+        aes(x = time, xend = time,
+            y = 0, yend = Inf),
+          show.legend = FALSE, colour=level_colours["Level 2"]) +
+  geom_segment(data = segment9,
+      aes(x = time, xend = time,
+          y = 0, yend = Inf),
+        show.legend = FALSE, colour=level_colours["Level 3"]) +
+  # active cases and rolling average
+  geom_col(aes(y = daily_confirmed), color = maroon) +
+  geom_line(aes(y = rolling_avg), color = ems_lightblue, size=1) +
+  labs(subtitle= "This chart shows the daily confirmed cases since March 2020. The levels refer to the lockdown levels. Blue line is the 7-day rolling average.",
+     caption = "Updated: June 2021",
+     x = NULL,
+     y = NULL) +
+  scale_colour_manual(name="Lockdown levels",values=level_colours) +
+  # scale_fill_manual(name="Lockdown Levels", values=level_colours) + # manual legend
+  scale_x_date(date_breaks = "1 month", date_labels = "%d %b") +
+  scale_y_continuous(label=comma) +
+  theme_minimal()
+```
+
 
 Row {data-width=data_width_standard}
 -------------------------------------
@@ -307,7 +405,7 @@ Row {data-width=data_width_standard}
 ```{r fig.width=15}
 # TODO: not plotting right (even when flipping the dates here - the date labels are wrong)
 # TODO: theology_purple colour not showing
-ggplot(confirmed, aes(x=rev(date), y=new_cases, fill=theology_purple)) + 
+ggplot(confirmed_20, aes(x=rev(date), y=new_cases, fill=theology_purple)) + 
   geom_col(position="dodge", color=theology_purple) +
   geom_text(aes(label = new_cases), position = position_dodge(0.9), hjust=-0.1) + # add labels
   labs(caption = "Updated: June 2021",
