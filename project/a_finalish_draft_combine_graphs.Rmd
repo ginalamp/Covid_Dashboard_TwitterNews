@@ -900,14 +900,61 @@ If you have any comments, suggestions or ideas, please feel free to contact us: 
 <!-- Other non-code stuff -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 # Project Writeup
-Explain overall code here
 
-# Background Research
+### Overview
+The purpose of this project was to recreate the [Mediahack Coronavirus in South Africa](https://mediahack.co.za/datastories/coronavirus/dashboard/) dashboard using R programming language.
 
-* Excess deaths
-* Doubling rate
+**Process**
+
+Our first point of action was to gather the data. For this, we needed to ask some important questions such as "What data is needed?", "Where do we get the data?", "What format do we need the data", and "How much data do we need?".
+
+After understanding our initial problem, we went ahead and gathered as much of our needed data as we could. We divided the graph's amongst the two of us using an online spreadsheet (allowing for self-allocation and process tracking), and used a GitHub repo for version control.
+
+
+#### Extra features
+* We used [Stellenbosch University's Branding Manual](http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf) to generate the colours used in this dashboard.
+* We used the [flexdashboard](https://pkgs.rstudio.com/flexdashboard/) format to beautifully arange our graphs in a real dashboard-like manner.
+
+### Reflection
+
+**Challenges**
+
+1. We struggled with replicating the Doubling Rates graph for the Confirmed cases and Deaths. We used [this](http://njcmindia.org/uploads/11-3_141-143.pdf) resource (amongst others) to understand Doubling Rates, but our graph came out quite differently to the one on the [dashboard](https://mediahack.co.za/datastories/coronavirus/dashboard/) we tried to replicate. 
+2. When creating two graphs with different x-axis scales (Positivity rate and Total deaths), we were only able to generate pdf's with the correct graph as we needed to combine different scales for the x-axis.
+3. For the lockdown levels we struggled with adding a matching legend.
+4. We couldn't find South African metropolitan population data, and as such were not able to implement the excess mortality in South African metros.
+
+**Learned**
+
+This project catalyzed a lot of learning. It is one thing to theoretically know what to do, and another to put it into practice. We learned a lot about data wrangling and ways to visualise what we wish to communicate. It was also a good lesson to really see the 80-20 principle come into play when it comes to the time spent gathering, cleaning, and wrangling data in comparison to actually plotting it.
+
+The theme of the project is very relevant and appropriate, so we learned about the current state of the pandemic in our country. It also gave us additional insight into what certain terms mean, such as the doubling rate, and excess mortality.
+
+**If we had more time...**
+
+Some features that we would've liked to add include:
+1. Having reactive graphs (instead of static images)
+2. Further tackle the challenges that we were facing (doubling rates, pdf generation, lockdown legend, South African metro excess deaths)
 
 # Sources
-* TODO
+**Main data sources:**
 
+* [rt South Africa](https://github.com/dsfsi/covid19za/blob/master/data/calc/calculated_rt_sa_provincial_cumulative.csv)
+* [Global hospital admissions JSON](https://github.com/owid/covid-19-data/blob/master/public/data/internal/megafile--hospital-admissions.json)
+* [Global github repo](https://github.com/owid/covid-19-data/tree/master/public/data)
+* [South African github repo - most current sources](https://github.com/dsfsi/covid19za)
+* [South Africa bunch of data](https://ourworldindata.org/coronavirus/country/south-africa) 
+* [Covid Lockdown Levels as text - might need scraping](https://www.gov.za/covid-19/about/about-alert-system)
+* [Population per city - needs admin_name grouping and summing](https://simplemaps.com/data/za-cities)
+
+**Some helpful formatting sources:**
+
+* [Flexdashboard](https://pkgs.rstudio.com/flexdashboard/) - [Basic Row and Cols](https://blog.      rstudio.com/2016/05/17/flexdashboard-easy-interactive-dashboards-for-r/)
+* [General good resource](http://zevross.com/blog/2014/08/04/beautiful-plotting-in-r-a-ggplot2-      cheatsheet-3/)
+* [Add commas to y-axis labels](https://stackoverflow.com/questions/37713351/formatting-ggplot2-     axis-labels-with-commas-and-k-mm-if-i-already-have-a-y-sc)
+* [Set y axis breaks](https://stackoverflow.com/questions/22818899/setting-y-axis-breaks-in-ggplot)
+* [Add specific date labels](https://www.r-graph-gallery.com/279-plotting-time-series-with-ggplot2.  html)
+* [Decimal formatting with scales library](https://scales.r-lib.org/reference/number_format.html)
+* [Set x/y axis cartesian limits](https://ggplot2.tidyverse.org/reference/lims.html)
+* [Create manual legend](https://stackoverflow.com/questions/17148679/construct-a-manual-legend-for- a-complicated-plot)
 
