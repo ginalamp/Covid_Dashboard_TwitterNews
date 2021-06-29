@@ -810,6 +810,10 @@ Row {data-width=data_width_standard}
 ggplot(active_confirmed_summary, aes(date)) + 
   geom_line(aes(y = total_confirmed), color=theology_purple) +
   geom_line(aes(y = total_active), color=arts_orange) + 
+  geom_text(aes(y = total_confirmed, label = format(total_confirmed, big.mark = ",")), 
+            data = tail(active_confirmed_summary, 1), nudge_y = 50000) +
+  geom_text(aes(y = total_active, label = format(total_active, big.mark = ",")), 
+            data = tail(active_confirmed_summary, 1), nudge_y = 50000) +
   labs(x = NULL,
      y = NULL,
      caption = "Updated: June 2021") +
