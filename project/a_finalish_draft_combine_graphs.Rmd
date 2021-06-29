@@ -162,16 +162,20 @@ cases <- provincial_total_confirmed %>%
   pivot_longer(c('EC', 'FS', 'GP', 'KZN', 'LP', 'MP', 'NC', 'NW', 'WC', 'UNKNOWN'), 
                names_to = "province", values_to = "cases")
 cases <- cases %>% 
-  select(date, province, cases, total)  %>% 
-  filter(province != 'UNKNOWN') %>% 
+  mutate(code = province) %>%
+  select(date, code, cases, total)  %>% 
+  filter(code != 'UNKNOWN') %>% 
   mutate(date = dmy(date)) %>%
   # calculate daily cases per province
-  group_by(province) %>%
+  group_by(code) %>%
   mutate(daily_cases=cases-lag(cases,default=0)) %>%
   # calculate 7-day rolling average of daily cases
   mutate(rolling_avg = roll_mean(daily_cases, n=7, fill = NA, align = "right"))
 
-cases_last_8_mths <- cases %>%
+cases_provincial <- cases %>%
+  left_join(province_population, by = "code") %>%
+  select(date, code, province, cases, daily_cases, rolling_avg, total)
+cases_last_8_mths <- cases_provincial %>%
   filter(date >= ymd("2020-11-12"))
 ```
 
@@ -213,7 +217,6 @@ total_cases_100k <- tail(cases, 9) # cumulative cases per province up to 21 June
 # add province populations to province cases
 total_cases_100k <- total_cases_100k %>%
   ungroup() %>%
-  mutate(code = province) %>%
   select(code, cases) %>%
   left_join(province_population, by = "code") %>% 
   select(code, province, cases, population) %>%
