@@ -1071,7 +1071,7 @@ ggplot() +
        x = NULL,
        y = NULL) +
   scale_color_manual(values = c(education_darkblue, law_winered)) +
-  guides(color = guide_legend(override.aes = list(fill = c(education_darkblue, law_winered)))) +
+  guides(color = guide_legend(override.aes = list(fill = c(law_winered, education_darkblue)))) +
   custom_line_theme() +
   theme(panel.grid.major.y = element_line(colour = "lightgrey")
 )
@@ -1083,13 +1083,14 @@ ggplot() +
 ### **Excess Deaths (Provinces)**
 ```{r fig.height=6}
 ggplot() + 
-  geom_col(excess_deaths_provinces, mapping = aes(province, total_exs_deaths)) +
+  geom_col(excess_deaths_provinces, mapping = aes(province, total_exs_deaths), fill = education_darkblue) +
   geom_col(excess_deaths_provinces, mapping = aes(province, deaths), fill = law_winered) +
   geom_text(aes(x=excess_deaths_provinces$province, y = excess_deaths_provinces$total_exs_deaths, 
                 label=format(excess_deaths_provinces$total_exs_deaths, big.mark = ",")), vjust=-1) +
   scale_x_discrete() +
   scale_y_continuous(breaks = c(0, 20000, 40000), labels = comma) +
-  labs(caption = "Updated: June 2021",
+  labs(subtitle = "Data for week ending 19 June 2021",
+       caption = "Updated: June 2021",
        x = NULL,
        y = NULL) +
   custom_theme() +
@@ -1103,12 +1104,13 @@ ggplot() +
 ### **Excess Deaths (Metros)**
 ```{r}
 ggplot() + 
-  geom_col(total_excess_deaths_metros, mapping = aes(metro, total_exs_deaths)) +
+  geom_col(total_excess_deaths_metros, mapping = aes(metro, total_exs_deaths), fill = education_darkblue) +
   geom_text(aes(x=total_excess_deaths_metros$metro, y = total_excess_deaths_metros$total_exs_deaths, 
                 label=format(total_excess_deaths_metros$total_exs_deaths, big.mark = ",")), vjust=-1) +
   scale_x_discrete() +
   scale_y_continuous(breaks = seq(0, 15000, by = 5000), limits = c(0, 15000), labels = comma) +
-  labs(caption = "Updated: June 2021",
+  labs(subtitle = "Data for week ending 19 June 2021",
+       caption = "Updated: June 2021",
        x = NULL,
        y = NULL) +
   custom_theme() +
