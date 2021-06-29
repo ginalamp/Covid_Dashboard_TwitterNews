@@ -240,6 +240,7 @@ total_deaths_province <- total_deaths_province %>%
   mutate(date = dmy(date)) %>% 
   arrange(desc(deaths))
 
+# keep order when plotting
 total_deaths_province$province <- factor(total_deaths_province$province, levels = total_deaths_province$province)
 ```
 
@@ -258,6 +259,7 @@ total_deaths_100k <- total_deaths_100k %>%
   mutate(deaths_per_100k = round(100000 * provincial_deaths / population, digits=2)) %>%
   arrange(desc(provincial_deaths))
 
+# keep order when plotting
 total_deaths_100k$province <- factor(total_deaths_100k$province, levels = total_deaths_100k$province)
 total_deaths_100k$code <- factor(total_deaths_100k$code, levels = total_deaths_100k$code)
 
@@ -275,7 +277,8 @@ total_cases_100k <- total_cases_100k %>%
   mutate(cases_per_100k = round(100000 * cases / population, digits=2)) %>% 
   arrange(cases_per_100k)
 
-total_cases_100k$province <- factor(total_cases_100k$province, levels = total_cases_100k$province) # keep order when plotting
+# keep order when plotting
+total_cases_100k$province <- factor(total_cases_100k$province, levels = total_cases_100k$province) 
 ```
 
 ```{r avg daily tests per week}
@@ -433,17 +436,13 @@ provincial_active$active <- with(provincial_active, cases - recoveries - deaths)
 provincial_active <- provincial_active %>%
   select(date, province, cases, recoveries, deaths, active)
 
-# attempt to replace names with "nicer" names - problem with grouping
+# add full name of province
 province_names <- province_population %>%
   select(code, province)
 provincial_active <- provincial_active %>%
   mutate(code = province) %>%
   select(!province) %>%
   left_join(province_names, by = "code")
-# province_names <- c('EASTERN CAPE', 'FREE STATE','GAUTENG','KWAZULU NATAL', 'LIMPOPO', 'MPUMALANGA', 'NORTHERN CAPE', 'NORTH WEST', 'WESTERN CAPE')
-# pn <- data.frame("province", province_names)
-# provincial_active$province <- pn
-# head(provincial_active)
 ```
 
 ```{r national hospital admissions}
@@ -506,7 +505,8 @@ covid_deaths_SA <- death_data %>%
 deaths_SA <- excess_deaths_SA %>%
   left_join(covid_deaths_SA, by = "date")
 
-deaths_SA$period <- factor(deaths_SA$period, levels = deaths_SA$period) # to keep the ordering when plotting
+# keep the order when plotting
+deaths_SA$period <- factor(deaths_SA$period, levels = deaths_SA$period) 
 ```
 
 ```{r excess deaths (provinces)}
@@ -534,12 +534,13 @@ covid_deaths <- death_data %>%
 excess_deaths_provinces <- total_excess_deaths %>%
   inner_join(covid_deaths, by = 'province')
 
-excess_deaths_provinces$province <- factor(excess_deaths_provinces$province, levels = excess_deaths_provinces$province) # to keep the ordering when plotting
+# keep the order when plotting
+excess_deaths_provinces$province <- factor(excess_deaths_provinces$province, levels = excess_deaths_provinces$province)
 
 ```
 
 ```{r excess deaths (metros)}
-# TODO: add covid deaths per metro for comparison
+# missing covid deaths per metro for comparison
 
 excess_deaths_metros <- excess_deahts_metros_data %>%
   mutate(date = ymd(date)) %>%
@@ -553,7 +554,8 @@ total_excess_deaths_metros <- excess_deaths_metros %>%
   mutate(total_exs_deaths = round(total_exs_deaths)) %>%
   arrange(desc(total_exs_deaths))
 
-total_excess_deaths_metros$metro <- factor(total_excess_deaths_metros$metro, levels = total_excess_deaths_metros$metro) # to keep the ordering when plotting
+# keep the order when plotting
+total_excess_deaths_metros$metro <- factor(total_excess_deaths_metros$metro, levels = total_excess_deaths_metros$metro)
 ```
 
 ```{r continental comparison of confirmed cases}
@@ -665,7 +667,7 @@ Row {data-width=400}
 -------------------------------------
 ### **Daily vaccinations**
 ```{r}
-# TODO: add vaccinations for last 7 days to side of graph
+# missing vaccinations for last 7 days to side of graph
 ggplot(vaccinations, aes(date, daily)) + 
   geom_col(color=agri_green) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
@@ -783,7 +785,6 @@ ggplot(deaths_summary, aes(date, daily_deaths)) +
        y = NULL) +
   custom_theme() +
   theme(panel.grid.major.x = element_blank())
-
 ```
 
 Row {data-width=data_width_standard}
@@ -890,8 +891,7 @@ Row {data-width=data_width_standard}
 -------------------------------------
 ### **Confirmed and Active Cases by Province**
 ```{r fig.height=4, fig.width=12}
-# TODO: Add labels (total active and confirmed per province)
-# TODO: Convert province codes to nice province names
+# TODO: Add labels (total active per province)
 ggplot(provincial_active, aes(date)) + 
   geom_line(aes(y = cases, colour = "Confirmed Cases"), color = theology_purple) + 
   geom_line(aes(y = active, colour = "Active Cases"), color = arts_orange) +
@@ -965,7 +965,6 @@ Row {data-width=data_width_standard}
 -------------------------------------
 ### **Daily tests and positive cases**
 ```{r fig.width = 8}
-# TODO: Add number of test labels on specific dates
 # TODO: Y axis labeling (cap at 60k, but allow graph to continue upward)
 ggplot(bubble_data, aes(x=date, y=new_tests, size = new_cases)) +
     geom_point(alpha=0.5, color=theology_purple) +
@@ -1007,7 +1006,7 @@ ggplot(confirmed_20, aes(x=date, y=new_cases)) +
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Positivity Rate: Number of Tests vs Positive Cases (%)**
-<!-- TODO insert here -->
+<!-- Add screenshot of generated positivity rate graph -->
 ![](./positivity_rate.jpg)
 
 Row {data-width=data_width_standard}
@@ -1051,7 +1050,6 @@ Row {data-width=data_width_standard}
 ### **Current Rt estimates for South Africa**
 ```{r}
 # TODO: add 90% credible interval
-# TODO; add current Rt value label
 ggplot(rt_summary, aes(date, rolling_avg)) + 
   geom_line(color=maroon, size=1) +
   geom_text(aes(label = paste("26 June \nRt =", round(rolling_avg, 2))), 
@@ -1079,8 +1077,7 @@ ggplot() +
                 label=format(deaths_SA$covid_deaths, big.mark = ",")), vjust=7) +
   scale_y_continuous(breaks = c(0, 100000, 200000), labels = comma, limits = c(0, 200000)) +
   labs(caption = "Updated: 21 June 2021",
-       x = NULL,
-       y = NULL) +
+       x = NULL, y = NULL) +
   scale_color_manual(values = c(education_darkblue, law_winered)) +
   guides(color = guide_legend(override.aes = list(fill = c(law_winered, education_darkblue)))) +
   custom_line_theme() +
@@ -1102,8 +1099,7 @@ ggplot() +
   scale_y_continuous(breaks = c(0, 20000, 40000), labels = comma) +
   labs(subtitle = "Data for week ending 19 June 2021",
        caption = "Updated: 21 June 2021",
-       x = NULL,
-       y = NULL) +
+       x = NULL, y = NULL) +
   custom_theme() +
   theme(panel.grid.major.x = element_blank())
 ```
@@ -1122,8 +1118,7 @@ ggplot() +
   scale_y_continuous(breaks = seq(0, 15000, by = 5000), limits = c(0, 15000), labels = comma) +
   labs(subtitle = "Data for week ending 19 June 2021",
        caption = "Updated: 21 June 2021",
-       x = NULL,
-       y = NULL) +
+       x = NULL, y = NULL) +
   custom_theme() +
   theme(panel.grid.major.x = element_blank())
 ```
@@ -1143,8 +1138,7 @@ ggplot(rolling_avg_continent, aes(date)) +
   geom_line(aes(y = rolling_avg_africa, colour = "Africa")) +
   geom_line(aes(y = rolling_avg_oceania, colour = "Oceania")) +
   labs(caption = "Updated: 21 June 2021",
-     x = NULL,
-     y = NULL) +
+     x = NULL, y = NULL) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b") +
   scale_y_continuous(labels = scales::number_format(accuracy = NULL)) +
   scale_color_manual(values = c(med_bluegreen, arts_orange, mustard, theology_purple, education_darkblue, agri_green, law_winered)) +
