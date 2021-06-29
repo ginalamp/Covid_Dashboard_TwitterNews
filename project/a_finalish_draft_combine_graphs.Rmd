@@ -24,13 +24,25 @@ library(flexdashboard) # html dashboard formatting
 <!-- Custom themes -->
 ```{r}
 custom_theme <- function () { 
-    theme_minimal(base_size=12, base_family="Avenir") %+replace% 
+    theme_minimal(base_size=12, base_family="Avenir")
         theme(
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
             legend.position="none", # no legend
             plot.title = element_text(size = 10, hjust = 0),
-            plot.caption = element_text(hjust = 0)
+            plot.caption = element_text(size = 8, hjust = 0)
+        )
+}
+
+# with legend, no grids
+custom_line_theme <- function () { 
+    theme_minimal(base_size=12, base_family="Avenir")
+        theme(
+            panel.background  = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            plot.title = element_text(size = 10, hjust = 0),
+            plot.caption = element_text(size = 8, hjust = 0)
         )
 }
 ```
@@ -44,7 +56,7 @@ darkgrey <- "#333333"
 lightgrey <- "#8c979a"
 black <- "#000000"
 engineering_yellow <- "#eaaa00"
-arts_orange <- "#FF8F1C"
+arts_orange <- "#FF8F1C" # active cases
 military_salmon <- "#e56a54"
 science_red <- "#cb333b"
 law_winered <- "#9e2629" # deaths
@@ -62,6 +74,8 @@ data_width_standard <- 400
 
 <!-- Read data -->
 ```{r read data}
+# TODO: clean this up (remove duplicate data read ins)
+
 # general (cumulative) information regarding tests, deaths, and recoveries. Complete timeline.
 tests_deaths_recoveries_data <- read.csv("data/covid19za_timeline_testing.csv")
 
@@ -229,6 +243,24 @@ segment8 = data.frame(time = seq(national_lockdown$date_start[8], national_lockd
 segment9 = data.frame(time = seq(national_lockdown$date_start[9], national_lockdown$date_end[9], by = "1 day"))
 ```
 
+```{r active cases (confirmed, death and recovery data used)}
+# recovery
+recovery_summary <- tests_deaths_recoveries_data %>%
+  select(date, recovered) %>%
+  mutate(date = dmy(date)) %>%
+  mutate(daily_recovered=recovered-lag(recovered,default=0))
+names(recovery_summary)[names(recovery_summary) == 'recovered'] <- 'total_recovered'
+
+# active
+active_df <- recovery_summary %>% 
+  inner_join(deaths_summary, by = "date") %>% 
+  inner_join(confirmed_summary, by = "date")
+active_df$total_active <- with(active_df, total_confirmed - total_deaths - total_recovered)
+
+active_confirmed_summary <- active_df %>%
+  select(date, total_active, total_confirmed, daily_confirmed, total_deaths, daily_deaths) %>%
+  mutate(daily_active=total_active-lag(total_active,default=0))
+```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Plot data -->
@@ -423,7 +455,21 @@ Row {data-width=data_width_standard}
 Row {data-width=data_width_standard}
 -------------------------------------
 ### **Cases vs Active Cases**
-<!-- TODO insert here -->
+```{r fig.width=8}
+# TODO: add total active and total confirmed number label
+# TODO: Add legend with right colours labelling active and confirmed
+# TODO: Gap in active cases
+ggplot(active_confirmed_summary, aes(date)) + 
+  geom_line(aes(y = total_confirmed), color=theology_purple) +
+  geom_line(aes(y = total_active), color=arts_orange) + 
+  labs(x = NULL,
+     y = NULL,
+     caption = element_text("Updated: June 2021")) +
+  scale_colour_manual(name="",values="level_colours") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
+  scale_y_continuous(label=comma) +
+  custom_line_theme()
+```
 
 <!-- Row {data-width=data_width_standard} -->
 <!-- ------------------------------------- -->
