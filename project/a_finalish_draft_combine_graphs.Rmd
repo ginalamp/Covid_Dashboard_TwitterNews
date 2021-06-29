@@ -704,7 +704,7 @@ Row {data-width=400}
 ```{r}
 # missing vaccinations for last 7 days to side of graph
 ggplot(vaccinations, aes(date, daily)) + 
-  geom_col(color=agri_green) +
+  geom_col(fill=agri_green) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   scale_y_continuous(breaks=c(0, 50000, 100000), labels = comma, minor_breaks = NULL) +
   labs(caption = "Updated: 21 June 2021",
@@ -796,7 +796,7 @@ Row {data-width=data_width_standard}
 ```{r}
 #TODO: Gap in active cases
 ggplot(active_confirmed_summary, aes(date, total_active)) + 
-  geom_col(color=arts_orange) +
+  geom_col(color=arts_orange, fill=arts_orange) +
   labs(caption = "Updated: 21 June 2021",
        x = NULL,
        y = NULL) +
