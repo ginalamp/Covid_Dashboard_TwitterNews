@@ -117,7 +117,7 @@ total$percentage[4] = round(100*total$value[4]/(total$value[4]+total$value[5]), 
 total$percentage[5] = round(100*total$value[5]/(total$value[4]+total$value[5]), 1)
 total
 ```
-```{r, eval=FALSE, echo=FALSE, include=FALSE}
+```{r}
 library(ggpmisc)
 ggplot() +
   annotate(geom = "table", x=0, y=0, label = list(total)) +
