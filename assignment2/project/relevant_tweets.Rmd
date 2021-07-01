@@ -4,19 +4,57 @@ output: html_notebook
 ---
 ```{r}
 library(tidyverse)
+library(lubridate)
 ```
 
 ```{r}
 SABCNews_tweets <- read.csv("data/SABCNews_tweets.csv")
+DailyMav_tweets <- read.csv("data/DailyMav_tweets.csv")
 ```
 ```{r}
-SABCNews_tweets[grepl("covid", SABCNews_tweets[["text"]]) | 
+relevant_SABC <- SABCNews_tweets[grepl("covid", SABCNews_tweets[["text"]]) | 
                   grepl("Covid", SABCNews_tweets[["text"]]) |
                   grepl("corona", SABCNews_tweets[["text"]]) |
                   grepl("Corona", SABCNews_tweets[["text"]]) |
                   grepl("Pandemic", SABCNews_tweets[["text"]]) |
                   grepl("pandemic", SABCNews_tweets[["text"]]), ]
+relevant_SABC <- relevant_SABC %>%
+  mutate(created_at = ymd_hms(created_at))
+
+tail(relevant_SABC)
 ```
+
+```{r}
+relevant_DM <- DailyMav_tweets[grepl("covid", DailyMav_tweets[["text"]]) | 
+                  grepl("Covid", DailyMav_tweets[["text"]]) |
+                  grepl("corona", DailyMav_tweets[["text"]]) |
+                  grepl("Corona", DailyMav_tweets[["text"]]) |
+                  grepl("Pandemic", DailyMav_tweets[["text"]]) |
+                  grepl("pandemic", DailyMav_tweets[["text"]]), ]
+relevant_DM <- relevant_DM %>%
+  mutate(created_at = ymd_hms(created_at))
+
+tail(relevant_DM)
+```
+
+
+```{r}
+ggplot(relevant, aes(x = created_at)) +
+  geom_histogram(position = "identity", bins = 30, show.legend = FALSE)
+```
+
+```{r}
+tweets <- bind_rows(relevant_SABC %>% 
+                      mutate(user = "SABC"),
+                    relevant_DM %>% 
+                      mutate(user = "Daily Maverick"))
+
+ggplot(tweets, aes(x = created_at, fill = user)) +
+  geom_histogram(position = "identity", bins = 20, show.legend = FALSE) +
+  facet_wrap(~user, ncol = 1)
+```
+
+
 
 
 
