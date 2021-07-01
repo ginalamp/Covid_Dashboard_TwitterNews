@@ -3,6 +3,15 @@
 [Graph Allocation spreadsheet](https://docs.google.com/spreadsheets/d/1thUrLAOECz5pQ8OlmwxMl1a2i2PxGF3Oj1CnxEZAU8g/edit?usp=sharing)
 
 ## Twitter connection resources
+* [TwitterScraper](https://github.com/MatthewWolff/TwitterScraper)
+    - gets tweets for a longer time period (get more than 3200 tweets)
+    - in order to run:
+        - add keys to `api_keys.example.py` and then rename to `api_keys.py`
+        - Change code in `init_chrome()` from chrome web driver to firefox webdriver
+        - Make sure to explicitly set the path to the geckodriver
+            - [Intall geckodriver and set path Ubuntu](https://askubuntu.com/questions/870530/how-to-install-geckodriver-in-ubuntu)
+            - [Set gecko path in script explicitly](https://stackoverflow.com/questions/45992670/geckodriver-not-being-found)
+        - run script with `-u` and `--since` parameters as specified in the github "Using the Scraper" section.
 * [Getting access to the Twitter API | Docs](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
 * rtweet - R package as well
 
