@@ -11,7 +11,12 @@
         - Make sure to explicitly set the path to the geckodriver
             - [Intall geckodriver and set path Ubuntu](https://askubuntu.com/questions/870530/how-to-install-geckodriver-in-ubuntu)
             - [Set gecko path in script explicitly](https://stackoverflow.com/questions/45992670/geckodriver-not-being-found)
-        - run script with `-u` and `--since` parameters as specified in the github "Using the Scraper" section.
+        - run script with parameters as specified in the github "Using the Scraper" section.
+        - convert JSON to R vector:
+        - ```
+            library(rjson)
+            vect <- names(fromJSON(file="<jsonFileName"))
+        - ```
 * [Getting access to the Twitter API | Docs](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
 * rtweet - R package as well
 * [Twitter Object V1 API docs](https://developer.twitter.com/en/docs/twitter-api/v1/data-dictionary/object-model/tweet)
