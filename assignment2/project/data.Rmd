@@ -28,6 +28,11 @@ create_token(app=app_name,
 n_tweets = 3200
 ```
 
+```{r}
+# how to find tweets from their IDs
+lookup_tweets(c("1349557374877577218", "1403067237670526976"))
+```
+
 
 # Daily Maverick
 ```{r}
@@ -117,4 +122,19 @@ SABCNews_tweets <- SABCNews_tweets %>%
 
 # write to csv
 write.csv(SABCNews_tweets, "data/SABCNews_tweets.csv")
+```
+
+# Cape Argus news
+```{r}
+CapeArgus_tweets_full <- get_timeline("TheCapeArgus", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+CapeArgus_tweets <- CapeArgus_tweets_full[, colSums(!is.na(CapeArgus_tweets_full)) == nrow(CapeArgus_tweets_full)]
+# take out columns that have list values
+CapeArgus_tweets <- CapeArgus_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(CapeArgus_tweets, "data/CapeArgus_tweets.csv")
 ```
