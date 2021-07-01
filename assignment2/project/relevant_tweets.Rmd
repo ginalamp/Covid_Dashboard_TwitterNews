@@ -1,0 +1,22 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+```
+
+```{r}
+SABCNews_tweets <- read.csv("data/SABCNews_tweets.csv")
+```
+```{r}
+SABCNews_tweets[grepl("covid", SABCNews_tweets[["text"]]) | 
+                  grepl("Covid", SABCNews_tweets[["text"]]) |
+                  grepl("corona", SABCNews_tweets[["text"]]) |
+                  grepl("Corona", SABCNews_tweets[["text"]]) |
+                  grepl("Pandemic", SABCNews_tweets[["text"]]) |
+                  grepl("pandemic", SABCNews_tweets[["text"]]), ]
+```
+
+
+
