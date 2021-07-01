@@ -44,6 +44,7 @@ ggplot(relevant, aes(x = created_at)) +
 ```
 
 ```{r}
+# adapted from TidyTextMining Ch 7
 tweets <- bind_rows(relevant_SABC %>% 
                       mutate(user = "SABC"),
                     relevant_DM %>% 

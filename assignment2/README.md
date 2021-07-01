@@ -25,6 +25,10 @@
 * [Creating Reports with R Markdown - pdf and word](https://towardsdatascience.com/creating-reports-with-r-markdown-c6031ecdd65c)
 * [Create HTML report](https://jozef.io/r913-spin-with-style/)
 
+## Analysis resources
+* [TidyTextMining Ch7 Case study: comparing Twitter archives](https://www.tidytextmining.com/twitter.html)
+    - currently following this for a basic exploratory analysis
+
 ## Notes
 
 - Collect dataset of different media agencies over last 6 months
