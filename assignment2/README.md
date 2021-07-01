@@ -14,6 +14,7 @@
         - run script with `-u` and `--since` parameters as specified in the github "Using the Scraper" section.
 * [Getting access to the Twitter API | Docs](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
 * rtweet - R package as well
+* [Twitter Object V1 API docs](https://developer.twitter.com/en/docs/twitter-api/v1/data-dictionary/object-model/tweet)
 
 ## Report resources
 * [Creating Reports with R Markdown - pdf and word](https://towardsdatascience.com/creating-reports-with-r-markdown-c6031ecdd65c)
