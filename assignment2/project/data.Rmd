@@ -88,3 +88,33 @@ News24_tweets <- News24_tweets %>%
 # write to csv
 write.csv(News24_tweets, "data/News24_tweets.csv")
 ```
+
+# Cape Talk
+```{r}
+CapeTalk_tweets_full <- get_timeline("CapeTalk", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+CapeTalk_tweets <- CapeTalk_tweets_full[, colSums(!is.na(CapeTalk_tweets_full)) == nrow(CapeTalk_tweets_full)]
+# take out columns that have list values
+CapeTalk_tweets <- CapeTalk_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(CapeTalk_tweets, "data/CapeTalk_tweets.csv")
+```
+
+# SABC news
+```{r}
+SABCNews_tweets_full <- get_timeline("SABCNews", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+SABCNews_tweets <- SABCNews_tweets_full[, colSums(!is.na(SABCNews_tweets_full)) == nrow(SABCNews_tweets_full)]
+# take out columns that have list values
+SABCNews_tweets <- SABCNews_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(SABCNews_tweets, "data/SABCNews_tweets.csv")
+```
