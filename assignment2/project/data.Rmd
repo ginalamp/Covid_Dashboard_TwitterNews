@@ -1,0 +1,90 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(rtweet)
+library(tidyverse)
+```
+
+```{r}
+app_name<-"covid_news_tweets"
+consumer_key<-"bpvgj1v8U2DVuGkydfUVbn7Fd"
+consumer_secret<-"rLi8BEDEMhY2b94XunH1Trmw8EvWXsH62uD9J4W8BpjLFaVaxc"
+access_token<-"1406939447346798597-MGGIwaG9ZIMrNRMh2I8UjhN6R5UHRt"
+access_token_secret<-"OJoAcrwf00quax6lXYQpvd84ffArkceymB0cB16vu2yjl"
+```
+
+```{r}
+create_token(app=app_name,
+             consumer_key = consumer_key,
+             consumer_secret = consumer_secret,
+             access_token = access_token,
+             access_secret = access_token_secret)
+```
+```{r}
+# number of tweets to collect
+n_tweets = 3200
+```
+
+
+# Daily Maverick
+```{r}
+DailyMav_tweets_full <- get_timeline("DailyMaverick", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+DailyMav_tweets <- DailyMav_tweets_full[, colSums(!is.na(DailyMav_tweets_full)) == nrow(DailyMav_tweets_full)]
+# take out columns that have list values
+DailyMav_tweets <- DailyMav_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(DailyMav_tweets, "data/DailyMav_tweets.csv")
+```
+
+# Media 24
+```{r}
+Media24_tweets_full <- get_timeline("Media24", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+Media24_tweets <- Media24_tweets_full[, colSums(!is.na(Media24_tweets_full)) == nrow(Media24_tweets_full)]
+# take out columns that have list values
+Media24_tweets <- Media24_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(Media24_tweets, "data/Media24_tweets.csv")
+```
+
+# EWN
+```{r}
+EWN_tweets_full <- get_timeline("EwnUpdates", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+EWN_tweets <- EWN_tweets_full[, colSums(!is.na(EWN_tweets_full)) == nrow(EWN_tweets_full)]
+# take out columns that have list values
+EWN_tweets <- EWN_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(EWN_tweets, "data/EWN_tweets.csv")
+```
+
+# News24
+```{r}
+News24_tweets_full <- get_timeline("News24", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+News24_tweets <- News24_tweets_full[, colSums(!is.na(News24_tweets_full)) == nrow(News24_tweets_full)]
+# take out columns that have list values
+News24_tweets <- News24_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(News24_tweets, "data/News24_tweets.csv")
+```
