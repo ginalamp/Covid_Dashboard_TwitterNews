@@ -1,8 +1,10 @@
 # Assignment 2
 
-[Getting access to the Twitter API | Docs](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
+[Graph Allocation spreadsheet](https://docs.google.com/spreadsheets/d/1thUrLAOECz5pQ8OlmwxMl1a2i2PxGF3Oj1CnxEZAU8g/edit?usp=sharing)
 
-rtweet - R package as well
+## Twitter connection resources
+* [Getting access to the Twitter API | Docs](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
+* rtweet - R package as well
 
 ## Report resources
 * [Creating Reports with R Markdown - pdf and word](https://towardsdatascience.com/creating-reports-with-r-markdown-c6031ecdd65c)
