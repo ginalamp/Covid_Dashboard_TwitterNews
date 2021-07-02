@@ -215,3 +215,56 @@ model_topics_of_org("SABC", 2)
 ```
 
 
+# topic modelling for organisation for specific month
+
+```{r}
+# org being the name of the media agency as found in the tidy_tweets dataframe
+model_topics_of_org_for_month <- function(org, past_month, nr_topics) {
+  # word count for specified media organisation
+  word_counts <- tidy_tweets %>%
+    mutate(time_floor = floor_date(created_at, unit = "month")) %>%
+    select(user, word, time_floor) %>%
+    # filter to specified org
+    filter(user == org) %>%
+    # filter to specified month
+    filter(time_floor == as.Date(past_month)) %>%
+    count(user, word, sort = TRUE) %>%
+    ungroup()
+    
+  # create document term matrix
+  # (treating all tweets from one organisation as one document)
+  orgs_dtm <- word_counts %>%
+    cast_dtm(user, word, n)
+
+  # apply topic modelling
+  orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
+
+  orgs_topics <- tidy(orgs_lda, matrix = "beta")
+
+  # find top words per topic
+  top_terms <- orgs_topics %>%
+    group_by(topic) %>%
+    slice_max(beta, n = 5) %>% 
+    ungroup() %>%
+    arrange(topic, -beta)
+
+  # plot top terms per topic
+  top_terms %>%
+    mutate(term = reorder_within(term, beta, topic)) %>%
+    ggplot(aes(beta, term, fill = factor(topic))) +
+    geom_col(show.legend = FALSE) +
+    labs(title = paste("Topics for ", org, " for month starting ", past_month)) +
+    facet_wrap(~ topic, scales = "free") +
+    scale_y_reordered()
+}
+```
+```{r}
+model_topics_of_org_for_month("DailyMaverick", "2021-06-01", 3)
+```
+```{r}
+model_topics_of_org_for_month("SABC", "2021-06-01", 3)
+
+```
+
+
+
