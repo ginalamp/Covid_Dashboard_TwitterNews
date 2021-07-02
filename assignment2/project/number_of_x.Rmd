@@ -89,6 +89,13 @@ number_of_x <- data.frame(name=names,
                           outlet_retweet_count=outlet_retweet_count)
 head(number_of_x)
 ```
+```{r in progress - try to combine favourited and retweet functions}
+b <- function(CapeTalk_tweets, column_name){
+    eval(substitute(column_name), CapeTalk_tweets)
+}
+# CapeTalk_tweets
+b(CapeTalk_tweets, favorite_count)
+```
 
 ```{r get top x tweets per media outlet}
 get_top_retweets <- function(df) {
@@ -101,19 +108,32 @@ get_top_retweets <- function(df) {
 }
 ```
 
+```{r top 5 favourited tweets per media outlet}
+get_top_favorited_tweets <- function(df) {
+  x <- 5
+  text <- df %>%
+    arrange(desc(favorite_count)) %>% 
+    slice(1:x) %>% 
+    select(screen_name, favorite_count, text)
+  return(text)
+}
+```
+
 ```{r top 5 user retweeted tweets per media outlet}
 # TODO need to plot nicely (as table?)
 top_retweets <- lapply(media_outlet_list, get_top_retweets)
 top_retweets
 ```
 
-
+```{r top 5 user retweeted tweets per media outlet}
+# TODO need to plot nicely (as table?)
+top_favourited <- lapply(media_outlet_list, get_top_favorited_tweets)
+top_favourited
+```
 
 ```{r}
 # select tweet IDs that are retweets
-CapeTalk_tweets$text[(CapeTalk_tweets$is_retweet)]
-CapeTalk_tweets$retweet_count[(CapeTalk_tweets$is_retweet)]
-CapeTalk_tweets$favorite_count[(CapeTalk_tweets$is_retweet)]
+CapeTalk_tweets$status_id[(CapeTalk_tweets$is_retweet)]
 ```
 
 
