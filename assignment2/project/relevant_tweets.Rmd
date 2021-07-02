@@ -174,7 +174,75 @@ ggplot(tail(overall_frequency,20), aes(word, n)) +
   labs(title = "Top 20 words overall") +
   coord_flip()
 ```
+# Top hashtags
 
+```{r}
+# calculate frequency of words by organisation
+frequency_wide_ht <- tidy_tweets %>% 
+  filter(str_detect(word, "^#")) %>%
+  group_by(user) %>% 
+  count(word, sort = TRUE) %>% 
+  left_join(tidy_tweets %>% 
+              group_by(user) %>% 
+              summarise(total = n())) %>%
+  mutate(freq = n/total)
+frequency_wide_ht
+```
+
+```{r}
+# frequency of words per organisation (tidier)
+frequency_ht <- frequency_wide_ht %>% 
+  select(user, word, freq) %>% 
+  pivot_wider(names_from = user, values_from = freq)
+frequency_ht
+```
+```{r}
+# top n hashtags to consider
+n_hashtags <- 3
+```
+
+```{r}
+# top n hashtags per organisation
+top_n_ht <- frequency_wide_ht %>%
+  group_by(user) %>%
+  slice_max(order_by = freq, n=n_hashtags) %>%
+  ungroup
+top_n_ht
+
+users <- unique(top_n_ht[c("user")])
+
+top_n_per_org_ht <- data.frame(top_n_ht %>% filter(user == "SABC") %>% select(word)) %>%
+  mutate(SABC = word) %>%
+  select(SABC)
+
+for (i in seq(nrow(users[1]))) {
+  top_n_per_org_ht[[users$user[i]]] = (top_n_ht %>% filter(user == users$user[i]) %>% select(word))
+}
+
+top_n_per_org_ht <- top_n_per_org_ht %>% unnest() %>% head(n_hashtags)
+top_n_per_org_ht
+```
+# Top n hashtags overall
+
+```{r}
+# frequency of hashtags overall (not per org)
+overall_frequency_ht <- tidy_tweets %>%
+  filter(str_detect(word, "^#")) %>%
+  select(word) %>%
+  count(word) %>%
+  arrange(n) %>%
+  mutate(total = sum(n))
+
+overall_frequency_ht$word <- factor(overall_frequency_ht$word, levels = overall_frequency_ht$word)
+overall_frequency_ht
+```
+```{r}
+# plot most frequently used hashtags
+ggplot(tail(overall_frequency_ht,20), aes(word, n)) +
+  geom_col() +
+  labs(title = "Top 20 hashtags overall") +
+  coord_flip()
+```
 
 # word usage
 
@@ -253,6 +321,7 @@ ggplot(words_by_time_slopes, aes(time_floor, count/time_total, color = word)) +
   facet_wrap(~user, ncol = 1) +
   labs(x = NULL, y = "Word frequency")
 ```
+
 
 
 
