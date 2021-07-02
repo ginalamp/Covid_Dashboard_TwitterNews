@@ -113,4 +113,57 @@ top_terms %>%
   scale_y_reordered()
 ```
 
+# topic modelling over time
+
+```{r}
+model_topics_of_month <- function(past_month, nr_topics) {
+  # word count by media organisation for specified month
+  word_counts <- tidy_tweets %>%
+    mutate(time_floor = floor_date(created_at, unit = "month")) %>%
+    select(user, word, time_floor) %>%
+    filter(time_floor == as.Date(past_month)) %>%
+    count(user, word, sort = TRUE) %>%
+    ungroup()
+    
+  # create document term matrix
+  # (treating all tweets from one organisation as one document)
+  orgs_dtm <- word_counts %>%
+    cast_dtm(user, word, n)
+
+  # define number of topics
+  k_topics = 4
+  # apply topic modelling
+  orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
+
+  orgs_topics <- tidy(orgs_lda, matrix = "beta")
+
+  # find top words per topic
+  top_terms <- orgs_topics %>%
+    group_by(topic) %>%
+    slice_max(beta, n = 5) %>% 
+    ungroup() %>%
+    arrange(topic, -beta)
+
+  # plot top terms per topic
+  top_terms %>%
+    mutate(term = reorder_within(term, beta, topic)) %>%
+    ggplot(aes(beta, term, fill = factor(topic))) +
+    geom_col(show.legend = FALSE) +
+    labs(title = paste("Topics for month starting", past_month)) +
+    facet_wrap(~ topic, scales = "free") +
+    scale_y_reordered()
+}
+```
+
+```{r}
+model_topics_of_month("2021-06-01", 4)
+```
+```{r}
+model_topics_of_month("2021-05-01", 2)
+# note: previous months have fewer topics because SABC only has data for June, anything before is only Daily Maverick
+```
+```{r}
+model_topics_of_month("2021-04-01", 2)
+```
+
 
