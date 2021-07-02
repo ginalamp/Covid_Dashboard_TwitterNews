@@ -5,6 +5,7 @@ output: html_notebook
 ---
 # TODO
 * label each column with the number of days that spans each variable (for example state that the number of retweets for SABC occured over x days)
+* perhaps do histogram combining charts?
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
@@ -51,7 +52,7 @@ library(tidyverse)
 
 ```{r extract relevant data from read in csv}
 extract_relevant_data <- function(df) {
-  return(df %>% select(screen_name, created_at, statuses_count, is_retweet, favourites_count, retweet_count, followers_count, friends_count))
+  return(df %>% select(status_id, screen_name, created_at, statuses_count, is_retweet, favourites_count, retweet_count, followers_count, friends_count))
 }
 ```
 
@@ -62,6 +63,7 @@ EWN_tweets <- extract_relevant_data(read.csv("data/EWN_tweets.csv"))
 News24_tweets <- extract_relevant_data(read.csv("data/News24_tweets.csv"))
 SABCNews_tweets <- extract_relevant_data(read.csv("data/SABCNews_tweets.csv"))
 media_outlet_list <- list(CapeTalk_tweets, DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
+head(media_outlet_list[1])
 ```
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Wrangling -->
@@ -73,16 +75,25 @@ names <- unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1]
 followers_count <- unlist(lapply(media_outlet_list, function(df) {return(df$followers_count[1])}))
 friends_count <- unlist(lapply(media_outlet_list, function(df) {return(df$friends_count[1])}))
 tweets_count <- unlist(lapply(media_outlet_list, function(df) {return(df$statuses_count[1])}))
-# calculate retweet sum
+# calculate user retweet sum
 user_retweet_sum <- unlist(lapply(media_outlet_list, function(df) {return(sum(df$retweet_count))}))
+# calculate media organisation's number of retweets (is_retweet == TRUE)
+org_retweet_count <- unlist(lapply(media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))}))
 
 # join values into a dataframe
 number_of_x <- data.frame(name=names, 
                           followers_count=followers_count, 
                           friends_count=friends_count, 
                           tweets_count=tweets_count, 
-                          user_retweet_sum=user_retweet_sum)
+                          user_retweet_sum=user_retweet_sum,
+                          org_retweet_count=org_retweet_count)
 head(number_of_x)
+```
+```{r}
+# select tweet IDs that are retweets
+a <- CapeTalk_tweets$status_id[(CapeTalk_tweets$is_retweet)]
+# dim(a)
+NROW(a)
 ```
 
 
