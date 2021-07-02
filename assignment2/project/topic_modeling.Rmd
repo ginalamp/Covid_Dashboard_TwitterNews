@@ -1,0 +1,116 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## adapted from TidyTextMining Ch 6
+
+
+```{r}
+#library(tidyverse)
+library(tidytext)
+library(lubridate)
+library(dplyr)
+library(stringr)
+library(tidyr)
+library(topicmodels)
+#library(scales)
+```
+
+```{r}
+SABCNews_tweets <- read.csv("data/SABCNews_tweets.csv")
+DailyMav_tweets <- read.csv("data/DailyMav_tweets.csv")
+```
+```{r}
+# filter for tweets related to covid
+relevant_SABC <- SABCNews_tweets[grepl("covid", SABCNews_tweets[["text"]]) | 
+                  grepl("Covid", SABCNews_tweets[["text"]]) |
+                  grepl("corona", SABCNews_tweets[["text"]]) |
+                  grepl("Corona", SABCNews_tweets[["text"]]) |
+                  grepl("Pandemic", SABCNews_tweets[["text"]]) |
+                  grepl("pandemic", SABCNews_tweets[["text"]]), ]
+relevant_SABC <- relevant_SABC %>%
+  mutate(created_at = ymd_hms(created_at))
+
+relevant_DM <- DailyMav_tweets[grepl("covid", DailyMav_tweets[["text"]]) | 
+                  grepl("Covid", DailyMav_tweets[["text"]]) |
+                  grepl("corona", DailyMav_tweets[["text"]]) |
+                  grepl("Corona", DailyMav_tweets[["text"]]) |
+                  grepl("Pandemic", DailyMav_tweets[["text"]]) |
+                  grepl("pandemic", DailyMav_tweets[["text"]]), ]
+relevant_DM <- relevant_DM %>%
+  mutate(created_at = ymd_hms(created_at))
+```
+
+```{r}
+# combine all tweets into one dataframe
+tweets <- bind_rows(relevant_SABC %>% 
+                      mutate(user = "SABC"),
+                    relevant_DM %>% 
+                      mutate(user = "DailyMaverick"))
+```
+
+```{r}
+# define custom stopwords
+my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
+# remove stopwords
+tidy_tweets <- tweets %>% 
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stop_words$word,
+         !word %in% my_stopwords,
+         !word %in% str_remove_all(stop_words$word, "'"),
+         str_detect(word, "[a-z]"))
+```
+
+# Topic Modelling
+
+```{r}
+# word count by media organisation
+word_counts <- tidy_tweets %>%
+  select(user, word, created_at) %>%
+  count(user, word, sort = TRUE) %>%
+  ungroup()
+
+word_counts
+```
+```{r}
+# create document term matrix
+# (treating all tweets from one organisation as one document)
+orgs_dtm <- word_counts %>%
+  cast_dtm(user, word, n)
+
+orgs_dtm
+```
+```{r}
+# define number of topics
+k_topics = 4
+# apply topic modelling
+orgs_lda <- LDA(orgs_dtm, k = k_topics, control = list(seed = 1234))
+orgs_lda
+```
+```{r}
+orgs_topics <- tidy(orgs_lda, matrix = "beta")
+orgs_topics
+```
+```{r}
+# find top words per topic
+top_terms <- orgs_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 5) %>% 
+  ungroup() %>%
+  arrange(topic, -beta)
+
+top_terms
+```
+
+```{r}
+# plot top terms per topic
+top_terms %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+```
+
+

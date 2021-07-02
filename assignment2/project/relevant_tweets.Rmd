@@ -174,9 +174,158 @@ ggplot(tail(overall_frequency,20), aes(word, n)) +
   labs(title = "Top 20 words overall") +
   coord_flip()
 ```
+# Top hashtags
+
+```{r}
+# calculate frequency of words by organisation
+frequency_wide_ht <- tidy_tweets %>% 
+  filter(str_detect(word, "^#")) %>%
+  group_by(user) %>% 
+  count(word, sort = TRUE) %>% 
+  left_join(tidy_tweets %>% 
+              group_by(user) %>% 
+              summarise(total = n())) %>%
+  mutate(freq = n/total)
+frequency_wide_ht
+```
+
+```{r}
+# frequency of words per organisation (tidier)
+frequency_ht <- frequency_wide_ht %>% 
+  select(user, word, freq) %>% 
+  pivot_wider(names_from = user, values_from = freq)
+frequency_ht
+```
+```{r}
+# top n hashtags to consider
+n_hashtags <- 3
+```
+
+```{r}
+# top n hashtags per organisation
+top_n_ht <- frequency_wide_ht %>%
+  group_by(user) %>%
+  slice_max(order_by = freq, n=n_hashtags) %>%
+  ungroup
+top_n_ht
+
+users <- unique(top_n_ht[c("user")])
+
+top_n_per_org_ht <- data.frame(top_n_ht %>% filter(user == "SABC") %>% select(word)) %>%
+  mutate(SABC = word) %>%
+  select(SABC)
+
+for (i in seq(nrow(users[1]))) {
+  top_n_per_org_ht[[users$user[i]]] = (top_n_ht %>% filter(user == users$user[i]) %>% select(word))
+}
+
+top_n_per_org_ht <- top_n_per_org_ht %>% unnest() %>% head(n_hashtags)
+top_n_per_org_ht
+```
+# Top n hashtags overall
+
+```{r}
+# frequency of hashtags overall (not per org)
+overall_frequency_ht <- tidy_tweets %>%
+  filter(str_detect(word, "^#")) %>%
+  select(word) %>%
+  count(word) %>%
+  arrange(n) %>%
+  mutate(total = sum(n))
+
+overall_frequency_ht$word <- factor(overall_frequency_ht$word, levels = overall_frequency_ht$word)
+overall_frequency_ht
+```
+```{r}
+# plot most frequently used hashtags
+ggplot(tail(overall_frequency_ht,20), aes(word, n)) +
+  geom_col() +
+  labs(title = "Top 20 hashtags overall") +
+  coord_flip()
+```
+
+# hashtag usage over time
+
+```{r}
+ht_by_time <- tidy_tweets %>%
+  # only consider hashtags
+  filter(str_detect(word, "^#")) %>%
+  # create time bins
+  mutate(time_floor = floor_date(created_at, unit = "week")) %>%
+  # count how often each org uses each hashtag in each bin
+  count(time_floor, user, word) %>%
+  # add column for the total number hashtags used by each org in each time bin
+  group_by(user, time_floor) %>%
+  mutate(time_total = sum(n)) %>%
+  # add column for the total number of times each hashtag was used by each org
+  group_by(user, word) %>%
+  mutate(word_total = sum(n)) %>%
+  ungroup() %>%
+  rename(count = n) %>%
+  # consider only top hashtags
+  filter(word_total > 20)
+
+ht_by_time
+```
+```{r}
+library(purrr)
+library(broom)
+# create a dataframe with one row for each user-word combination, remaining data as a tibble in the last column
+nested_data <- ht_by_time %>%
+  nest(-word, -user) 
+nested_data
+
+# model to determine the change in frequency over time as slopes
+nested_models <- nested_data %>%
+  mutate(models = map(data, ~ glm(cbind(count, time_total) ~ time_floor, ., 
+                                  family = "binomial")))
+nested_models
+
+# extract slopes
+slopes <- nested_models %>%
+  mutate(models = map(models, tidy)) %>%
+  unnest(cols = c(models)) %>%
+  filter(term == "time_floor") %>%
+  mutate(adjusted.p.value = p.adjust(p.value))
+slopes
+```
+
+```{r}
+# plot change of hashtag usage over time for SABC
+ht_by_time %>%
+  inner_join(slopes, by = c("word", "user")) %>%
+  filter(user == "SABC") %>%
+  ggplot(aes(time_floor, count/time_total, color = word)) +
+  geom_line(size = 1.3) +
+  labs(x = NULL, y = "Word frequency")
+```
+
+```{r}
+# plot change of word usage over time for daily maverick
+ht_by_time %>%
+  inner_join(slopes, by = c("word", "user")) %>%
+  filter(user == "DailyMaverick") %>%
+  ggplot(aes(time_floor, count/time_total, color = word)) +
+  geom_line(size = 1.3) +
+  labs(x = NULL, y = "Word frequency")
+
+# NOTE: daily maverick has no frequent hashtags
+```
+
+```{r}
+# plot comparison of word usage over time by orgs
+
+ht_by_time_slopes <- ht_by_time %>%
+  inner_join(slopes, by = c("word", "user"))
 
 
-# word usage
+ggplot(ht_by_time_slopes, aes(time_floor, count/time_total, color = word)) +
+  geom_line(size = 1.3) +
+  facet_wrap(~user, ncol = 1) +
+  labs(x = NULL, y = "Word frequency")
+```
+
+# word usage over time
 
 ```{r}
 words_by_time <- tidy_tweets %>%
@@ -253,6 +402,7 @@ ggplot(words_by_time_slopes, aes(time_floor, count/time_total, color = word)) +
   facet_wrap(~user, ncol = 1) +
   labs(x = NULL, y = "Word frequency")
 ```
+
 
 
 
