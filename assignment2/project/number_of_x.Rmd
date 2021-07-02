@@ -3,6 +3,9 @@ title: "Number of x"
 author: "Gina"
 output: html_notebook
 ---
+# TODO
+* label each column with the number of days that spans each variable (for example state that the number of retweets for SABC occured over x days)
+
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -58,22 +61,30 @@ DailyMav_tweets <- extract_relevant_data(read.csv("data/DailyMav_tweets.csv"))
 EWN_tweets <- extract_relevant_data(read.csv("data/EWN_tweets.csv"))
 News24_tweets <- extract_relevant_data(read.csv("data/News24_tweets.csv"))
 SABCNews_tweets <- extract_relevant_data(read.csv("data/SABCNews_tweets.csv"))
-head(CapeTalk_tweets)
+media_outlet_list <- list(CapeTalk_tweets, DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
 ```
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r get number of followers, friends, tweets per media outlet}
-media_outlet_list <- list(CapeTalk_tweets, DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
+```{r get number of followers, friends, tweets, retweets per media outlet}
+# get name, follower, friend, and tweet values
 names <- unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])}))
 followers_count <- unlist(lapply(media_outlet_list, function(df) {return(df$followers_count[1])}))
 friends_count <- unlist(lapply(media_outlet_list, function(df) {return(df$friends_count[1])}))
 tweets_count <- unlist(lapply(media_outlet_list, function(df) {return(df$statuses_count[1])}))
+# calculate retweet sum
+user_retweet_sum <- unlist(lapply(media_outlet_list, function(df) {return(sum(df$retweet_count))}))
 
-number_of_x <- data.frame(name=names, followers_count=followers_count, friends_count=friends_count, tweets_count=tweets_count)
+# join values into a dataframe
+number_of_x <- data.frame(name=names, 
+                          followers_count=followers_count, 
+                          friends_count=friends_count, 
+                          tweets_count=tweets_count, 
+                          user_retweet_sum=user_retweet_sum)
 head(number_of_x)
 ```
+
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Plotting -->
@@ -109,4 +120,13 @@ ggplot(number_of_x, aes(name, tweets_count, fill=name)) +
   scale_fill_manual(values = c(capetalk_colour, dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
   custom_column_basic_theme()
 ```
-
+```{r plot retweets of users per media outlet}
+ggplot(number_of_x, aes(name, user_retweet_sum, fill=name)) +
+  geom_col() +
+  labs(title = "Number of user retweets per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = c(capetalk_colour, dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  custom_column_basic_theme()
+```
