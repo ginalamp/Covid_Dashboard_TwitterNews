@@ -2,6 +2,10 @@
 title: "R Notebook"
 output: html_notebook
 ---
+
+## adapted from TidyTextMining Ch 7
+
+
 ```{r}
 library(tidyverse)
 library(tidytext)
@@ -16,6 +20,7 @@ SABCNews_tweets <- read.csv("data/SABCNews_tweets.csv")
 DailyMav_tweets <- read.csv("data/DailyMav_tweets.csv")
 ```
 ```{r}
+# filter for tweets related to covid
 relevant_SABC <- SABCNews_tweets[grepl("covid", SABCNews_tweets[["text"]]) | 
                   grepl("Covid", SABCNews_tweets[["text"]]) |
                   grepl("corona", SABCNews_tweets[["text"]]) |
@@ -29,6 +34,7 @@ tail(relevant_SABC)
 ```
 
 ```{r}
+# filter for tweets related to covid
 relevant_DM <- DailyMav_tweets[grepl("covid", DailyMav_tweets[["text"]]) | 
                   grepl("Covid", DailyMav_tweets[["text"]]) |
                   grepl("corona", DailyMav_tweets[["text"]]) |
@@ -43,17 +49,22 @@ tail(relevant_DM)
 
 
 ```{r}
+# plot daily maverick tweet freq over time
 ggplot(relevant_DM, aes(x = created_at)) +
-  geom_histogram(position = "identity", bins = 30, show.legend = FALSE)
+  geom_histogram(position = "identity", bins = 30, show.legend = FALSE) +
+  labs(title = "Daily Maverick Tweet Frequency over Time")
 ```
-
+# Comparing Tweet Frequency over Time
 ```{r}
-# adapted from TidyTextMining Ch 7
+# combine all tweets into one dataframe
 tweets <- bind_rows(relevant_SABC %>% 
                       mutate(user = "SABC"),
                     relevant_DM %>% 
                       mutate(user = "DailyMaverick"))
+```
 
+```{r}
+# plot tweet frequency over time by org
 ggplot(tweets, aes(x = created_at, fill = user)) +
   geom_histogram(position = "identity", bins = 20, show.legend = FALSE) +
   facet_wrap(~user, ncol = 1)
@@ -62,7 +73,9 @@ ggplot(tweets, aes(x = created_at, fill = user)) +
 # word frequencies
 
 ```{r}
+# define custom stopwords
 my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
+# remove stopwords
 tidy_tweets <- tweets %>% 
   unnest_tokens(word, text, token = "tweets") %>%
   filter(!word %in% stop_words$word,
@@ -71,6 +84,7 @@ tidy_tweets <- tweets %>%
          str_detect(word, "[a-z]"))
 ```
 ```{r}
+# calculate frequency of words by organisation
 frequency_wide <- tidy_tweets %>% 
   group_by(user) %>% 
   count(word, sort = TRUE) %>% 
@@ -82,6 +96,7 @@ frequency_wide
 ```
 
 ```{r}
+# frequency of words per organisation (tidier)
 frequency <- frequency_wide %>% 
   select(user, word, freq) %>% 
   pivot_wider(names_from = user, values_from = freq)
@@ -91,6 +106,7 @@ frequency
 
 
 ```{r}
+# comparing most frequent words of SABC and Daily Maverick
 ggplot(frequency, aes(SABC, DailyMaverick)) +
   geom_jitter(alpha = 0.1, size = 2.5, width = 0.25, height = 0.25) +
   geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
@@ -102,6 +118,7 @@ ggplot(frequency, aes(SABC, DailyMaverick)) +
 
 # Top words per organisation
 ```{r}
+# top n words to consider
 n_words <- 10
 ```
 
@@ -133,13 +150,14 @@ for (i in seq(nrow(users[1]))) {
   top_n_per_org[[users$user[i]]] = (top_n %>% filter(user == users$user[i]) %>% select(word))
 }
 
+top_n_per_org <- top_n_per_org %>% unnest() %>% head(n_words)
 top_n_per_org
-# the output here is weird, but click on top_n_per_org in the global environment -> open in tab with correct values
 ```
 
 # Top n words overall
 
 ```{r}
+# frequency of words overall (not per org)
 overall_frequency <- tidy_tweets %>%
   select(word) %>%
   count(word) %>%
@@ -150,6 +168,7 @@ overall_frequency$word <- factor(overall_frequency$word, levels = overall_freque
 overall_frequency
 ```
 ```{r}
+# plot most frequently used words
 ggplot(tail(overall_frequency,20), aes(word, n)) +
   geom_col() +
   labs(title = "Top 20 words overall") +
