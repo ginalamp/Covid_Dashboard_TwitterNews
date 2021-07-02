@@ -116,11 +116,14 @@ top_terms %>%
 # topic modelling over time
 
 ```{r}
+# past_month being the full date of the first day of that month - eg "2021-06-01" for June
 model_topics_of_month <- function(past_month, nr_topics) {
   # word count by media organisation for specified month
   word_counts <- tidy_tweets %>%
+    # create time bins (monthly)
     mutate(time_floor = floor_date(created_at, unit = "month")) %>%
     select(user, word, time_floor) %>%
+    # filter to specified month
     filter(time_floor == as.Date(past_month)) %>%
     count(user, word, sort = TRUE) %>%
     ungroup()
@@ -130,8 +133,6 @@ model_topics_of_month <- function(past_month, nr_topics) {
   orgs_dtm <- word_counts %>%
     cast_dtm(user, word, n)
 
-  # define number of topics
-  k_topics = 4
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
 
@@ -164,6 +165,53 @@ model_topics_of_month("2021-05-01", 2)
 ```
 ```{r}
 model_topics_of_month("2021-04-01", 2)
+```
+
+# topic modelling per organisation
+
+```{r}
+# org being the name of the media agency as found in the tidy_tweets dataframe
+model_topics_of_org <- function(org, nr_topics) {
+  # word count for specified media organisation
+  word_counts <- tidy_tweets %>%
+    select(user, word) %>%
+    # filter to specified org
+    filter(user == org) %>%
+    count(user, word, sort = TRUE) %>%
+    ungroup()
+    
+  # create document term matrix
+  # (treating all tweets from one organisation as one document)
+  orgs_dtm <- word_counts %>%
+    cast_dtm(user, word, n)
+
+  # apply topic modelling
+  orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
+
+  orgs_topics <- tidy(orgs_lda, matrix = "beta")
+
+  # find top words per topic
+  top_terms <- orgs_topics %>%
+    group_by(topic) %>%
+    slice_max(beta, n = 5) %>% 
+    ungroup() %>%
+    arrange(topic, -beta)
+
+  # plot top terms per topic
+  top_terms %>%
+    mutate(term = reorder_within(term, beta, topic)) %>%
+    ggplot(aes(beta, term, fill = factor(topic))) +
+    geom_col(show.legend = FALSE) +
+    labs(title = paste("Topics for ", org)) +
+    facet_wrap(~ topic, scales = "free") +
+    scale_y_reordered()
+}
+```
+```{r}
+model_topics_of_org("DailyMaverick", 3)
+```
+```{r}
+model_topics_of_org("SABC", 2)
 ```
 
 
