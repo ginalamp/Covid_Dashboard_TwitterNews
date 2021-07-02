@@ -137,6 +137,25 @@ top_n_per_org
 # the output here is weird, but click on top_n_per_org in the global environment -> open in tab with correct values
 ```
 
+# Top n words overall
+
+```{r}
+overall_frequency <- tidy_tweets %>%
+  select(word) %>%
+  count(word) %>%
+  arrange(n) %>%
+  mutate(total = sum(n))
+
+overall_frequency$word <- factor(overall_frequency$word, levels = overall_frequency$word)
+overall_frequency
+```
+```{r}
+ggplot(tail(overall_frequency,20), aes(word, n)) +
+  geom_col() +
+  labs(title = "Top 20 words overall") +
+  coord_flip()
+```
+
 
 # word usage
 
