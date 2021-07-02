@@ -52,7 +52,7 @@ library(tidyverse)
 
 ```{r extract relevant data from read in csv}
 extract_relevant_data <- function(df) {
-  return(df %>% select(status_id, screen_name, created_at, statuses_count, is_retweet, favourites_count, retweet_count, followers_count, friends_count))
+  return(df %>% select(status_id, screen_name, created_at, statuses_count, is_retweet, favorite_count, retweet_count, followers_count, friends_count, text))
 }
 ```
 
@@ -69,7 +69,7 @@ head(media_outlet_list[1])
 <!-- Data Wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r get number of followers, friends, tweets, retweets per media outlet}
+```{r get number of followers, friends, tweets, and retweets per media outlet}
 # get name, follower, friend, and tweet values
 names <- unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])}))
 followers_count <- unlist(lapply(media_outlet_list, function(df) {return(df$followers_count[1])}))
@@ -77,8 +77,8 @@ friends_count <- unlist(lapply(media_outlet_list, function(df) {return(df$friend
 tweets_count <- unlist(lapply(media_outlet_list, function(df) {return(df$statuses_count[1])}))
 # calculate user retweet sum
 user_retweet_sum <- unlist(lapply(media_outlet_list, function(df) {return(sum(df$retweet_count))}))
-# calculate media organisation's number of retweets (is_retweet == TRUE)
-org_retweet_count <- unlist(lapply(media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))}))
+# calculate media outlet's number of retweets (is_retweet == TRUE)
+outlet_retweet_count <- unlist(lapply(media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))}))
 
 # join values into a dataframe
 number_of_x <- data.frame(name=names, 
@@ -86,15 +86,36 @@ number_of_x <- data.frame(name=names,
                           friends_count=friends_count, 
                           tweets_count=tweets_count, 
                           user_retweet_sum=user_retweet_sum,
-                          org_retweet_count=org_retweet_count)
+                          outlet_retweet_count=outlet_retweet_count)
 head(number_of_x)
 ```
+
+```{r get top x tweets per media outlet}
+get_top_retweets <- function(df) {
+  x <- 5
+  text <- df %>%
+    arrange(desc(retweet_count)) %>% 
+    slice(1:x) %>% 
+    select(screen_name, retweet_count, text)
+  return(text)
+}
+```
+
+```{r top 5 user retweeted tweets per media outlet}
+# TODO need to plot nicely (as table?)
+top_retweets <- lapply(media_outlet_list, get_top_retweets)
+top_retweets
+```
+
+
+
 ```{r}
 # select tweet IDs that are retweets
-a <- CapeTalk_tweets$status_id[(CapeTalk_tweets$is_retweet)]
-# dim(a)
-NROW(a)
+CapeTalk_tweets$text[(CapeTalk_tweets$is_retweet)]
+CapeTalk_tweets$retweet_count[(CapeTalk_tweets$is_retweet)]
+CapeTalk_tweets$favorite_count[(CapeTalk_tweets$is_retweet)]
 ```
+
 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -111,7 +132,7 @@ ggplot(number_of_x, aes(name, followers_count, fill=name)) +
   scale_fill_manual(values = c(capetalk_colour, dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
   custom_column_basic_theme()
 ```
-```{r plot followers per media outlet}
+```{r plot friends per media outlet}
 ggplot(number_of_x, aes(name, friends_count, fill=name)) +
   geom_col() +
   labs(title = "Number of friends per media outlet",
@@ -135,6 +156,16 @@ ggplot(number_of_x, aes(name, tweets_count, fill=name)) +
 ggplot(number_of_x, aes(name, user_retweet_sum, fill=name)) +
   geom_col() +
   labs(title = "Number of user retweets per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = c(capetalk_colour, dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  custom_column_basic_theme()
+```
+```{r plot retweets of outlets per media outlet}
+ggplot(number_of_x, aes(name, outlet_retweet_count, fill=name)) +
+  geom_col() +
+  labs(title = "Number of outlet retweets per media outlet",
        x=NULL,
        y=NULL) +
   scale_y_continuous(label=comma) +
