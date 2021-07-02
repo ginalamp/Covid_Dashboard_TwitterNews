@@ -71,22 +71,24 @@ tidy_tweets <- tweets %>%
          str_detect(word, "[a-z]"))
 ```
 ```{r}
-frequency <- tidy_tweets %>% 
+frequency_wide <- tidy_tweets %>% 
   group_by(user) %>% 
   count(word, sort = TRUE) %>% 
   left_join(tidy_tweets %>% 
               group_by(user) %>% 
               summarise(total = n())) %>%
   mutate(freq = n/total)
-frequency
+frequency_wide
 ```
 
 ```{r}
-frequency <- frequency %>% 
+frequency <- frequency_wide %>% 
   select(user, word, freq) %>% 
   pivot_wider(names_from = user, values_from = freq)
 frequency
 ```
+
+
 
 ```{r}
 ggplot(frequency, aes(SABC, DailyMaverick)) +
@@ -96,6 +98,45 @@ ggplot(frequency, aes(SABC, DailyMaverick)) +
   scale_y_log10(labels = percent_format())
   # geom_abline(color = "red")
 ```
+
+
+# Top words per organisation
+```{r}
+n_words <- 10
+```
+
+```{r}
+# top words SABC
+top_words_SABC <- frequency %>%
+  select(word, SABC) %>%
+  arrange(desc(SABC))
+top_words_SABC
+# top words Daily Maverick
+top_words_DM <- frequency %>%
+  select(word, DailyMaverick) %>%
+  arrange(desc(DailyMaverick))
+top_words_DM
+```
+```{r}
+# top n words per organisation
+top_n <- frequency_wide %>%
+  group_by(user) %>%
+  slice_max(order_by = freq, n=n_words) %>%
+  ungroup
+
+users <- unique(top_n[c("user")])
+
+top_n_per_org <- data.frame(top_n %>% filter(user == "SABC") %>% select(word)) %>%
+  mutate(SABC = word) %>%
+  select(SABC)
+for (i in seq(nrow(users[1]))) {
+  top_n_per_org[[users$user[i]]] = (top_n %>% filter(user == users$user[i]) %>% select(word))
+}
+
+top_n_per_org
+# the output here is weird, but click on top_n_per_org in the global environment -> open in tab with correct values
+```
+
 
 # word usage
 
