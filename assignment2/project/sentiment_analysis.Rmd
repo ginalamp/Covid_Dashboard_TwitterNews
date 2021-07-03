@@ -1,0 +1,89 @@
+---
+title: "Sentiment analysis"
+output: html_notebook
+---
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Setup -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+<!-- Set colours according to Stellenbosch Branding manual-->
+<!-- http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf -->
+```{r set colours}
+dailymav_colour <- "#FF8F1C" # Daily Maveric - arts_orange
+capetalk_colour <- "#9e2629" # Cape Talk - law_winered
+sabc_colour <- "#84329B" # SABC News - theology_purple
+news24_colour <- "#326295" # News24 - education_darkblue
+ewn_colour <- "#509e2f" # EWN - agri_green
+
+# other colours to use
+med_bluegreen <- "#006163"
+military_salmon <- "#e56a54"
+science_red <- "#cb333b"
+ems_lightblue <- "#2dccd3"
+maroon <- "#60223b"
+mustard <- "#F1B434"
+darkgrey <- "#333333"
+lightgrey <- "#8c979a"
+black <- "#000000"
+engineering_yellow <- "#eaaa00"
+```
+
+```{r custom themes}
+custom_column_basic_theme <- function () { 
+    theme_minimal(base_size=12, base_family="Avenir") +
+        theme(
+            panel.background  = element_blank(),
+            panel.grid.minor = element_blank(),
+            legend.position="none", # no legend
+            plot.title = element_text(size = 10, hjust = 0),
+            plot.caption = element_text(size = 8, hjust = 0)
+        )
+}
+```
+
+```{r import libraries}
+library(tidyverse)
+library(vader) # sentiment analysis
+# library(dplyr)
+library(tidytext)
+```
+
+```{r extract relevant data from read in csv}
+extract_relevant_data <- function(df) {
+  return(df %>% select(status_id, screen_name, created_at, statuses_count, is_retweet, favorite_count, retweet_count, followers_count, friends_count, text))
+}
+```
+
+```{r read data}
+CapeTalk_tweets <- extract_relevant_data(read.csv("data/CapeTalk_tweets.csv"))
+DailyMav_tweets <- extract_relevant_data(read.csv("data/DailyMav_tweets.csv"))
+EWN_tweets <- extract_relevant_data(read.csv("data/EWN_tweets.csv"))
+News24_tweets <- extract_relevant_data(read.csv("data/News24_tweets.csv"))
+SABCNews_tweets <- extract_relevant_data(read.csv("data/SABCNews_tweets.csv"))
+media_outlet_list <- list(CapeTalk_tweets, DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
+head(media_outlet_list[1])
+```
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Wrangling -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+```{r remove stopwords}
+
+```
+
+
+```{r vader sentiment analysis on dataframe}
+vader_df(CapeTalk_tweets$text)
+```
+
+```{r vader sentiment analysis on one tweet}
+get_vader(CapeTalk_tweets$text[3])
+```
+
+
+
+
+
+
