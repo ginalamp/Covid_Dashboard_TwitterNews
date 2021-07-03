@@ -45,8 +45,8 @@ custom_column_basic_theme <- function () {
 ```{r import libraries}
 library(tidyverse)
 library(vader) # sentiment analysis
-# library(dplyr)
 library(tidytext)
+library(ggplot2)
 ```
 
 ```{r extract relevant data from read in csv}
@@ -80,6 +80,66 @@ vader_df(CapeTalk_tweets$text)
 
 ```{r vader sentiment analysis on one tweet}
 get_vader(CapeTalk_tweets$text[3])
+```
+
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Learning stuff - not for publishing -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+# Learning
+```{r one sentence sentiment}
+text <- c("Because I could not stop for Death -",
+          "He kindly stopped for me -",
+          "The Carriage held but just Ourselves -",
+          "and Immortality")
+text_df <- tibble(line = 1:4, text = text)
+text_df %>% unnest_tokens(word, text)
+```
+
+```{r jane austen dataframe sentiment}
+# For my sentiment analysis analysis
+# book = media company
+# line number = tweet ID
+# chapter = tweet number in dataframe
+# text = tweet text -> word = tweet words
+
+library(janeaustenr)
+original_books <- austen_books() %>%
+  group_by(book) %>%
+  # get line number and chapter in book
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text, 
+                                     regex("^chapter [\\divxlc]",
+                                           ignore_case = TRUE)))) %>%
+  ungroup()
+
+# unnest tokens of book
+tidy_books <- original_books %>%
+  unnest_tokens(word, text)
+tidy_books
+
+# remove stopwords
+data("stop_words")
+tidy_books <- tidy_books %>%
+  anti_join(stop_words)
+tidy_books
+# get most commonly used words
+tidy_books %>%
+  count(word, sort = TRUE) 
+
+# plot word frequency
+tidy_books %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 600) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word)) +
+  geom_col() +
+  labs(y = NULL)
+```
+```{r str extract method}
+# We use str_extract() here because the UTF-8 encoded texts from Project Gutenberg have some examples of words with underscores around them to indicate emphasis (like italics).
+# mutate(word = str_extract(word, "[a-z']+")) %>%
 ```
 
 
