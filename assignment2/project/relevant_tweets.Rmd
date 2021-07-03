@@ -177,7 +177,7 @@ ggplot(tail(overall_frequency,20), aes(word, n)) +
 # Top hashtags
 
 ```{r}
-# calculate frequency of words by organisation
+# calculate frequency of hashtags by organisation
 frequency_wide_ht <- tidy_tweets %>% 
   filter(str_detect(word, "^#")) %>%
   group_by(user) %>% 
@@ -190,7 +190,7 @@ frequency_wide_ht
 ```
 
 ```{r}
-# frequency of words per organisation (tidier)
+# frequency of hashtags per organisation (tidier)
 frequency_ht <- frequency_wide_ht %>% 
   select(user, word, freq) %>% 
   pivot_wider(names_from = user, values_from = freq)
