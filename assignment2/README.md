@@ -24,8 +24,9 @@
 
 ## Analysis resources
 * [TidyTextMining Ch7 Case study: comparing Twitter archives](https://www.tidytextmining.com/twitter.html)
-    - currently following this for a basic exploratory analysis
 * [Passing a variable name to a function in R](https://stackoverflow.com/questions/19133980/passing-a-variable-name-to-a-function-in-r)
+* [TidyTextMining Ch6 Topic Modeling](https://www.tidytextmining.com/topicmodeling.html#topicmodeling)
+    - Topic Modeling using LDA from R's 'topicmodels' library
 
 ## Notes
 
