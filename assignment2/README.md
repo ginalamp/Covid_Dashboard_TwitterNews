@@ -26,6 +26,7 @@
 * [TidyTextMining Ch7 Case study: comparing Twitter archives](https://www.tidytextmining.com/twitter.html)
     - currently following this for a basic exploratory analysis
 * [Passing a variable name to a function in R](https://stackoverflow.com/questions/19133980/passing-a-variable-name-to-a-function-in-r)
+* [lapply - apply function to list (of dataframes)](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/lapply)
 
 ## Notes
 
