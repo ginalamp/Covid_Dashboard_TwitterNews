@@ -23,9 +23,13 @@
 * [Create HTML report](https://jozef.io/r913-spin-with-style/)
 
 ## Analysis resources
-* [TidyTextMining Ch7 Case study: comparing Twitter archives](https://www.tidytextmining.com/twitter.html)
 * [Passing a variable name to a function in R](https://stackoverflow.com/questions/19133980/passing-a-variable-name-to-a-function-in-r)
 * [lapply - apply function to list (of dataframes)](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/lapply)
+* [TidyTextMining Ch1 TidyTextFormat - cleaning text to get into right format](https://www.tidytextmining.com/tidytext.html#tidyausten)
+* [TidyTextMining Ch2 Sentiment Analysis](https://www.tidytextmining.com/sentiment.html)
+* [Vader Sentiment Analysis cran docs](https://cran.r-project.org/web/packages/vader/vader.pdf)
+    - Usage: `vader_df(text, incl_nt = T, neu_set = T, rm_qm = F)`
+* [TidyTextMining Ch7 Case study: comparing Twitter archives](https://www.tidytextmining.com/twitter.html)
 * [TidyTextMining Ch6 Topic Modeling](https://www.tidytextmining.com/topicmodeling.html#topicmodeling)
     - Topic Modeling using LDA from R's 'topicmodels' library
 
