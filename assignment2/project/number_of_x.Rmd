@@ -6,6 +6,7 @@ output: html_notebook
 # TODO
 * label each column with the number of days that spans each variable (for example state that the number of retweets for SABC occured over x days)
 * perhaps do histogram combining charts?
+* label each column with number
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
@@ -62,6 +63,7 @@ DailyMav_tweets <- extract_relevant_data(read.csv("data/DailyMav_tweets.csv"))
 EWN_tweets <- extract_relevant_data(read.csv("data/EWN_tweets.csv"))
 News24_tweets <- extract_relevant_data(read.csv("data/News24_tweets.csv"))
 SABCNews_tweets <- extract_relevant_data(read.csv("data/SABCNews_tweets.csv"))
+
 media_outlet_list <- list(CapeTalk_tweets, DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
 head(media_outlet_list[1])
 ```
@@ -108,7 +110,7 @@ get_top_retweets <- function(df) {
 }
 ```
 
-```{r top 5 favourited tweets per media outlet}
+```{r get top x favourited tweets per media outlet}
 get_top_favorited_tweets <- function(df) {
   x <- 5
   text <- df %>%
@@ -125,7 +127,7 @@ top_retweets <- lapply(media_outlet_list, get_top_retweets)
 top_retweets
 ```
 
-```{r top 5 user retweeted tweets per media outlet}
+```{r top 5 favourited tweets per media outlet}
 # TODO need to plot nicely (as table?)
 top_favourited <- lapply(media_outlet_list, get_top_favorited_tweets)
 top_favourited
