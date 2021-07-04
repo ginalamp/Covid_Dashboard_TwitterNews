@@ -18,6 +18,9 @@ library(scales)
 ```{r}
 SABCNews_tweets <- read.csv("data/SABCNews_tweets.csv")
 DailyMav_tweets <- read.csv("data/DailyMav_tweets.csv")
+CapeTalk_tweets <- read.csv("data/CapeTalk_tweets.csv")
+EWN_tweets <- read.csv("data/EWN_tweets.csv")
+News24_tweets <- read.csv("data/News24_tweets.csv")
 ```
 ```{r}
 # filter for tweets related to covid
@@ -46,6 +49,43 @@ relevant_DM <- relevant_DM %>%
 
 tail(relevant_DM)
 ```
+```{r}
+# filter for tweets related to covid
+relevant_CapeTalk <- CapeTalk_tweets[grepl("covid", CapeTalk_tweets[["text"]]) | 
+                  grepl("Covid", CapeTalk_tweets[["text"]]) |
+                  grepl("corona", CapeTalk_tweets[["text"]]) |
+                  grepl("Corona", CapeTalk_tweets[["text"]]) |
+                  grepl("Pandemic", CapeTalk_tweets[["text"]]) |
+                  grepl("pandemic", CapeTalk_tweets[["text"]]), ]
+relevant_CapeTalk <- relevant_CapeTalk %>%
+  mutate(created_at = ymd_hms(created_at))
+
+tail(relevant_CapeTalk)
+
+# filter for tweets related to covid
+relevant_EWN <- EWN_tweets[grepl("covid", EWN_tweets[["text"]]) | 
+                  grepl("Covid", EWN_tweets[["text"]]) |
+                  grepl("corona", EWN_tweets[["text"]]) |
+                  grepl("Corona", EWN_tweets[["text"]]) |
+                  grepl("Pandemic", EWN_tweets[["text"]]) |
+                  grepl("pandemic", EWN_tweets[["text"]]), ]
+relevant_EWN <- relevant_EWN %>%
+  mutate(created_at = ymd_hms(created_at))
+
+tail(relevant_EWN)
+
+# filter for tweets related to covid
+relevant_News24 <- News24_tweets[grepl("covid", News24_tweets[["text"]]) | 
+                  grepl("Covid", News24_tweets[["text"]]) |
+                  grepl("corona", News24_tweets[["text"]]) |
+                  grepl("Corona", News24_tweets[["text"]]) |
+                  grepl("Pandemic", News24_tweets[["text"]]) |
+                  grepl("pandemic", News24_tweets[["text"]]), ]
+relevant_News24 <- relevant_News24 %>%
+  mutate(created_at = ymd_hms(created_at))
+
+tail(relevant_News24)
+```
 
 
 ```{r}
@@ -60,7 +100,13 @@ ggplot(relevant_DM, aes(x = created_at)) +
 tweets <- bind_rows(relevant_SABC %>% 
                       mutate(user = "SABC"),
                     relevant_DM %>% 
-                      mutate(user = "DailyMaverick"))
+                      mutate(user = "DailyMaverick"),
+                    relevant_CapeTalk %>%
+                      mutate(user = "CapeTalk"),
+                    relevant_EWN %>%
+                      mutate(user = "EWN"),
+                    relevant_News24 %>%
+                      mutate(user = "News24"))
 ```
 
 ```{r}
@@ -133,6 +179,21 @@ top_words_DM <- frequency %>%
   select(word, DailyMaverick) %>%
   arrange(desc(DailyMaverick))
 top_words_DM
+# top words Cape Talk
+top_words_CapeTalk <- frequency %>%
+  select(word, CapeTalk) %>%
+  arrange(desc(CapeTalk))
+top_words_CapeTalk
+# top words Daily Maverick
+top_words_EWN <- frequency %>%
+  select(word, EWN) %>%
+  arrange(desc(EWN))
+top_words_EWN
+# top words Daily Maverick
+top_words_News24 <- frequency %>%
+  select(word, News24) %>%
+  arrange(desc(News24))
+top_words_News24
 ```
 ```{r}
 # top n words per organisation
@@ -143,11 +204,20 @@ top_n <- frequency_wide %>%
 
 users <- unique(top_n[c("user")])
 
+# Finding maximum length
+ln <- top_n %>%
+  group_by(user) %>%
+  count()
+ln
+max_ln <- max(ln$n)
+
+
 top_n_per_org <- data.frame(top_n %>% filter(user == "SABC") %>% select(word)) %>%
   mutate(SABC = word) %>%
   select(SABC)
 for (i in seq(nrow(users[1]))) {
-  top_n_per_org[[users$user[i]]] = (top_n %>% filter(user == users$user[i]) %>% select(word))
+  top_n_of_org <- top_n %>% filter(user == users$user[i]) %>% select(word)
+  top_n_per_org[[users$user[i]]] = head(top_n_of_org, n_words)
 }
 
 top_n_per_org <- top_n_per_org %>% unnest() %>% head(n_words)
@@ -263,7 +333,13 @@ ht_by_time <- tidy_tweets %>%
   ungroup() %>%
   rename(count = n) %>%
   # consider only top hashtags
-  filter(word_total > 20)
+   filter(word_total > 15)
+
+#ht_by_time <- ht_by_time %>%
+#  group_by(user) %>%
+#  filter(!duplicated(word)) %>%
+#  slice_max(order_by = word_total, n=5) %>%
+#  ungroup
 
 ht_by_time
 ```
