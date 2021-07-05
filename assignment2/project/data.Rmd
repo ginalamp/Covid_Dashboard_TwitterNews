@@ -33,6 +33,141 @@ n_tweets = 3200
 lookup_tweets(c("1349557374877577218", "1403067237670526976"))
 ```
 
+# Government ZA
+```{r}
+govZA_tweets_full <- get_timeline("governmentZA", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+govZA_tweets <- govZA_tweets_full[, colSums(!is.na(govZA_tweets_full)) == nrow(govZA_tweets_full)]
+# take out columns that have list values
+govZA_tweets <- govZA_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(govZA_tweets, "data/govZA_tweets.csv")
+```
+
+--------------------------------------------------
+USA
+--------------------------------------------------
+
+# cnnbrk
+```{r}
+cnnbrk_tweets_full <- get_timeline("cnnbrk", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+cnnbrk_tweets <- cnnbrk_tweets_full[, colSums(!is.na(cnnbrk_tweets_full)) == nrow(cnnbrk_tweets_full)]
+# take out columns that have list values
+cnnbrk_tweets <- cnnbrk_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(cnnbrk_tweets, "data/cnnbrk_tweets.csv")
+```
+
+# FoxNews
+```{r}
+FoxNews_tweets_full <- get_timeline("FoxNews", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+FoxNews_tweets <- FoxNews_tweets_full[, colSums(!is.na(FoxNews_tweets_full)) == nrow(FoxNews_tweets_full)]
+# take out columns that have list values
+FoxNews_tweets <- FoxNews_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(FoxNews_tweets, "data/FoxNews_tweets.csv")
+```
+
+--------------------------------------------------
+UK
+--------------------------------------------------
+
+# BBC Breaking
+```{r}
+BBC_tweets_full <- get_timeline("bbcbreaking", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+BBC_tweets <- BBC_tweets_full[, colSums(!is.na(BBC_tweets_full)) == nrow(BBC_tweets_full)]
+# take out columns that have list values
+BBC_tweets <- BBC_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(BBC_tweets, "data/BBCbreaking_tweets.csv")
+```
+
+--------------------------------------------------
+Global
+--------------------------------------------------
+
+# Time
+```{r}
+time_tweets_full <- get_timeline("time", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+time_tweets <- time_tweets_full[, colSums(!is.na(time_tweets_full)) == nrow(time_tweets_full)]
+# take out columns that have list values
+time_tweets <- time_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(time_tweets, "data/time_tweets.csv")
+```
+
+# The Economist
+```{r}
+economist_tweets_full <- get_timeline("theeconomist", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+economist_tweets <- economist_tweets_full[, colSums(!is.na(economist_tweets_full)) == nrow(economist_tweets_full)]
+# take out columns that have list values
+economist_tweets <- economist_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(economist_tweets, "data/economist_tweets.csv")
+```
+
+# BBC World
+```{r}
+bbcworld_tweets_full <- get_timeline("bbcworld", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+bbcworld_tweets <- bbcworld_tweets_full[, colSums(!is.na(bbcworld_tweets_full)) == nrow(bbcworld_tweets_full)]
+# take out columns that have list values
+bbcworld_tweets <- bbcworld_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(bbcworld_tweets, "data/bbcworld_tweets.csv")
+```
+
+# AP
+```{r}
+AP_tweets_full <- get_timeline("AP", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+AP_tweets <- AP_tweets_full[, colSums(!is.na(AP_tweets_full)) == nrow(AP_tweets_full)]
+# take out columns that have list values
+AP_tweets <- AP_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(AP_tweets, "data/AP_tweets.csv")
+```
+
+--------------------------------------------------
+SA
+--------------------------------------------------
 
 # Daily Maverick
 ```{r}
