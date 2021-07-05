@@ -51,6 +51,7 @@ library(tidyverse)
 library(vader) # sentiment analysis
 library(tidytext)
 library(lubridate) # date conversion
+library(RcppRoll) # rolling average
 library(ggplot2)
 ```
 
@@ -216,10 +217,17 @@ top_favourited_sentiment_per_outlet
 for (i in seq(tidy_tweets)) {
   tidy_tweets[[i]]["compound"] <- vader_analysis[[i]]["compound"]
 }
+
+# calculate 7-day rolling average of compound
+ROLLING_AVERAGE_TIME <- 7 # week
+
+for (i in seq(tidy_tweets)) {
+  tidy_tweets[[i]] <- tidy_tweets[[i]] %>% 
+    mutate(rolling_avg = roll_mean(compound, n=ROLLING_AVERAGE_TIME, fill = NA, align = "right"))
+}
 tidy_tweets
 ```
 ```{r}
-# want to group rows by week (month average)
 
 ```
 
@@ -240,7 +248,7 @@ ggplot(overall_sentiment_per_outlet, aes(name, sentiment_mean, fill=name)) +
   geom_col() +
   labs(title = "Overall sentiment per organisation on covid-19",
        x=NULL,
-       y=NULL) +
+       y="Vader Sentiment Score") +
   scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
   custom_column_basic_theme()
 ```
@@ -250,7 +258,7 @@ ggplot(top_retweets_sentiment_per_outlet, aes(name, top_retweets_sentiment_mean,
   geom_col() +
   labs(title = "Sentiment of Top 10 retweeted tweets per organisation on covid-19",
        x=NULL,
-       y=NULL) +
+       y="Vader Sentiment Score") +
   scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
   custom_column_basic_theme()
 ```
@@ -260,10 +268,26 @@ ggplot(top_favourited_sentiment_per_outlet, aes(name, top_favourited_sentiment_m
   geom_col() +
   labs(title = "Sentiment of Top 10 favourited tweets per organisation on covid-19",
        x=NULL,
-       y=NULL) +
+       y="Vader Sentiment Score") +
   scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
   custom_column_basic_theme()
 ```
 
+```{r}
+tidy_tweets[[1]] <- tidy_tweets[[1]] %>% mutate(ymd(created_at))
+tidy_tweets
+```
+
+```{r}
+ggplot(tidy_tweets[[1]], aes(created_at, rolling_avg)) + 
+  geom_line() + 
+  labs(title= "Sentiment over time per media outlet",
+       x = NULL,
+       y = "Vader Sentiment Score") +
+  # TODO: not working due to date being in POSIXt format
+  # scale_x_log10() + 
+  custom_column_basic_theme()
+
+```
 
 
