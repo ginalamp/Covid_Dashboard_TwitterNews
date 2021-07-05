@@ -230,7 +230,7 @@ for (i in seq(tidy_tweets)) {
 }
 
 # calculate 7-day rolling average of compound
-ROLLING_AVERAGE_TIME <- 7 # week
+ROLLING_AVERAGE_TIME <- 30 # month
 
 for (i in seq(tidy_tweets)) {
   tidy_tweets[[i]] <- tidy_tweets[[i]] %>% 
