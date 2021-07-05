@@ -210,6 +210,19 @@ top_favourited_sentiment_per_outlet
 ```
 
 
+# Sentiment analysis over time
+```{r}
+# want to add the vader compound column (in a list of dataframes) to tidy_tweets (a list of dataframes)
+for (i in seq(tidy_tweets)) {
+  tidy_tweets[[i]]["compound"] <- vader_analysis[[i]]["compound"]
+}
+tidy_tweets
+```
+```{r}
+# want to group rows by week (month average)
+
+```
+
 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
