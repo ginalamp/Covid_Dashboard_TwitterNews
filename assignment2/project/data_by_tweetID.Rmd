@@ -1,0 +1,54 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Setup -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+
+```{r}
+library(rtweet)
+library(tidyverse)
+library(rjson)
+```
+```{r}
+app_name<-"covid_news_tweets"
+consumer_key<-"bpvgj1v8U2DVuGkydfUVbn7Fd"
+consumer_secret<-"rLi8BEDEMhY2b94XunH1Trmw8EvWXsH62uD9J4W8BpjLFaVaxc"
+access_token<-"1406939447346798597-MGGIwaG9ZIMrNRMh2I8UjhN6R5UHRt"
+access_token_secret<-"OJoAcrwf00quax6lXYQpvd84ffArkceymB0cB16vu2yjl"
+```
+
+```{r}
+create_token(app=app_name,
+             consumer_key = consumer_key,
+             consumer_secret = consumer_secret,
+             access_token = access_token,
+             access_secret = access_token_secret)
+```
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Collection -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+```{r}
+# TODO: enter name of input and output file
+
+# vector containing the tweetIDs (read from json file)
+tweet_IDs <- names(fromJSON(file="<jsonFileName>"))
+#tweet_IDs <- c("1349557374877577218", "1403067237670526976")
+
+# find tweets from their IDs
+tweets_full <- lookup_tweets(tweet_IDs)
+
+# take out columns consisting of NA values
+tweets <- tweets_full[, colSums(!is.na(tweets_full)) == nrow(tweets_full)]
+# take out columns that have list values
+tweets <- tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(tweets, "data/<name_of_account>_tweets.csv")
+```
