@@ -25,6 +25,7 @@
 ## Analysis resources
 * [Passing a variable name to a function in R](https://stackoverflow.com/questions/19133980/passing-a-variable-name-to-a-function-in-r)
 * [lapply - apply function to list (of dataframes)](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/lapply)
+* [create and edit list of dataframes](https://www.geeksforgeeks.org/list-of-dataframes-in-r/)
 * [TidyTextMining Ch1 TidyTextFormat - cleaning text to get into right format](https://www.tidytextmining.com/tidytext.html#tidyausten)
 * [TidyTextMining Ch2 Sentiment Analysis](https://www.tidytextmining.com/sentiment.html)
 * [Vader Sentiment Analysis cran docs](https://cran.r-project.org/web/packages/vader/vader.pdf)
