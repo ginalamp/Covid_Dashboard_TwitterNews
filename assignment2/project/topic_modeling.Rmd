@@ -20,6 +20,9 @@ library(topicmodels)
 ```{r}
 SABCNews_tweets <- read.csv("data/SABCNews_tweets.csv")
 DailyMav_tweets <- read.csv("data/DailyMav_tweets.csv")
+CapeTalk_tweets <- read.csv("data/CapeTalk_tweets.csv")
+EWN_tweets <- read.csv("data/EWN_tweets.csv")
+News24_tweets <- read.csv("data/News24_tweets.csv")
 ```
 ```{r}
 # filter for tweets related to covid
@@ -40,6 +43,36 @@ relevant_DM <- DailyMav_tweets[grepl("covid", DailyMav_tweets[["text"]]) |
                   grepl("pandemic", DailyMav_tweets[["text"]]), ]
 relevant_DM <- relevant_DM %>%
   mutate(created_at = ymd_hms(created_at))
+
+# filter for tweets related to covid
+relevant_CapeTalk <- CapeTalk_tweets[grepl("covid", CapeTalk_tweets[["text"]]) | 
+                  grepl("Covid", CapeTalk_tweets[["text"]]) |
+                  grepl("corona", CapeTalk_tweets[["text"]]) |
+                  grepl("Corona", CapeTalk_tweets[["text"]]) |
+                  grepl("Pandemic", CapeTalk_tweets[["text"]]) |
+                  grepl("pandemic", CapeTalk_tweets[["text"]]), ]
+relevant_CapeTalk <- relevant_CapeTalk %>%
+  mutate(created_at = ymd_hms(created_at))
+
+# filter for tweets related to covid
+relevant_EWN <- EWN_tweets[grepl("covid", EWN_tweets[["text"]]) | 
+                  grepl("Covid", EWN_tweets[["text"]]) |
+                  grepl("corona", EWN_tweets[["text"]]) |
+                  grepl("Corona", EWN_tweets[["text"]]) |
+                  grepl("Pandemic", EWN_tweets[["text"]]) |
+                  grepl("pandemic", EWN_tweets[["text"]]), ]
+relevant_EWN <- relevant_EWN %>%
+  mutate(created_at = ymd_hms(created_at))
+
+# filter for tweets related to covid
+relevant_News24 <- News24_tweets[grepl("covid", News24_tweets[["text"]]) | 
+                  grepl("Covid", News24_tweets[["text"]]) |
+                  grepl("corona", News24_tweets[["text"]]) |
+                  grepl("Corona", News24_tweets[["text"]]) |
+                  grepl("Pandemic", News24_tweets[["text"]]) |
+                  grepl("pandemic", News24_tweets[["text"]]), ]
+relevant_News24 <- relevant_News24 %>%
+  mutate(created_at = ymd_hms(created_at))
 ```
 
 ```{r}
@@ -47,7 +80,13 @@ relevant_DM <- relevant_DM %>%
 tweets <- bind_rows(relevant_SABC %>% 
                       mutate(user = "SABC"),
                     relevant_DM %>% 
-                      mutate(user = "DailyMaverick"))
+                      mutate(user = "DailyMaverick"),
+                    relevant_CapeTalk %>%
+                      mutate(user = "CapeTalk"),
+                    relevant_EWN %>%
+                      mutate(user = "EWN"),
+                    relevant_News24 %>%
+                      mutate(user = "News24"))
 ```
 
 ```{r}
@@ -214,6 +253,18 @@ model_topics_of_org("DailyMaverick", 3)
 model_topics_of_org("SABC", 2)
 ```
 
+```{r}
+model_topics_of_org("CapeTalk", 2)
+```
+
+```{r}
+model_topics_of_org("EWN", 2)
+```
+
+```{r}
+model_topics_of_org("News24", 2)
+```
+
 
 # topic modelling for organisation for specific month
 
@@ -267,4 +318,10 @@ model_topics_of_org_for_month("SABC", "2021-06-01", 3)
 ```
 
 
+```{r}
+model_topics_of_org_for_month("CapeTalk", "2021-06-01", 3)
+model_topics_of_org_for_month("EWN", "2021-06-01", 3)
+model_topics_of_org_for_month("News24", "2021-06-01", 3)
+
+```
 
