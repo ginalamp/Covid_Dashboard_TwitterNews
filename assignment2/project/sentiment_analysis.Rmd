@@ -5,6 +5,7 @@ output: html_notebook
 
 # TODO
 * add custom sentiment to vader analysis
+* Cape_Talk was removed due to 5 datasets throwing [this](https://stackoverflow.com/questions/15363076/error-in-gzfilefile-wb-cannot-open-the-connection-or-compressed-file) error when applying `apply_vader()` (was a bit too much to handle) 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
@@ -126,25 +127,6 @@ tidy_tweets <- lapply(covid_tweets, clean_tweets)
 tidy_tweets
 ```
 
-<!-- xx -->
-<!-- ```{r remove stopwords and clean data} -->
-<!-- # define custom stopwords -->
-<!-- my_stopwords <- c("covid", "covid19", "corona", "coronavirus") -->
-
-<!-- # remove stopwords, links, special chatacters -->
-<!-- tidy_tweets <- relevant_CapeTalk %>% -->
-<!--   unnest_tokens(word, text) %>% -->
-<!--   filter(!word %in% stop_words$word, -->
-<!--          !word %in% my_stopwords, -->
-<!--          !word %in% str_remove_all(stop_words$word, "'"), -->
-<!--          str_detect(word, "[a-z]")) %>% -->
-<!--   # group words back together (creating sentences) according to their twitter_id -->
-<!--   group_by(status_id) %>% -->
-<!--   summarize(text=str_c(word, collapse = " ")) %>% -->
-<!--   ungroup() -->
-<!-- tidy_tweets -->
-<!-- ``` -->
-
 ```{r apply vader sentiment analysis to list of cleaned covid tweets}
 # https://towardsdatascience.com/sentimental-analysis-using-vader-a3415fef7664
 # all values greater than zeroes will be considered a positive review and all values less than zero would be considered as a negative review.
@@ -155,20 +137,11 @@ vader_analysis <- lapply(tidy_tweets, apply_vader)
 vader_analysis
 ```
 
-<!-- x -->
-<!-- ```{r vader sentiment analysis on dataframe} -->
-<!-- # https://towardsdatascience.com/sentimental-analysis-using-vader-a3415fef7664 -->
-<!-- # all values greater than zeroes will be considered a positive review and all values less than zero would be considered as a negative review. -->
-<!-- vader_analysis <- vader_df(tidy_tweets$text) -->
-<!-- vader_analysis -->
-<!-- ``` -->
 
-```{r}
+```{r get sentiment mean per oulet}
+# get names of media outlets
 name <- unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])}))
-name
-```
 
-```{r}
 get_sentiment_mean <- function(df) {
   return(mean(df$compound))
 }
@@ -181,7 +154,6 @@ overall_sentiment_per_outlet
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Visualisation -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
 
 ```{r plot overall sentiment per organisation on covid-19}
 ggplot(overall_sentiment_per_outlet, aes(name, sentiment_mean, fill=name)) +
