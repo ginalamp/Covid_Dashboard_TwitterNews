@@ -44,6 +44,17 @@ custom_column_basic_theme <- function () {
             plot.caption = element_text(size = 8, hjust = 0)
         )
 }
+
+custom_line_basic_theme <- function () { 
+    theme_minimal(base_size=12, base_family="Avenir") +
+        theme(
+            panel.background  = element_blank(),
+            panel.grid.minor = element_blank(),
+            plot.title = element_text(size = 10, hjust = 0),
+            plot.subtitle = element_text(size = 8, hjust = 0),
+            plot.caption = element_text(size = 8, hjust = 0)
+        )
+}
 ```
 
 ```{r import libraries}
@@ -278,15 +289,21 @@ tidy_tweets[[1]] <- tidy_tweets[[1]] %>% mutate(ymd(created_at))
 tidy_tweets
 ```
 
-```{r}
-ggplot(tidy_tweets[[1]], aes(created_at, rolling_avg)) + 
-  geom_line() + 
+
+
+```{r plot sentiment per organisation over time on covid-19}
+# TODO: want to apply log scale (not working due to time format)
+ggplot(bind_rows(tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=screen_name)) + 
+  geom_line() +
   labs(title= "Sentiment over time per media outlet",
+       subtitle = paste("A rolling average of", NUM_TWEETS, "is used."),
+       color="Media outlet",
        x = NULL,
        y = "Vader Sentiment Score") +
   # TODO: not working due to date being in POSIXt format
   # scale_x_log10() + 
-  custom_column_basic_theme()
+  scale_colour_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  custom_line_basic_theme()
 
 ```
 
