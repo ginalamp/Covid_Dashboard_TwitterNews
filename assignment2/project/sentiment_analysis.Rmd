@@ -103,112 +103,16 @@ tidy_tweets
 ```
 
 
-<!-- x -->
-<!-- ```{r remove stopwords} -->
-<!-- # define custom stopwords -->
-<!-- my_stopwords <- c("covid", "covid19", "corona", "coronavirus") -->
-<!-- # remove stopwords -->
-<!-- tidy_tweets <- relevant_CapeTalk %>% -->
-<!--   # unnest_tokens(word, text) %>% -->
-<!--   filter(!text %in% stop_words$word, -->
-<!--          !text %in% my_stopwords, -->
-<!--          !text %in% str_remove_all(stop_words$word, "'"), -->
-<!--          str_detect(text, "[a-z]")) -->
-<!-- tidy_tweets -->
-<!-- ``` -->
-<!-- xxx -->
-<!-- ```{r clean data} -->
-<!-- require("tm") -->
-<!-- # remove links - https://towardsdatascience.com/twitter-sentiment-analysis-and-visualization-using-r-22e1f70f6967 -->
-<!-- relevant_CapeTalk$text <- gsub("http\\S+", "", relevant_CapeTalk$text) -->
-<!-- relevant_CapeTalk$text <- gsub("\\s+", " ", relevant_CapeTalk$text) -->
-<!-- relevant_CapeTalk$text <- gsub("[[:punct:]]", "", relevant_CapeTalk$text) -->
-<!-- relevant_CapeTalk$text <- gsub("['`^~\"]", " ", relevant_CapeTalk$text) -->
-<!-- relevant_CapeTalk$text <- iconv(relevant_CapeTalk$text, from = "UTF-8", to = "ASCII//TRANSLIT//IGNORE") -->
-<!-- relevant_CapeTalk$text <- gsub("['`^~\"]", "", relevant_CapeTalk$text) -->
-<!-- # remove stopwards -->
-<!-- text<-removeWords(text, stop_words) -->
-
-<!-- relevant_CapeTalk$text -->
-<!-- ``` -->
-
-
-
 ```{r vader sentiment analysis on dataframe}
-vader_df(tidy_tweets$text)
+# https://towardsdatascience.com/sentimental-analysis-using-vader-a3415fef7664
+# all values greater than zeroes will be considered a positive review and all values less than zero would be considered as a negative review.
+vader_analysis <- vader_df(tidy_tweets$text)
+vader_analysis
 ```
-<!-- xxx -->
-<!-- ```{r vader sentiment analysis on one tweet} -->
-<!-- get_vader(CapeTalk_tweets$text[3]) -->
-<!-- ``` -->
-
-
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Learning stuff - not for publishing -->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
-# Learning: TidyTextMining
-
-## Chapter 1: Tidy text format
-```{r one sentence sentiment}
-text <- c("Because I could not stop for Death -",
-          "He kindly stopped for me -",
-          "The Carriage held but just Ourselves -",
-          "and Immortality")
-text_df <- tibble(line = 1:4, text = text)
-text_df %>% unnest_tokens(word, text)
-```
-
-```{r jane austen dataframe sentiment}
-# For my sentiment analysis analysis
-# book = media company
-# line number = tweet ID
-# chapter = tweet number in dataframe
-# text = tweet text -> word = tweet words
-
-library(janeaustenr)
-original_books <- austen_books() %>%
-  group_by(book) %>%
-  # get line number and chapter in book
-  mutate(linenumber = row_number(),
-         chapter = cumsum(str_detect(text, 
-                                     regex("^chapter [\\divxlc]",
-                                           ignore_case = TRUE)))) %>%
-  ungroup()
-
-# unnest tokens of book
-tidy_books <- original_books %>%
-  unnest_tokens(word, text)
-tidy_books
-
-# remove stopwords
-data("stop_words")
-tidy_books <- tidy_books %>%
-  anti_join(stop_words)
-tidy_books
-# get most commonly used words
-tidy_books %>%
-  count(word, sort = TRUE) 
-
-# plot word frequency
-tidy_books %>%
-  count(word, sort = TRUE) %>%
-  filter(n > 600) %>%
-  mutate(word = reorder(word, n)) %>%
-  ggplot(aes(n, word)) +
-  geom_col() +
-  labs(y = NULL)
-```
-```{r str extract method}
-# We use str_extract() here because the UTF-8 encoded texts from Project Gutenberg have some examples of words with underscores around them to indicate emphasis (like italics).
-# mutate(word = str_extract(word, "[a-z']+")) %>%
-```
-
-
-## Chapter 2: Sentiment analysis
-
 ```{r}
-get_sentiments("afinn")
+# get average sentiment
+mean(vader_analysis$compound)
 ```
+
 
 
