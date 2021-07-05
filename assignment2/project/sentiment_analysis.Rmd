@@ -151,9 +151,20 @@ sentiment_mean
 overall_sentiment_per_outlet <- data.frame(name, sentiment_mean)
 overall_sentiment_per_outlet
 ```
+```{r get overall sentiment for all outlets}
+total_overall_sentiment <- sum(overall_sentiment_per_outlet$sentiment_mean)
+total_overall_sentiment
+```
+
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Visualisation -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+```{r plot total overall sentiment}
+# TODO: make a valuebox or something?
+total_overall_sentiment
+```
+
 
 ```{r plot overall sentiment per organisation on covid-19}
 ggplot(overall_sentiment_per_outlet, aes(name, sentiment_mean, fill=name)) +
