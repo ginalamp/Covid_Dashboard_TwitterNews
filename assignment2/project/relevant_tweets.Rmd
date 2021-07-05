@@ -237,7 +237,7 @@ top_n_ht
 users <- unique(top_n_ht[c("user")])
 
 # Finding maximum length
-ln <- top_n %>%
+ln <- top_n_ht %>%
   group_by(user) %>%
   count()
 ln
