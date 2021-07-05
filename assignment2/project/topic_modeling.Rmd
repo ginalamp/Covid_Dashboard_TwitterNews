@@ -24,55 +24,26 @@ CapeTalk_tweets <- read.csv("data/CapeTalk_tweets.csv")
 EWN_tweets <- read.csv("data/EWN_tweets.csv")
 News24_tweets <- read.csv("data/News24_tweets.csv")
 ```
+
+
 ```{r}
-# filter for tweets related to covid
-relevant_SABC <- SABCNews_tweets[grepl("covid", SABCNews_tweets[["text"]]) | 
-                  grepl("Covid", SABCNews_tweets[["text"]]) |
-                  grepl("corona", SABCNews_tweets[["text"]]) |
-                  grepl("Corona", SABCNews_tweets[["text"]]) |
-                  grepl("Pandemic", SABCNews_tweets[["text"]]) |
-                  grepl("pandemic", SABCNews_tweets[["text"]]), ]
-relevant_SABC <- relevant_SABC %>%
+filter_relevant_tweets <- function(tweets) {
+  relevant_tweets <- tweets[grepl("covid", tweets[["text"]]) | 
+                  grepl("Covid", tweets[["text"]]) |
+                  grepl("corona", tweets[["text"]]) |
+                  grepl("Corona", tweets[["text"]]) |
+                  grepl("Pandemic", tweets[["text"]]) |
+                  grepl("pandemic", tweets[["text"]]), ]
+relevant_tweets <- relevant_tweets %>%
   mutate(created_at = ymd_hms(created_at))
-
-relevant_DM <- DailyMav_tweets[grepl("covid", DailyMav_tweets[["text"]]) | 
-                  grepl("Covid", DailyMav_tweets[["text"]]) |
-                  grepl("corona", DailyMav_tweets[["text"]]) |
-                  grepl("Corona", DailyMav_tweets[["text"]]) |
-                  grepl("Pandemic", DailyMav_tweets[["text"]]) |
-                  grepl("pandemic", DailyMav_tweets[["text"]]), ]
-relevant_DM <- relevant_DM %>%
-  mutate(created_at = ymd_hms(created_at))
-
-# filter for tweets related to covid
-relevant_CapeTalk <- CapeTalk_tweets[grepl("covid", CapeTalk_tweets[["text"]]) | 
-                  grepl("Covid", CapeTalk_tweets[["text"]]) |
-                  grepl("corona", CapeTalk_tweets[["text"]]) |
-                  grepl("Corona", CapeTalk_tweets[["text"]]) |
-                  grepl("Pandemic", CapeTalk_tweets[["text"]]) |
-                  grepl("pandemic", CapeTalk_tweets[["text"]]), ]
-relevant_CapeTalk <- relevant_CapeTalk %>%
-  mutate(created_at = ymd_hms(created_at))
-
-# filter for tweets related to covid
-relevant_EWN <- EWN_tweets[grepl("covid", EWN_tweets[["text"]]) | 
-                  grepl("Covid", EWN_tweets[["text"]]) |
-                  grepl("corona", EWN_tweets[["text"]]) |
-                  grepl("Corona", EWN_tweets[["text"]]) |
-                  grepl("Pandemic", EWN_tweets[["text"]]) |
-                  grepl("pandemic", EWN_tweets[["text"]]), ]
-relevant_EWN <- relevant_EWN %>%
-  mutate(created_at = ymd_hms(created_at))
-
-# filter for tweets related to covid
-relevant_News24 <- News24_tweets[grepl("covid", News24_tweets[["text"]]) | 
-                  grepl("Covid", News24_tweets[["text"]]) |
-                  grepl("corona", News24_tweets[["text"]]) |
-                  grepl("Corona", News24_tweets[["text"]]) |
-                  grepl("Pandemic", News24_tweets[["text"]]) |
-                  grepl("pandemic", News24_tweets[["text"]]), ]
-relevant_News24 <- relevant_News24 %>%
-  mutate(created_at = ymd_hms(created_at))
+}
+```
+```{r}
+relevant_SABC <- filter_relevant_tweets(SABCNews_tweets)
+relevant_DM <- filter_relevant_tweets(DailyMav_tweets)
+relevant_CapeTalk <- filter_relevant_tweets(CapeTalk_tweets)
+relevant_EWN <- filter_relevant_tweets(EWN_tweets)
+relevant_News24 <- filter_relevant_tweets(News24_tweets)
 ```
 
 ```{r}
@@ -90,66 +61,65 @@ tweets <- bind_rows(relevant_SABC %>%
 ```
 
 ```{r}
-# define custom stopwords
-my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
-# remove stopwords
-tidy_tweets <- tweets %>% 
-  unnest_tokens(word, text, token = "tweets") %>%
-  filter(!word %in% stop_words$word,
-         !word %in% my_stopwords,
-         !word %in% str_remove_all(stop_words$word, "'"),
-         str_detect(word, "[a-z]"))
+remove_stopwords <- function(tweets_in) {
+  # define custom stopwords
+  my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
+  # remove stopwords
+  tidy_tweets <- tweets_in %>% 
+    unnest_tokens(word, text, token = "tweets") %>%
+    filter(!word %in% stop_words$word,
+           !word %in% my_stopwords,
+           !word %in% str_remove_all(stop_words$word, "'"),
+           str_detect(word, "[a-z]"))
+  return(tidy_tweets)
+}
 ```
+```{r}
+tidy_tweets <- remove_stopwords(tweets)
+```
+
 
 # Topic Modelling
 
 ```{r}
-# word count by media organisation
-word_counts <- tidy_tweets %>%
-  select(user, word, created_at) %>%
-  count(user, word, sort = TRUE) %>%
-  ungroup()
-
-word_counts
-```
-```{r}
-# create document term matrix
-# (treating all tweets from one organisation as one document)
-orgs_dtm <- word_counts %>%
-  cast_dtm(user, word, n)
-
-orgs_dtm
-```
-```{r}
-# define number of topics
-k_topics = 4
-# apply topic modelling
-orgs_lda <- LDA(orgs_dtm, k = k_topics, control = list(seed = 1234))
-orgs_lda
-```
-```{r}
-orgs_topics <- tidy(orgs_lda, matrix = "beta")
-orgs_topics
-```
-```{r}
-# find top words per topic
-top_terms <- orgs_topics %>%
-  group_by(topic) %>%
-  slice_max(beta, n = 5) %>% 
-  ungroup() %>%
-  arrange(topic, -beta)
-
-top_terms
+model_topics_overall <- function(tidy_tweets_in, nr_of_topics) {
+  # word count by media organisation
+  word_counts <- tidy_tweets_in %>%
+    select(user, word, created_at) %>%
+    count(user, word, sort = TRUE) %>%
+    ungroup()
+  
+  # create document term matrix
+  # (treating all tweets from one organisation as one document)
+  orgs_dtm <- word_counts %>%
+    cast_dtm(user, word, n)
+  
+  # define number of topics
+  k_topics = nr_of_topics
+  # apply topic modelling
+  orgs_lda <- LDA(orgs_dtm, k = k_topics, control = list(seed = 1234))
+  
+  orgs_topics <- tidy(orgs_lda, matrix = "beta")
+  
+  # find top words per topic
+  top_terms <- orgs_topics %>%
+    group_by(topic) %>%
+    slice_max(beta, n = 5) %>% 
+    ungroup() %>%
+    arrange(topic, -beta)
+  
+  # plot top terms per topic
+  top_terms %>%
+    mutate(term = reorder_within(term, beta, topic)) %>%
+    ggplot(aes(beta, term, fill = factor(topic))) +
+    geom_col(show.legend = FALSE) +
+    facet_wrap(~ topic, scales = "free") +
+    scale_y_reordered()
+}
 ```
 
 ```{r}
-# plot top terms per topic
-top_terms %>%
-  mutate(term = reorder_within(term, beta, topic)) %>%
-  ggplot(aes(beta, term, fill = factor(topic))) +
-  geom_col(show.legend = FALSE) +
-  facet_wrap(~ topic, scales = "free") +
-  scale_y_reordered()
+model_topics_overall(tidy_tweets, 4)
 ```
 
 # topic modelling over time
