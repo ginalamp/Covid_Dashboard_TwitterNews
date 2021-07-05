@@ -115,7 +115,7 @@ cleaned_tweets <- df %>%
          !word %in% str_remove_all(stop_words$word, "'"),
          str_detect(word, "[a-z]")) %>%
   # group words back together (creating sentences) according to their twitter_id
-  group_by(status_id, screen_name, created_at) %>%
+  group_by(status_id, screen_name, created_at, retweet_count, favorite_count) %>%
   summarize(text=str_c(word, collapse = " ")) %>%
   ungroup()
 
@@ -156,6 +156,62 @@ total_overall_sentiment <- sum(overall_sentiment_per_outlet$sentiment_mean)
 total_overall_sentiment
 ```
 
+
+# Sentiment on top x tweets
+```{r set number of tweets to be extracted}
+NUM_TWEETS <- 10
+```
+
+```{r sentiment analysis on top retweeted tweets per media outlet}
+# TODO need to plot nicely (as table?)
+
+# get top NUM_TWEETS retweeted tweets per media outlet
+get_top_retweets <- function(df) {
+  text <- df %>%
+    arrange(desc(retweet_count)) %>% 
+    slice(1:NUM_TWEETS) %>% 
+    select(status_id, screen_name, created_at, retweet_count, text)
+  return(text)
+}
+
+# apply sentiment analysis on top NUM_TWEETS user retweeted tweets per media outlet
+top_retweets <- lapply(tidy_tweets, get_top_retweets)
+top_retweets_vader_analysis <- lapply(top_retweets, apply_vader)
+top_retweets_vader_analysis
+
+# get average sentiment for top retweets per media outlet
+top_retweets_sentiment_mean <- unlist(lapply(top_retweets_vader_analysis, get_sentiment_mean))
+top_retweets_sentiment_per_outlet <- data.frame(name, top_retweets_sentiment_mean)
+top_retweets_sentiment_per_outlet
+```
+
+
+
+```{r sentiment analysis on top favourited tweets per media outlet}
+# TODO need to plot nicely (as table?)
+
+# get top NUM_TWEETS favourited tweets per media outlet
+get_top_favorited_tweets <- function(df) {
+  text <- df %>%
+    arrange(desc(favorite_count)) %>% 
+    slice(1:NUM_TWEETS) %>% 
+    select(status_id, screen_name, created_at, favorite_count, text)
+  return(text)
+}
+# apply sentiment analysis on top NUM_TWEETS favourited tweets per media outlet
+top_favourited <- lapply(tidy_tweets, get_top_favorited_tweets)
+top_favourited_vader_analysis <- lapply(top_favourited, apply_vader)
+top_favourited_vader_analysis
+
+# get average sentiment for top favourited tweets per media outlet
+top_favourited_sentiment_mean <- unlist(lapply(top_favourited_vader_analysis, get_sentiment_mean))
+top_favourited_sentiment_per_outlet <- data.frame(name, top_favourited_sentiment_mean)
+top_favourited_sentiment_per_outlet
+```
+
+
+
+
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Visualisation -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -175,3 +231,26 @@ ggplot(overall_sentiment_per_outlet, aes(name, sentiment_mean, fill=name)) +
   scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
   custom_column_basic_theme()
 ```
+
+```{r plot sentiment on Top x retweeted tweets per organisation (that users retweet)}
+ggplot(top_retweets_sentiment_per_outlet, aes(name, top_retweets_sentiment_mean, fill=name)) +
+  geom_col() +
+  labs(title = "Sentiment of Top 10 retweeted tweets per organisation on covid-19",
+       x=NULL,
+       y=NULL) +
+  scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  custom_column_basic_theme()
+```
+
+```{r Sentiment on Top x favourited tweets per organisation}
+ggplot(top_favourited_sentiment_per_outlet, aes(name, top_favourited_sentiment_mean, fill=name)) +
+  geom_col() +
+  labs(title = "Sentiment of Top 10 favourited tweets per organisation on covid-19",
+       x=NULL,
+       y=NULL) +
+  scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  custom_column_basic_theme()
+```
+
+
+
