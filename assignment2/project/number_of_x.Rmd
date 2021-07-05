@@ -105,9 +105,14 @@ get_top_retweets <- function(df) {
   text <- df %>%
     arrange(desc(retweet_count)) %>% 
     slice(1:x) %>% 
-    select(screen_name, retweet_count, text)
+    select(status_id, screen_name, created_at, retweet_count, text)
   return(text)
 }
+
+# TODO need to plot nicely (as table?)
+# top 5 user retweeted tweets per media outlet
+top_retweets <- lapply(media_outlet_list, get_top_retweets)
+top_retweets
 ```
 
 ```{r get top x favourited tweets per media outlet}
@@ -116,22 +121,17 @@ get_top_favorited_tweets <- function(df) {
   text <- df %>%
     arrange(desc(favorite_count)) %>% 
     slice(1:x) %>% 
-    select(screen_name, favorite_count, text)
+    select(status_id, screen_name, created_at, favorite_count, text)
   return(text)
-}
-```
 
-```{r top 5 user retweeted tweets per media outlet}
-# TODO need to plot nicely (as table?)
-top_retweets <- lapply(media_outlet_list, get_top_retweets)
-top_retweets
-```
-
-```{r top 5 favourited tweets per media outlet}
+# top 5 favourited tweets per media outlet
 # TODO need to plot nicely (as table?)
 top_favourited <- lapply(media_outlet_list, get_top_favorited_tweets)
 top_favourited
+}
 ```
+
+
 
 ```{r}
 # select tweet IDs that are retweets

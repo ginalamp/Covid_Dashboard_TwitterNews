@@ -12,13 +12,15 @@ library(lubridate)
 library(dplyr)
 library(stringr)
 library(tidyr)
-library(topicmodels)
 library(ggplot2)
+library(topicmodels) # NOTE: (Gina) need to install gsl package first with sudo apt-get install libgsl0-dev
+# Gina added
+library(reshape2) # threw an error when assigning org_lda for not having this package
 ```
 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Topic Modelling for SA Media Agencies -->
+<!-- Topic Modeling for SA Media Agencies -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 ```{r}
