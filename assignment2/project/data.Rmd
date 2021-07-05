@@ -165,6 +165,21 @@ AP_tweets <- AP_tweets %>%
 write.csv(AP_tweets, "data/AP_tweets.csv")
 ```
 
+# Firefox
+```{r}
+firefox_tweets_full <- get_timeline("firefox", n=n_tweets)
+```
+```{r}
+# take out columns consisting of NA values
+firefox_tweets <- firefox_tweets_full[, colSums(!is.na(firefox_tweets_full)) == nrow(firefox_tweets_full)]
+# take out columns that have list values
+firefox_tweets <- firefox_tweets %>%
+  select_if(~!is.list(.))
+
+# write to csv
+write.csv(firefox_tweets, "data/firefox_tweets.csv")
+```
+
 --------------------------------------------------
 SA
 --------------------------------------------------
