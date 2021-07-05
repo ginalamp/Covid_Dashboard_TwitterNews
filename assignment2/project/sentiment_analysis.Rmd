@@ -3,6 +3,9 @@ title: "Sentiment analysis"
 output: html_notebook
 ---
 
+# TODO
+* add custom sentiment to vader analysis
+
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -57,12 +60,14 @@ extract_relevant_data <- function(df) {
 ```
 
 ```{r read data}
-CapeTalk_tweets <- extract_relevant_data(read.csv("data/CapeTalk_tweets.csv"))
+# CapeTalk_tweets <- extract_relevant_data(read.csv("data/CapeTalk_tweets.csv"))
 DailyMav_tweets <- extract_relevant_data(read.csv("data/DailyMav_tweets.csv"))
 EWN_tweets <- extract_relevant_data(read.csv("data/EWN_tweets.csv"))
 News24_tweets <- extract_relevant_data(read.csv("data/News24_tweets.csv"))
 SABCNews_tweets <- extract_relevant_data(read.csv("data/SABCNews_tweets.csv"))
-media_outlet_list <- list(CapeTalk_tweets, DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
+# media_outlet_list <- list(CapeTalk_tweets, DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
+media_outlet_list <- list(DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
+
 head(media_outlet_list[1])
 ```
 
@@ -70,49 +75,120 @@ head(media_outlet_list[1])
 <!-- Data Wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r get relevant covid tweets}
-# filter for tweets related to covid
-relevant_CapeTalk <- CapeTalk_tweets[grepl("covid", CapeTalk_tweets[["text"]]) | 
-                  grepl("Covid", CapeTalk_tweets[["text"]]) |
-                  grepl("corona", CapeTalk_tweets[["text"]]) |
-                  grepl("Corona", CapeTalk_tweets[["text"]]) |
-                  grepl("Pandemic", CapeTalk_tweets[["text"]]) |
-                  grepl("pandemic", CapeTalk_tweets[["text"]]), ]
-relevant_CapeTalk <- relevant_CapeTalk %>%
-  mutate(created_at = ymd_hms(created_at))
 
-relevant_CapeTalk
+```{r extract tweets related to covid and combine covid tweets into a list}
+# extract covid tweets function
+get_covid_tweets <- function(df) {
+relevant_df <-  df[grepl("covid", df[["text"]]) | 
+                  grepl("Covid", df[["text"]]) |
+                  grepl("corona", df[["text"]]) |
+                  grepl("Corona", df[["text"]]) |
+                  grepl("Pandemic", df[["text"]]) |
+                  grepl("pandemic", df[["text"]]), ]
+relevant_df <- relevant_df %>%
+  mutate(created_at = ymd_hms(created_at))
+return(relevant_df)
+}
+
+# call get_covid_tweets() function for all media outlets
+# relevant_CapeTalk <- get_covid_tweets(CapeTalk_tweets)
+relevant_DM <- get_covid_tweets(DailyMav_tweets)
+relevant_EWN <- get_covid_tweets(EWN_tweets)
+relevant_News24 <- get_covid_tweets(News24_tweets)
+relevant_SABC <- get_covid_tweets(SABCNews_tweets)
+
+# combine tweets into list
+# covid_tweets <- list(relevant_CapeTalk, relevant_DM, relevant_EWN, relevant_News24, relevant_SABC)
+covid_tweets <- list(relevant_DM, relevant_EWN, relevant_News24, relevant_SABC)
 ```
-xx
-```{r remove stopwords and clean data}
-# define custom stopwords
+
+```{r tidy tweets - remove stopwords and clean data}
 my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
 
-# remove stopwords, links, special chatacters
-tidy_tweets <- relevant_CapeTalk %>%
+clean_tweets <- function(df) {
+# remove stop words, links, special characters
+cleaned_tweets <- df %>%
   unnest_tokens(word, text) %>%
   filter(!word %in% stop_words$word,
          !word %in% my_stopwords,
          !word %in% str_remove_all(stop_words$word, "'"),
          str_detect(word, "[a-z]")) %>%
   # group words back together (creating sentences) according to their twitter_id
-  group_by(status_id) %>%
+  group_by(status_id, screen_name, created_at) %>%
   summarize(text=str_c(word, collapse = " ")) %>%
   ungroup()
+
+return(cleaned_tweets)
+}
+
+# apply cleaning function to all media outlets
+tidy_tweets <- lapply(covid_tweets, clean_tweets)
 tidy_tweets
 ```
 
+<!-- xx -->
+<!-- ```{r remove stopwords and clean data} -->
+<!-- # define custom stopwords -->
+<!-- my_stopwords <- c("covid", "covid19", "corona", "coronavirus") -->
 
-```{r vader sentiment analysis on dataframe}
+<!-- # remove stopwords, links, special chatacters -->
+<!-- tidy_tweets <- relevant_CapeTalk %>% -->
+<!--   unnest_tokens(word, text) %>% -->
+<!--   filter(!word %in% stop_words$word, -->
+<!--          !word %in% my_stopwords, -->
+<!--          !word %in% str_remove_all(stop_words$word, "'"), -->
+<!--          str_detect(word, "[a-z]")) %>% -->
+<!--   # group words back together (creating sentences) according to their twitter_id -->
+<!--   group_by(status_id) %>% -->
+<!--   summarize(text=str_c(word, collapse = " ")) %>% -->
+<!--   ungroup() -->
+<!-- tidy_tweets -->
+<!-- ``` -->
+
+```{r apply vader sentiment analysis to list of cleaned covid tweets}
 # https://towardsdatascience.com/sentimental-analysis-using-vader-a3415fef7664
 # all values greater than zeroes will be considered a positive review and all values less than zero would be considered as a negative review.
-vader_analysis <- vader_df(tidy_tweets$text)
+apply_vader <- function(df) {
+  return(vader_df(df$text))
+}
+vader_analysis <- lapply(tidy_tweets, apply_vader)
 vader_analysis
 ```
+
+<!-- x -->
+<!-- ```{r vader sentiment analysis on dataframe} -->
+<!-- # https://towardsdatascience.com/sentimental-analysis-using-vader-a3415fef7664 -->
+<!-- # all values greater than zeroes will be considered a positive review and all values less than zero would be considered as a negative review. -->
+<!-- vader_analysis <- vader_df(tidy_tweets$text) -->
+<!-- vader_analysis -->
+<!-- ``` -->
+
 ```{r}
-# get average sentiment
-mean(vader_analysis$compound)
+name <- unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])}))
+name
 ```
 
+```{r}
+get_sentiment_mean <- function(df) {
+  return(mean(df$compound))
+}
+# get average sentiment
+sentiment_mean <- unlist(lapply(vader_analysis, get_sentiment_mean))
+sentiment_mean
+overall_sentiment_per_outlet <- data.frame(name, sentiment_mean)
+overall_sentiment_per_outlet
+```
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Visualisation -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 
+```{r plot overall sentiment per organisation on covid-19}
+ggplot(overall_sentiment_per_outlet, aes(name, sentiment_mean, fill=name)) +
+  geom_col() +
+  labs(title = "Overall sentiment per organisation on covid-19",
+       x=NULL,
+       y=NULL) +
+  scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  custom_column_basic_theme()
+```
