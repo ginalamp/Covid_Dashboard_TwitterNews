@@ -1,0 +1,87 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(lubridate)
+library(dplyr)
+library(stringr)
+library(scales)
+```
+
+```{r}
+# USA
+cnn_tweets <- read.csv("data/cnnbrk_tweets.csv")
+foxnews_tweets <- read.csv("data/FoxNews_tweets.csv")
+# UK
+bbcbreaking_tweets <- read.csv("data/BBCbreaking_tweets.csv")
+# Global
+time_tweets <- read.csv("data/time_tweets.csv")
+economist_tweets <- read.csv("data/economist_tweets.csv")
+bbcworld_tweets <- read.csv("data/bbcworld_tweets.csv")
+AP_tweets <- read.csv("data/AP_tweets.csv")
+firefox_tweets <- read.csv("data/firefox_tweets.csv")
+# SA government
+govZA_tweets <- read.csv("data/govZA_tweets.csv")
+```
+
+```{r}
+filter_relevant_tweets <- function(tweets) {
+  relevant_tweets <- tweets[grepl("covid", tweets[["text"]]) | 
+                  grepl("Covid", tweets[["text"]]) |
+                  grepl("corona", tweets[["text"]]) |
+                  grepl("Corona", tweets[["text"]]) |
+                  grepl("Pandemic", tweets[["text"]]) |
+                  grepl("pandemic", tweets[["text"]]), ]
+relevant_tweets <- relevant_tweets %>%
+  mutate(created_at = ymd_hms(created_at))
+}
+```
+
+```{r}
+relevant_cnn <- filter_relevant_tweets(cnn_tweets)
+relevant_foxnews <- filter_relevant_tweets(foxnews_tweets)
+relevant_bbcbreaking <- filter_relevant_tweets(bbcbreaking_tweets)
+relevant_time <- filter_relevant_tweets(time_tweets)
+relevant_economist <- filter_relevant_tweets(economist_tweets)
+relevant_bbcworld <- filter_relevant_tweets(bbcworld_tweets)
+relevant_AP <- filter_relevant_tweets(AP_tweets)
+relevant_firefox <- filter_relevant_tweets(firefox_tweets)
+relevant_govZA <- filter_relevant_tweets(govZA_tweets)
+```
+
+# Comparing Tweet Frequency over Time
+```{r}
+# combine all tweets into one dataframe
+tweets <- bind_rows(relevant_cnn %>% mutate(user = "CNN"),
+                    relevant_foxnews %>% mutate(user = "FoxNews"),
+                    relevant_bbcbreaking %>% mutate(user = "BBCbreaking"),
+                    relevant_time %>% mutate(user = "Time"),
+                    relevant_economist %>% mutate(user = "Economist"),
+                    relevant_bbcworld %>% mutate(user = "BBCworld"),
+                    relevant_AP %>% mutate(user = "AP"),
+                    relevant_firefox %>% mutate(user = "Firefox"))
+```
+
+```{r}
+# plot tweet frequency over time by org
+ggplot(tweets, aes(x = created_at, fill = user)) +
+  geom_histogram(position = "identity", bins = 20, show.legend = FALSE) +
+  facet_wrap(~user, ncol = 2) + 
+  labs(title = "Frequency of Covid-related Tweets over Time")
+```
+```{r}
+colors <- c("Tweets related to Covid" = "blue", "All Tweets" = "red")
+# plot govZA tweet freq over time
+ggplot() +
+  geom_histogram(govZA_tweets %>% mutate(created_at = ymd_hms(created_at)), mapping = aes(x = created_at, color = "All Tweets"), position = "identity", bins = 30, show.legend = TRUE) +
+  geom_histogram(relevant_govZA, mapping = aes(x = created_at, color = "Tweets related to Covid"), position = "identity", bins = 30, show.legend = TRUE) +
+  labs(title = "GovZA Tweet Frequency over Time", color = "Tweets") +
+    scale_color_manual(values = colors)
+```
+
+
+
