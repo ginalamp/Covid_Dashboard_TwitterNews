@@ -267,7 +267,7 @@ ggplot(overall_sentiment_per_outlet, aes(name, sentiment_mean, fill=name)) +
 ```{r plot sentiment on Top x retweeted tweets per organisation (that users retweet)}
 ggplot(top_retweets_sentiment_per_outlet, aes(name, top_retweets_sentiment_mean, fill=name)) +
   geom_col() +
-  labs(title = "Sentiment of Top 10 retweeted tweets per organisation on covid-19",
+  labs(title = paste("Sentiment of Top", NUM_TWEETS, "retweeted tweets per organisation on covid-19"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
@@ -277,7 +277,7 @@ ggplot(top_retweets_sentiment_per_outlet, aes(name, top_retweets_sentiment_mean,
 ```{r Sentiment on Top x favourited tweets per organisation}
 ggplot(top_favourited_sentiment_per_outlet, aes(name, top_favourited_sentiment_mean, fill=name)) +
   geom_col() +
-  labs(title = "Sentiment of Top 10 favourited tweets per organisation on covid-19",
+  labs(title = paste("Sentiment of Top", NUM_TWEETS, "favourited tweets per organisation on covid-19"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
@@ -296,7 +296,7 @@ tidy_tweets
 ggplot(bind_rows(tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=screen_name)) + 
   geom_line() +
   labs(title= "Sentiment over time per media outlet",
-       subtitle = paste("A rolling average of", NUM_TWEETS, "is used."),
+       subtitle = paste("A rolling average of", ROLLING_AVERAGE_TIME, "is used."),
        color="Media outlet",
        x = NULL,
        y = "Vader Sentiment Score") +
