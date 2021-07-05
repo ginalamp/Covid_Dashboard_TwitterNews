@@ -8,6 +8,9 @@ renv/
 *.nb.html
 *.html
 
+# Added: ignore files
+*ignore*
+
 # History files
 .Rhistory
 .Rapp.history
