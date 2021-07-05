@@ -83,5 +83,296 @@ ggplot() +
     scale_color_manual(values = colors)
 ```
 
+# word frequencies
+
+```{r}
+# define custom stopwords
+my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
+# remove stopwords
+tidy_tweets <- tweets %>% 
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stop_words$word,
+         !word %in% my_stopwords,
+         !word %in% str_remove_all(stop_words$word, "'"),
+         str_detect(word, "[a-z]"))
+```
+```{r}
+# calculate frequency of words by organisation
+frequency_wide <- tidy_tweets %>% 
+  group_by(user) %>% 
+  count(word, sort = TRUE) %>% 
+  left_join(tidy_tweets %>% 
+              group_by(user) %>% 
+              summarise(total = n())) %>%
+  mutate(freq = n/total)
+frequency_wide
+```
+
+```{r}
+# frequency of words per organisation (tidier)
+frequency <- frequency_wide %>% 
+  select(user, word, freq) %>% 
+  pivot_wider(names_from = user, values_from = freq)
+frequency
+```
+
+# Top words per organisation
+```{r}
+# top n words to consider
+n_words <- 10
+```
+
+```{r, eval=FALSE}
+# does not work
+top_words <- function(org) {
+  return(frequency %>%
+  select(word, org) %>%
+  arrange(desc(org)))
+}
+```
+```{r, eval=FALSE}
+# does not work
+top_CNN <- top_words("CNN")
+top_CNN
+```
 
 
+```{r}
+# top words CNN
+top_words_CNN <- frequency %>%
+  select(word, CNN) %>%
+  arrange(desc(CNN))
+top_words_CNN
+# top words FoxNews
+top_words_FoxNews <- frequency %>%
+  select(word, FoxNews) %>%
+  arrange(desc(FoxNews))
+top_words_FoxNews
+# top words BBCbreaking
+top_words_BBCbreaking <- frequency %>%
+  select(word, BBCbreaking) %>%
+  arrange(desc(BBCbreaking))
+top_words_BBCbreaking
+# top words Time
+top_words_Time <- frequency %>%
+  select(word, Time) %>%
+  arrange(desc(Time))
+top_words_Time
+# top words The Economist
+top_words_Economist <- frequency %>%
+  select(word, Economist) %>%
+  arrange(desc(Economist))
+top_words_Economist
+# top words BBCworld
+top_words_BBCworld <- frequency %>%
+  select(word, BBCworld) %>%
+  arrange(desc(BBCworld))
+top_words_BBCworld
+# top words AP
+top_words_AP <- frequency %>%
+  select(word, AP) %>%
+  arrange(desc(AP))
+top_words_AP
+# top words Firefox
+top_words_Firefox <- frequency %>%
+  select(word, Firefox) %>%
+  arrange(desc(Firefox))
+top_words_Firefox
+
+```
+
+```{r}
+# top n words per organisation
+top_n <- frequency_wide %>%
+  group_by(user) %>%
+  slice_max(order_by = freq, n=n_words) %>%
+  ungroup
+
+users <- unique(top_n[c("user")])
+
+# Finding maximum length
+ln <- top_n %>%
+  group_by(user) %>%
+  count()
+ln
+max_ln <- max(ln$n)
+
+
+top_n_per_org <- data.frame(top_n %>% filter(user == "CNN") %>% select(word)) %>%
+  mutate(CNN = word) %>%
+  select(CNN)
+for (i in seq(nrow(users[1]))) {
+  top_n_of_org <- top_n %>% filter(user == users$user[i]) %>% select(word)
+  top_n_per_org[[users$user[i]]] = head(top_n_of_org, n_words)
+}
+
+top_n_per_org <- top_n_per_org %>% unnest() %>% head(n_words)
+top_n_per_org
+```
+
+
+# Top n words overall
+
+```{r}
+# frequency of words overall (not per org)
+overall_frequency <- tidy_tweets %>%
+  select(word) %>%
+  count(word) %>%
+  arrange(n) %>%
+  mutate(total = sum(n))
+
+overall_frequency$word <- factor(overall_frequency$word, levels = overall_frequency$word)
+overall_frequency
+```
+```{r}
+# plot most frequently used words
+ggplot(tail(overall_frequency,20), aes(word, n)) +
+  geom_col() +
+  labs(title = "Top 20 words overall") +
+  coord_flip()
+```
+
+# Top hashtags
+
+```{r}
+# calculate frequency of hashtags by organisation
+frequency_wide_ht <- tidy_tweets %>% 
+  filter(str_detect(word, "^#")) %>%
+  group_by(user) %>% 
+  count(word, sort = TRUE) %>% 
+  left_join(tidy_tweets %>% 
+              group_by(user) %>% 
+              summarise(total = n())) %>%
+  mutate(freq = n/total)
+frequency_wide_ht
+```
+
+```{r}
+# frequency of hashtags per organisation (tidier)
+frequency_ht <- frequency_wide_ht %>% 
+  select(user, word, freq) %>% 
+  pivot_wider(names_from = user, values_from = freq)
+frequency_ht
+```
+
+```{r}
+# top n hashtags to consider
+n_hashtags <- 1
+```
+
+```{r}
+# TODO: fill with NA values if agency has less than n hashtags, so that n_hashtags can be increased
+
+
+# top n hashtags per organisation
+top_n_ht <- frequency_wide_ht %>%
+  group_by(user) %>%
+  slice_max(order_by = freq, n=n_hashtags) %>%
+  ungroup
+top_n_ht
+
+users <- unique(top_n_ht[c("user")])
+
+# Finding maximum length
+ln <- top_n_ht %>%
+  group_by(user) %>%
+  count()
+ln
+max_ln <- max(ln$n)
+
+top_n_per_org_ht <- data.frame(top_n_ht %>% filter(user == "CNN") %>% select(word)) %>%
+  mutate(CNN = word) %>%
+  select(CNN) %>%
+  head(n_hashtags)
+
+for (i in seq(nrow(users[1]))) {
+  top_n_of_org_ht <- top_n_ht %>% filter(user == users$user[i]) %>% select(word)
+  top_n_per_org_ht[[users$user[i]]] = head(top_n_of_org_ht, n_hashtags)
+  
+  #top_n_per_org_ht[[users$user[i]]] = (top_n_ht %>% filter(user == users$user[i]) %>% select(word))
+}
+
+top_n_per_org_ht <- top_n_per_org_ht %>% unnest() %>% head(n_hashtags)
+top_n_per_org_ht
+```
+
+# Top n hashtags overall
+
+```{r}
+# frequency of hashtags overall (not per org)
+overall_frequency_ht <- tidy_tweets %>%
+  filter(str_detect(word, "^#")) %>%
+  select(word) %>%
+  count(word) %>%
+  arrange(n) %>%
+  mutate(total = sum(n))
+
+overall_frequency_ht$word <- factor(overall_frequency_ht$word, levels = overall_frequency_ht$word)
+overall_frequency_ht
+```
+
+```{r}
+# plot most frequently used hashtags
+ggplot(tail(overall_frequency_ht,20), aes(word, n)) +
+  geom_col() +
+  labs(title = "Top 20 hashtags overall") +
+  coord_flip()
+```
+
+
+# word usage over time
+
+```{r}
+words_by_time <- tidy_tweets %>%
+  #filter(!str_detect(word, "^@")) %>%
+  # create time bins
+  mutate(time_floor = floor_date(created_at, unit = "week")) %>%
+  # count how often each org uses each word in each bin
+  count(time_floor, user, word) %>%
+  # add column for the total number words used by each org in each time bin
+  group_by(user, time_floor) %>%
+  mutate(time_total = sum(n)) %>%
+  # add column for the total number of times each word was used by each org
+  group_by(user, word) %>%
+  mutate(word_total = sum(n)) %>%
+  ungroup() %>%
+  rename(count = n) %>%
+  # consider only top words
+  filter(word_total > 35)
+
+words_by_time
+```
+```{r}
+library(purrr)
+library(broom)
+# create a dataframe with one row for each user-word combination, remaining data as a tibble in the last column
+nested_data <- words_by_time %>%
+  nest(-word, -user) 
+nested_data
+
+# model to determine the change in frequency over time as slopes
+nested_models <- nested_data %>%
+  mutate(models = map(data, ~ glm(cbind(count, time_total) ~ time_floor, ., 
+                                  family = "binomial")))
+nested_models
+
+# extract slopes
+slopes <- nested_models %>%
+  mutate(models = map(models, tidy)) %>%
+  unnest(cols = c(models)) %>%
+  filter(term == "time_floor") %>%
+  mutate(adjusted.p.value = p.adjust(p.value))
+slopes
+```
+```{r}
+# plot comparison of word usage over time by orgs
+
+words_by_time_slopes <- words_by_time %>%
+  inner_join(slopes, by = c("word", "user"))
+
+
+ggplot(words_by_time_slopes, aes(time_floor, count/time_total, color = word)) +
+  geom_line(size = 1.3) +
+  facet_wrap(~user, ncol = 2) +
+  labs(x = NULL, y = "Word frequency")
+```
