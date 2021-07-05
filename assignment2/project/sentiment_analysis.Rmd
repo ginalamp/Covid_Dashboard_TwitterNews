@@ -223,7 +223,7 @@ top_favourited_sentiment_per_outlet
 
 
 # Sentiment analysis over time
-```{r}
+```{r sentiment analysis over time with rolling avg}
 # want to add the vader compound column (in a list of dataframes) to tidy_tweets (a list of dataframes)
 for (i in seq(tidy_tweets)) {
   tidy_tweets[[i]]["compound"] <- vader_analysis[[i]]["compound"]
@@ -237,9 +237,6 @@ for (i in seq(tidy_tweets)) {
     mutate(rolling_avg = roll_mean(compound, n=ROLLING_AVERAGE_TIME, fill = NA, align = "right"))
 }
 tidy_tweets
-```
-```{r}
-
 ```
 
 
@@ -282,11 +279,6 @@ ggplot(top_favourited_sentiment_per_outlet, aes(name, top_favourited_sentiment_m
        y="Vader Sentiment Score") +
   scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
   custom_column_basic_theme()
-```
-
-```{r}
-tidy_tweets[[1]] <- tidy_tweets[[1]] %>% mutate(ymd(created_at))
-tidy_tweets
 ```
 
 
