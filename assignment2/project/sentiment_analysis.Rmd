@@ -46,6 +46,7 @@ custom_column_basic_theme <- function () {
 library(tidyverse)
 library(vader) # sentiment analysis
 library(tidytext)
+library(lubridate) # date conversion
 library(ggplot2)
 ```
 
@@ -69,25 +70,86 @@ head(media_outlet_list[1])
 <!-- Data Wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r remove stopwords}
+```{r get relevant covid tweets}
+# filter for tweets related to covid
+relevant_CapeTalk <- CapeTalk_tweets[grepl("covid", CapeTalk_tweets[["text"]]) | 
+                  grepl("Covid", CapeTalk_tweets[["text"]]) |
+                  grepl("corona", CapeTalk_tweets[["text"]]) |
+                  grepl("Corona", CapeTalk_tweets[["text"]]) |
+                  grepl("Pandemic", CapeTalk_tweets[["text"]]) |
+                  grepl("pandemic", CapeTalk_tweets[["text"]]), ]
+relevant_CapeTalk <- relevant_CapeTalk %>%
+  mutate(created_at = ymd_hms(created_at))
 
+relevant_CapeTalk
 ```
+xx
+```{r remove stopwords and clean data}
+# define custom stopwords
+my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
+
+# remove stopwords, links, special chatacters
+tidy_tweets <- relevant_CapeTalk %>%
+  unnest_tokens(word, text) %>%
+  filter(!word %in% stop_words$word,
+         !word %in% my_stopwords,
+         !word %in% str_remove_all(stop_words$word, "'"),
+         str_detect(word, "[a-z]")) %>%
+  # group words back together (creating sentences) according to their twitter_id
+  group_by(status_id) %>%
+  summarize(text=str_c(word, collapse = " ")) %>%
+  ungroup()
+tidy_tweets
+```
+
+
+<!-- x -->
+<!-- ```{r remove stopwords} -->
+<!-- # define custom stopwords -->
+<!-- my_stopwords <- c("covid", "covid19", "corona", "coronavirus") -->
+<!-- # remove stopwords -->
+<!-- tidy_tweets <- relevant_CapeTalk %>% -->
+<!--   # unnest_tokens(word, text) %>% -->
+<!--   filter(!text %in% stop_words$word, -->
+<!--          !text %in% my_stopwords, -->
+<!--          !text %in% str_remove_all(stop_words$word, "'"), -->
+<!--          str_detect(text, "[a-z]")) -->
+<!-- tidy_tweets -->
+<!-- ``` -->
+<!-- xxx -->
+<!-- ```{r clean data} -->
+<!-- require("tm") -->
+<!-- # remove links - https://towardsdatascience.com/twitter-sentiment-analysis-and-visualization-using-r-22e1f70f6967 -->
+<!-- relevant_CapeTalk$text <- gsub("http\\S+", "", relevant_CapeTalk$text) -->
+<!-- relevant_CapeTalk$text <- gsub("\\s+", " ", relevant_CapeTalk$text) -->
+<!-- relevant_CapeTalk$text <- gsub("[[:punct:]]", "", relevant_CapeTalk$text) -->
+<!-- relevant_CapeTalk$text <- gsub("['`^~\"]", " ", relevant_CapeTalk$text) -->
+<!-- relevant_CapeTalk$text <- iconv(relevant_CapeTalk$text, from = "UTF-8", to = "ASCII//TRANSLIT//IGNORE") -->
+<!-- relevant_CapeTalk$text <- gsub("['`^~\"]", "", relevant_CapeTalk$text) -->
+<!-- # remove stopwards -->
+<!-- text<-removeWords(text, stop_words) -->
+
+<!-- relevant_CapeTalk$text -->
+<!-- ``` -->
+
 
 
 ```{r vader sentiment analysis on dataframe}
-vader_df(CapeTalk_tweets$text)
+vader_df(tidy_tweets$text)
 ```
-
-```{r vader sentiment analysis on one tweet}
-get_vader(CapeTalk_tweets$text[3])
-```
+<!-- xxx -->
+<!-- ```{r vader sentiment analysis on one tweet} -->
+<!-- get_vader(CapeTalk_tweets$text[3]) -->
+<!-- ``` -->
 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Learning stuff - not for publishing -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-# Learning
+# Learning: TidyTextMining
+
+## Chapter 1: Tidy text format
 ```{r one sentence sentiment}
 text <- c("Because I could not stop for Death -",
           "He kindly stopped for me -",
@@ -143,7 +205,10 @@ tidy_books %>%
 ```
 
 
+## Chapter 2: Sentiment analysis
 
-
+```{r}
+get_sentiments("afinn")
+```
 
 
