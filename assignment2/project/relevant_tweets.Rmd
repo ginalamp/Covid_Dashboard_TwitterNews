@@ -13,6 +13,8 @@ library(lubridate)
 library(dplyr)
 library(stringr)
 library(scales)
+library(gridExtra)
+library(grid)
 ```
 
 ```{r}
@@ -179,6 +181,13 @@ top_n_per_org <- top_n_per_org %>% unnest() %>% head(n_words)
 top_n_per_org
 ```
 
+```{r}
+# https://stackoverflow.com/questions/31796219/grid-table-and-tablegrob-in-gridextra-package
+# https://cran.r-project.org/web/packages/gridExtra/vignettes/tableGrob.html#faster-tables-an-alternative-grid-function
+grid.newpage()
+grid.table(top_n_per_org)
+```
+
 # Top n words overall
 
 ```{r}
@@ -257,6 +266,13 @@ for (i in seq(nrow(users[1]))) {
 top_n_per_org_ht <- top_n_per_org_ht %>% unnest() %>% head(n_hashtags)
 top_n_per_org_ht
 ```
+
+```{r}
+grid.newpage()
+grid.table(top_n_per_org_ht)
+```
+
+
 # Top n hashtags overall
 
 ```{r}
