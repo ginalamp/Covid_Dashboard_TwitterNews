@@ -24,18 +24,19 @@ library(vader) # sentiment analysis
 <!-- Topic Modeling for SA Media Agencies -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r}
+```{r read data}
 SABCNews_tweets <- read.csv("data/SABCNews_tweets.csv")
 DailyMav_tweets <- read.csv("data/DailyMav_tweets.csv")
 CapeTalk_tweets <- read.csv("data/CapeTalk_tweets.csv")
 EWN_tweets <- read.csv("data/EWN_tweets.csv")
 News24_tweets <- read.csv("data/News24_tweets.csv")
 
+# TODO: combine into list as with seniment analysis
 # media_outlet_list <- list(DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets) # Gina added
 ```
 
 
-```{r}
+```{r extract tweets related to covid}
 filter_relevant_tweets <- function(tweets) {
   relevant_tweets <- tweets[grepl("covid", tweets[["text"]]) | 
                   grepl("Covid", tweets[["text"]]) |
@@ -45,17 +46,17 @@ filter_relevant_tweets <- function(tweets) {
                   grepl("pandemic", tweets[["text"]]), ]
 relevant_tweets <- relevant_tweets %>%
   mutate(created_at = ymd_hms(created_at))
-}
-```
-```{r}
+
+# TODO: combine into list as with sentiment analysis
 relevant_SABC <- filter_relevant_tweets(SABCNews_tweets)
 relevant_DM <- filter_relevant_tweets(DailyMav_tweets)
 relevant_CapeTalk <- filter_relevant_tweets(CapeTalk_tweets)
 relevant_EWN <- filter_relevant_tweets(EWN_tweets)
 relevant_News24 <- filter_relevant_tweets(News24_tweets)
+}
 ```
 
-```{r}
+```{r combine all tweets into one dataframe}
 # combine all tweets into one dataframe
 tweets <- bind_rows(relevant_SABC %>% mutate(user = "SABC"),
                     relevant_DM %>% mutate(user = "DailyMaverick"),
@@ -64,7 +65,10 @@ tweets <- bind_rows(relevant_SABC %>% mutate(user = "SABC"),
                     relevant_News24 %>% mutate(user = "News24"))
 ```
 
-```{r}
+```{r tidy tweets - remove stopwords and clean data}
+# TODO: remove links
+# TODO: remove mentions
+# TODO: remove numbers
 remove_stopwords <- function(tweets_in) {
   # define custom stopwords
   my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
@@ -77,14 +81,13 @@ remove_stopwords <- function(tweets_in) {
            str_detect(word, "[a-z]"))
   return(tidy_tweets)
 }
-```
-```{r}
+
 tidy_tweets <- remove_stopwords(tweets)
 ```
 
 
 # Topic Modelling
-```{r}
+```{r apply topic modelling to get overall topics}
 overall_topics <- function(tidy_tweets_in, nr_of_topics) {
   # word count by media organisation
   word_counts <- tidy_tweets_in %>%
@@ -108,7 +111,7 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
 }
 ```
 
-```{r}
+```{r plot topics}
 model_topics_overall <- function(tidy_tweets_in, nr_of_topics) {
   
   orgs_topics <- overall_topics(tidy_tweets_in, nr_of_topics)
@@ -135,7 +138,7 @@ model_topics_overall <- function(tidy_tweets_in, nr_of_topics) {
 #  pivot_wider(names_from = topic, values_from = beta)
 ```
 
-```{r}
+```{r extract top words per topic}
 top_words_per_topic <- function(topics, words_per_topic) {
   return(topics%>%
   group_by(topic) %>%
@@ -145,7 +148,7 @@ top_words_per_topic <- function(topics, words_per_topic) {
 }
 ```
 
-```{r}
+```{r get overall topics for all media outlets for entire time period}
 # top words per topic (for sentiment analysis)
 nr_of_topics <- 4
 words_per_topic <- 200
@@ -158,7 +161,7 @@ model_topics_overall(tidy_tweets, nr_of_topics)
 
 # topic modelling over time
 
-```{r}
+```{r get topics per month}
 monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
   # word count by media organisation for specified month
   word_counts <- tidy_tweets_in %>%
@@ -184,7 +187,7 @@ monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
 }
 ```
 
-```{r}
+```{r plot topics per month}
 # past_month being the full date of the first day of that month - eg "2021-06-01" for June
 model_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
 
@@ -209,23 +212,24 @@ model_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
 }
 ```
 
-```{r}
+```{r get overall topics for all media outlets per month}
 # top words per topic (for sentiment analysis)
 nr_of_topics <- 4
 words_per_topic <- 200
+# TODO: where is June_topics used?
 June_topics <- top_words_per_topic(monthly_topics(tidy_tweets, "2021-06-01", 4), words_per_topic)
-```
 
-```{r}
+# plot
 model_topics_of_month(tidy_tweets, "2021-06-01", 4)
 model_topics_of_month(tidy_tweets, "2021-05-01", 2)
 # note: previous months have fewer topics because SABC only has data for June, anything before is only Daily Maverick
 model_topics_of_month(tidy_tweets, "2021-04-01", 2)
 ```
 
+
 # topic modelling per organisation
 
-```{r}
+```{r get topics per organisation}
 org_topics <- function(tidy_tweets_in, org, nr_topics) {
   # word count for specified media organisation
   word_counts <- tidy_tweets %>%
@@ -249,7 +253,7 @@ org_topics <- function(tidy_tweets_in, org, nr_topics) {
 }
 ```
 
-```{r}
+```{r plot topics per organisation}
 # org being the name of the media agency as found in the tidy_tweets dataframe
 model_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
 
@@ -278,10 +282,10 @@ model_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
 # top words per topic (for sentiment analysis)
 n_topics <- 3
 words_per_topic <- 200
+# TODO: where is DailyMav_topics used?
 DailyMav_topics <- top_words_per_topic(org_topics(tidy_tweets, "DailyMaverick", n_topics), words_per_topic)
-```
 
-```{r}
+# plot
 model_topics_of_org(tidy_tweets, "DailyMaverick", 3)
 model_topics_of_org(tidy_tweets, "SABC", 2)
 model_topics_of_org(tidy_tweets, "CapeTalk", 2)
@@ -290,9 +294,10 @@ model_topics_of_org(tidy_tweets, "News24", 2)
 ```
 
 
+
 # topic modelling for organisation for specific month
 
-```{r}
+```{r get topics per organisation per month}
 monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
   # word count for specified media organisation
   word_counts <- tidy_tweets_in %>%
@@ -323,7 +328,7 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
 }
 ```
 
-```{r}
+```{r plot topics per organisation per month}
 # org being the name of the media agency as found in the tidy_tweets dataframe
 # past_month being the full date of the first day of that month - eg "2021-06-01" for June
 model_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_topics) {
@@ -357,9 +362,8 @@ model_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_to
 n_topics <- 3
 words_per_topic <- 200
 DailyMav_June_topics <- top_words_per_topic(monthly_org_topics(tidy_tweets, "DailyMaverick", "2021-06-01", 3), words_per_topic)
-```
 
-```{r}
+# plot
 # Topics per media agency in June
 model_topics_of_org_for_month(tidy_tweets, "DailyMaverick", "2021-06-01", 3)
 model_topics_of_org_for_month(tidy_tweets, "SABC", "2021-06-01", 3)
@@ -370,10 +374,10 @@ model_topics_of_org_for_month(tidy_tweets, "News24", "2021-06-01", 3)
 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Topic Modelling for SA Media Agencies -->
+<!-- Topic Modelling for OUTSIDE SA Media Agencies -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r}
+```{r read external data}
 # USA
 cnn_tweets <- read.csv("data/cnnbrk_tweets.csv")
 foxnews_tweets <- read.csv("data/FoxNews_tweets.csv")
@@ -387,7 +391,7 @@ AP_tweets <- read.csv("data/AP_tweets.csv")
 firefox_tweets <- read.csv("data/firefox_tweets.csv")
 ```
 
-```{r}
+```{r get relevant tweets for external data}
 relevant_cnn <- filter_relevant_tweets(cnn_tweets)
 relevant_foxnews <- filter_relevant_tweets(foxnews_tweets)
 relevant_bbcbreaking <- filter_relevant_tweets(bbcbreaking_tweets)
@@ -398,7 +402,7 @@ relevant_AP <- filter_relevant_tweets(AP_tweets)
 relevant_firefox <- filter_relevant_tweets(firefox_tweets)
 ```
 
-```{r}
+```{r combine all tweets into one dataframe for external data}
 # combine all tweets into one dataframe
 tweets <- bind_rows(relevant_cnn %>% mutate(user = "CNN"),
                     relevant_foxnews %>% mutate(user = "FoxNews"),
@@ -410,9 +414,10 @@ tweets <- bind_rows(relevant_cnn %>% mutate(user = "CNN"),
                     relevant_firefox %>% mutate(user = "Firefox"))
 ```
 
-```{r}
+```{r clean external data}
 tidy_tweets <- remove_stopwords(tweets)
 ```
+
 # Topic Modeling overall
 
 ```{r}
@@ -464,6 +469,7 @@ model_topics_of_org_for_month(tidy_tweets, "BBCworld", "2021-05-01", 3)
 model_topics_of_org_for_month(tidy_tweets, "AP", "2021-05-01", 3)
 model_topics_of_org_for_month(tidy_tweets, "Firefox", "2021-05-01", 3)
 ```
+
 # Sentiment per topic
 
 ```{r split topics into list of dataframes}
@@ -486,8 +492,7 @@ vader_analysis
 ```{r get sentiment mean per topic}
 # TODO need to plot nicely (as table?)
 
-# get names of media outlets
-# name <- unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])}))
+# set names of topics
 topic <- list(1:length(term_per_topic_list))
 
 get_sentiment_mean <- function(df) {
@@ -500,3 +505,7 @@ overall_sentiment_per_topic <- data.frame(topic, sentiment_mean)
 colnames(overall_sentiment_per_topic)[1] = "topic"
 overall_sentiment_per_topic
 ```
+```{r}
+
+```
+
