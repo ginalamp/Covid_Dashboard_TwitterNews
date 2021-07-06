@@ -81,9 +81,8 @@ tidy_tweets <- remove_stopwords(tweets)
 
 
 # Topic Modelling
-
 ```{r}
-model_topics_overall <- function(tidy_tweets_in, nr_of_topics) {
+overall_topics <- function(tidy_tweets_in, nr_of_topics) {
   # word count by media organisation
   word_counts <- tidy_tweets_in %>%
     select(user, word, created_at) %>%
@@ -100,7 +99,16 @@ model_topics_overall <- function(tidy_tweets_in, nr_of_topics) {
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = k_topics, control = list(seed = 1234))
   
-  orgs_topics <- tidy(orgs_lda, matrix = "beta")
+  orgs_topics_overall <- tidy(orgs_lda, matrix = "beta")
+  
+  return(orgs_topics_overall)
+}
+```
+
+```{r}
+model_topics_overall <- function(tidy_tweets_in, nr_of_topics) {
+  
+  orgs_topics <- overall_topics(tidy_tweets_in, nr_of_topics)
   
   # find top words per topic
   top_terms <- orgs_topics %>%
@@ -120,16 +128,37 @@ model_topics_overall <- function(tidy_tweets_in, nr_of_topics) {
 ```
 
 ```{r}
-model_topics_overall(tidy_tweets, 4)
+#topics_overall <- overall_topics(tidy_tweets, 4) %>%
+#  pivot_wider(names_from = topic, values_from = beta)
+```
+
+```{r}
+top_words_per_topic <- function(topics, words_per_topic) {
+  return(topics%>%
+  group_by(topic) %>%
+  slice_max(beta, n = words_per_topic) %>%
+  ungroup() %>%
+  arrange(topic, -beta))
+}
+```
+
+```{r}
+# top words per topic (for sentiment analysis)
+nr_of_topics <- 4
+words_per_topic <- 200
+topics_overall <- top_words_per_topic(overall_topics(tidy_tweets, nr_of_topics), words_per_topic)
+```
+
+```{r}
+model_topics_overall(tidy_tweets, nr_of_topics)
 ```
 
 # topic modelling over time
 
 ```{r}
-# past_month being the full date of the first day of that month - eg "2021-06-01" for June
-model_topics_of_month <- function(past_month, nr_topics) {
+monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
   # word count by media organisation for specified month
-  word_counts <- tidy_tweets %>%
+  word_counts <- tidy_tweets_in %>%
     # create time bins (monthly)
     mutate(time_floor = floor_date(created_at, unit = "month")) %>%
     select(user, word, time_floor) %>%
@@ -146,7 +175,18 @@ model_topics_of_month <- function(past_month, nr_topics) {
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
 
-  orgs_topics <- tidy(orgs_lda, matrix = "beta")
+  orgs_topics_month <- tidy(orgs_lda, matrix = "beta")
+  
+  return(orgs_topics_month)
+}
+```
+
+```{r}
+# past_month being the full date of the first day of that month - eg "2021-06-01" for June
+model_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
+
+  #topics for the month
+  orgs_topics <- monthly_topics(tidy_tweets_in, past_month, nr_topics)
 
   # find top words per topic
   top_terms <- orgs_topics %>%
@@ -167,17 +207,23 @@ model_topics_of_month <- function(past_month, nr_topics) {
 ```
 
 ```{r}
-model_topics_of_month("2021-06-01", 4)
-model_topics_of_month("2021-05-01", 2)
+# top words per topic (for sentiment analysis)
+nr_of_topics <- 4
+words_per_topic <- 200
+June_topics <- top_words_per_topic(monthly_topics(tidy_tweets, "2021-06-01", 4), words_per_topic)
+```
+
+```{r}
+model_topics_of_month(tidy_tweets, "2021-06-01", 4)
+model_topics_of_month(tidy_tweets, "2021-05-01", 2)
 # note: previous months have fewer topics because SABC only has data for June, anything before is only Daily Maverick
-model_topics_of_month("2021-04-01", 2)
+model_topics_of_month(tidy_tweets, "2021-04-01", 2)
 ```
 
 # topic modelling per organisation
 
 ```{r}
-# org being the name of the media agency as found in the tidy_tweets dataframe
-model_topics_of_org <- function(org, nr_topics) {
+org_topics <- function(tidy_tweets_in, org, nr_topics) {
   # word count for specified media organisation
   word_counts <- tidy_tweets %>%
     select(user, word) %>%
@@ -194,7 +240,18 @@ model_topics_of_org <- function(org, nr_topics) {
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
 
-  orgs_topics <- tidy(orgs_lda, matrix = "beta")
+  org_topics <- tidy(orgs_lda, matrix = "beta")
+  
+  return(org_topics)
+}
+```
+
+```{r}
+# org being the name of the media agency as found in the tidy_tweets dataframe
+model_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
+
+  # topics for org
+  orgs_topics <- org_topics(tidy_tweets_in, org, nr_topics)
 
   # find top words per topic
   top_terms <- orgs_topics %>%
@@ -213,23 +270,29 @@ model_topics_of_org <- function(org, nr_topics) {
     scale_y_reordered()
 }
 ```
+
 ```{r}
-model_topics_of_org("DailyMaverick", 3)
-model_topics_of_org("SABC", 2)
-model_topics_of_org("CapeTalk", 2)
-model_topics_of_org("EWN", 2)
-model_topics_of_org("News24", 2)
+# top words per topic (for sentiment analysis)
+n_topics <- 3
+words_per_topic <- 200
+DailyMav_topics <- top_words_per_topic(org_topics(tidy_tweets, "DailyMaverick", n_topics), words_per_topic)
+```
+
+```{r}
+model_topics_of_org(tidy_tweets, "DailyMaverick", 3)
+model_topics_of_org(tidy_tweets, "SABC", 2)
+model_topics_of_org(tidy_tweets, "CapeTalk", 2)
+model_topics_of_org(tidy_tweets, "EWN", 2)
+model_topics_of_org(tidy_tweets, "News24", 2)
 ```
 
 
 # topic modelling for organisation for specific month
 
 ```{r}
-# org being the name of the media agency as found in the tidy_tweets dataframe
-# past_month being the full date of the first day of that month - eg "2021-06-01" for June
-model_topics_of_org_for_month <- function(org, past_month, nr_topics) {
+monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
   # word count for specified media organisation
-  word_counts <- tidy_tweets %>%
+  word_counts <- tidy_tweets_in %>%
     mutate(time_floor = floor_date(created_at, unit = "month")) %>%
     select(user, word, time_floor) %>%
     # filter to specified org
@@ -252,8 +315,22 @@ model_topics_of_org_for_month <- function(org, past_month, nr_topics) {
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
 
-  orgs_topics <- tidy(orgs_lda, matrix = "beta")
+  topics <- tidy(orgs_lda, matrix = "beta")
+  return(topics)
+}
+```
 
+```{r}
+# org being the name of the media agency as found in the tidy_tweets dataframe
+# past_month being the full date of the first day of that month - eg "2021-06-01" for June
+model_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_topics) {
+  
+  # topics for org for month
+  orgs_topics <- monthly_org_topics(tidy_tweets_in, org, past_month, nr_topics)
+  if (is.null(orgs_topics)) {
+    return()
+  }
+  
   # find top words per topic
   top_terms <- orgs_topics %>%
     group_by(topic) %>%
@@ -273,12 +350,19 @@ model_topics_of_org_for_month <- function(org, past_month, nr_topics) {
 ```
 
 ```{r}
+# top words per topic (for sentiment analysis)
+n_topics <- 3
+words_per_topic <- 200
+DailyMav_June_topics <- top_words_per_topic(monthly_org_topics(tidy_tweets, "DailyMaverick", "2021-06-01", 3), words_per_topic)
+```
+
+```{r}
 # Topics per media agency in June
-model_topics_of_org_for_month("DailyMaverick", "2021-06-01", 3)
-model_topics_of_org_for_month("SABC", "2021-06-01", 3)
-model_topics_of_org_for_month("CapeTalk", "2021-06-01", 3)
-model_topics_of_org_for_month("EWN", "2021-06-01", 3)
-model_topics_of_org_for_month("News24", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "DailyMaverick", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "SABC", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "CapeTalk", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "EWN", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "News24", "2021-06-01", 3)
 ```
 
 
@@ -334,46 +418,46 @@ model_topics_overall(tidy_tweets, 4)
 # topic modelling over time
 
 ```{r}
-model_topics_of_month("2021-06-01", 4)
-model_topics_of_month("2021-05-01", 4)
-model_topics_of_month("2021-04-01", 4)
+model_topics_of_month(tidy_tweets, "2021-06-01", 4)
+model_topics_of_month(tidy_tweets, "2021-05-01", 4)
+model_topics_of_month(tidy_tweets, "2021-04-01", 4)
 ```
 # topic modelling per organisation
 
 ```{r}
-model_topics_of_org("CNN", 3)
-model_topics_of_org("FoxNews", 3)
-model_topics_of_org("BBCbreaking", 3)
-model_topics_of_org("Time", 3)
-model_topics_of_org("Economist", 3)
-model_topics_of_org("BBCworld", 3)
-model_topics_of_org("AP", 3)
-model_topics_of_org("Firefox", 3)
+model_topics_of_org(tidy_tweets, "CNN", 3)
+model_topics_of_org(tidy_tweets, "FoxNews", 3)
+model_topics_of_org(tidy_tweets, "BBCbreaking", 3)
+model_topics_of_org(tidy_tweets, "Time", 3)
+model_topics_of_org(tidy_tweets, "Economist", 3)
+model_topics_of_org(tidy_tweets, "BBCworld", 3)
+model_topics_of_org(tidy_tweets, "AP", 3)
+model_topics_of_org(tidy_tweets, "Firefox", 3)
 ```
 
 # topic modelling for organisation for specific month
 
 ```{r}
 # Topics per media agency for June
-model_topics_of_org_for_month("CNN", "2021-06-01", 3)
-model_topics_of_org_for_month("FoxNews", "2021-06-01", 3)
-model_topics_of_org_for_month("BBCbreaking", "2021-06-01", 3)
-model_topics_of_org_for_month("Time", "2021-06-01", 3)
-model_topics_of_org_for_month("Economist", "2021-06-01", 3)
-model_topics_of_org_for_month("BBCworld", "2021-06-01", 3)
-model_topics_of_org_for_month("AP", "2021-06-01", 3)
-model_topics_of_org_for_month("Firefox", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "CNN", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "FoxNews", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "BBCbreaking", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "Time", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "Economist", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "BBCworld", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "AP", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "Firefox", "2021-06-01", 3)
 ```
 
 
 ```{r}
 # Topics per media agency for May
-model_topics_of_org_for_month("CNN", "2021-05-01", 3)
-model_topics_of_org_for_month("FoxNews", "2021-05-01", 3)
-model_topics_of_org_for_month("BBCbreaking", "2021-05-01", 3)
-model_topics_of_org_for_month("Time", "2021-05-01", 3)
-model_topics_of_org_for_month("Economist", "2021-05-01", 3)
-model_topics_of_org_for_month("BBCworld", "2021-05-01", 3)
-model_topics_of_org_for_month("AP", "2021-05-01", 3)
-model_topics_of_org_for_month("Firefox", "2021-05-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "CNN", "2021-05-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "FoxNews", "2021-05-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "BBCbreaking", "2021-05-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "Time", "2021-05-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "Economist", "2021-05-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "BBCworld", "2021-05-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "AP", "2021-05-01", 3)
+model_topics_of_org_for_month(tidy_tweets, "Firefox", "2021-05-01", 3)
 ```
