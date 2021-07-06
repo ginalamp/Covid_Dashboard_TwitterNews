@@ -227,15 +227,15 @@ model_topics_of_month(tidy_tweets, "2021-04-01", 2)
 ```
 
 ```{r Gina added: create list with topics per month}
-NUM_TOPICS <- 4
-NUM_TOPICS_REDUCED <- 2 # some months have less topics due to less data being available
+NUM_TOPICS_MONTH <- 4
+NUM_TOPICS_MONTH_REDUCED <- 2 # some months have less topics due to less data being available
 
 # TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_month
 # TODO: optimise this in some way with a loop?
 topics_per_month_list <- list(
-  top_words_per_topic(monthly_topics(tidy_tweets, "2021-04-01", NUM_TOPICS_REDUCED), words_per_topic),
-  top_words_per_topic(monthly_topics(tidy_tweets, "2021-05-01", NUM_TOPICS), words_per_topic),
-  top_words_per_topic(monthly_topics(tidy_tweets, "2021-06-01", NUM_TOPICS), words_per_topic)
+  top_words_per_topic(monthly_topics(tidy_tweets, "2021-04-01", NUM_TOPICS_MONTH_REDUCED), words_per_topic),
+  top_words_per_topic(monthly_topics(tidy_tweets, "2021-05-01", NUM_TOPICS_MONTH), words_per_topic),
+  top_words_per_topic(monthly_topics(tidy_tweets, "2021-06-01", NUM_TOPICS_MONTH), words_per_topic)
 )
 topics_per_month_list
 ```
@@ -307,7 +307,21 @@ model_topics_of_org(tidy_tweets, "EWN", 2)
 model_topics_of_org(tidy_tweets, "News24", 2)
 ```
 
+```{r Gina added: create list with topics per media outlet}
+NUM_TOPICS_OUTLET <- 3
+NUM_TOPICS_OUTLET_REDUCED <- 3
 
+# TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_outlet
+# TODO: optimise this in some way with a loop?
+topics_per_outlet_list <- list(
+  top_words_per_topic(org_topics(tidy_tweets, "DailyMaverick", NUM_TOPICS_OUTLET), words_per_topic),
+  top_words_per_topic(org_topics(tidy_tweets, "SABC", NUM_TOPICS_OUTLET_REDUCED), words_per_topic),
+  top_words_per_topic(org_topics(tidy_tweets, "CapeTalk", NUM_TOPICS_OUTLET_REDUCED), words_per_topic),
+  top_words_per_topic(org_topics(tidy_tweets, "EWN", NUM_TOPICS_OUTLET_REDUCED), words_per_topic),
+  top_words_per_topic(org_topics(tidy_tweets, "News24", NUM_TOPICS_OUTLET_REDUCED), words_per_topic)
+)
+topics_per_outlet_list
+```
 
 # topic modelling for organisation for specific month
 
@@ -534,7 +548,20 @@ sentiment_mean_per_month <- unlist(lapply(vader_analysis_per_month, get_sentimen
 
 # get sentiment mean per per month
 overall_sentiment_per_month <- data.frame(month=MONTHS_TO_PLOT, sentiment_mean_per_month)
-# colnames(overall_sentiment_per_month)[1] = "topic"
 overall_sentiment_per_month
+```
+```{r get topic sentiment mean per media outlet}
+# TODO need to plot nicely (as table?)
+
+# set outlet names to plot
+OUTLETS_TO_PLOT <- c("DailyMaveric", "SABC", "CapeTalk", "EWN", "News24")
+
+# get average sentiment
+vader_analysis_per_outlet <- lapply(topics_per_outlet_list, apply_vader)
+sentiment_mean_per_outlet <- unlist(lapply(vader_analysis_per_outlet, get_sentiment_mean))
+
+# get sentiment mean per per month
+overall_sentiment_per_outlet <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet)
+overall_sentiment_per_outlet
 ```
 
