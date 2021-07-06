@@ -6,7 +6,7 @@ output: html_notebook
 ## adapted from TidyTextMining Ch 6
 
 
-```{r}
+```{r import libraries}
 library(tidytext)
 library(lubridate)
 library(dplyr)
@@ -16,6 +16,7 @@ library(ggplot2)
 library(topicmodels) # NOTE: (Gina) need to install gsl package first with sudo apt-get install libgsl0-dev
 # Gina added
 library(reshape2) # threw an error when assigning org_lda for not having this package
+library(vader) # sentiment analysis
 ```
 
 
@@ -29,6 +30,8 @@ DailyMav_tweets <- read.csv("data/DailyMav_tweets.csv")
 CapeTalk_tweets <- read.csv("data/CapeTalk_tweets.csv")
 EWN_tweets <- read.csv("data/EWN_tweets.csv")
 News24_tweets <- read.csv("data/News24_tweets.csv")
+
+# media_outlet_list <- list(DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets) # Gina added
 ```
 
 
@@ -463,9 +466,37 @@ model_topics_of_org_for_month(tidy_tweets, "Firefox", "2021-05-01", 3)
 ```
 # Sentiment per topic
 
-```{r}
-topics_overall
+```{r split topics into list of dataframes}
+# split overall topics into a list with each dataframe only containing one topic and the term associated with it
+term_per_topic_list <- topics_overall %>% 
+  select(topic,term) %>% 
+  group_split(topic)
+term_per_topic_list
 ```
 
+```{r apply vader sentiment analysis to list of topics on covid tweets}
+# https://towardsdatascience.com/sentimental-analysis-using-vader-a3415fef7664
+# all values greater than zeroes will be considered a positive review and all values less than zero would be considered as a negative review.
+apply_vader <- function(df) {
+  return(vader_df(df$term))
+}
+vader_analysis <- lapply(term_per_topic_list, apply_vader)
+vader_analysis
+```
+```{r get sentiment mean per topic}
+# TODO need to plot nicely (as table?)
 
+# get names of media outlets
+# name <- unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])}))
+topic <- list(1:length(term_per_topic_list))
 
+get_sentiment_mean <- function(df) {
+  return(mean(df$compound))
+}
+# get average sentiment
+sentiment_mean <- unlist(lapply(vader_analysis, get_sentiment_mean))
+# get sentiment mean per topic
+overall_sentiment_per_topic <- data.frame(topic, sentiment_mean)
+colnames(overall_sentiment_per_topic)[1] = "topic"
+overall_sentiment_per_topic
+```
