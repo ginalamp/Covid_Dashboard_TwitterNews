@@ -461,3 +461,11 @@ model_topics_of_org_for_month(tidy_tweets, "BBCworld", "2021-05-01", 3)
 model_topics_of_org_for_month(tidy_tweets, "AP", "2021-05-01", 3)
 model_topics_of_org_for_month(tidy_tweets, "Firefox", "2021-05-01", 3)
 ```
+# Sentiment per topic
+
+```{r}
+topics_overall
+```
+
+
+
