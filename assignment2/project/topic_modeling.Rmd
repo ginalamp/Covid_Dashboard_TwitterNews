@@ -226,6 +226,20 @@ model_topics_of_month(tidy_tweets, "2021-05-01", 2)
 model_topics_of_month(tidy_tweets, "2021-04-01", 2)
 ```
 
+```{r Gina added: create list with topics per month}
+NUM_TOPICS <- 4
+NUM_TOPICS_REDUCED <- 2 # some months have less topics due to less data being available
+
+# TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_month
+# TODO: optimise this in some way with a loop?
+topics_per_month_list <- list(
+  top_words_per_topic(monthly_topics(tidy_tweets, "2021-04-01", NUM_TOPICS_REDUCED), words_per_topic),
+  top_words_per_topic(monthly_topics(tidy_tweets, "2021-05-01", NUM_TOPICS), words_per_topic),
+  top_words_per_topic(monthly_topics(tidy_tweets, "2021-06-01", NUM_TOPICS), words_per_topic)
+)
+topics_per_month_list
+```
+
 
 # topic modelling per organisation
 
@@ -486,26 +500,41 @@ term_per_topic_list
 apply_vader <- function(df) {
   return(vader_df(df$term))
 }
-vader_analysis <- lapply(term_per_topic_list, apply_vader)
-vader_analysis
+
+get_sentiment_mean <- function(df) {
+  return(mean(df$compound))
+}
 ```
-```{r get sentiment mean per topic}
+
+```{r get topic sentiment mean per topic}
 # TODO need to plot nicely (as table?)
 
 # set names of topics
 topic <- list(1:length(term_per_topic_list))
 
-get_sentiment_mean <- function(df) {
-  return(mean(df$compound))
-}
 # get average sentiment
-sentiment_mean <- unlist(lapply(vader_analysis, get_sentiment_mean))
+vader_analysis_per_topic <- lapply(term_per_topic_list, apply_vader)
+sentiment_mean_per_topic <- unlist(lapply(vader_analysis_per_topic, get_sentiment_mean))
+
 # get sentiment mean per topic
-overall_sentiment_per_topic <- data.frame(topic, sentiment_mean)
+overall_sentiment_per_topic <- data.frame(topic, sentiment_mean_per_topic)
 colnames(overall_sentiment_per_topic)[1] = "topic"
 overall_sentiment_per_topic
 ```
-```{r}
 
+```{r get topic sentiment mean per month}
+# TODO need to plot nicely (as table?)
+
+# set months to plot
+MONTHS_TO_PLOT <- c("April", "May", "June")
+
+# get average sentiment
+vader_analysis_per_month <- lapply(topics_per_month_list, apply_vader)
+sentiment_mean_per_month <- unlist(lapply(vader_analysis_per_month, get_sentiment_mean))
+
+# get sentiment mean per per month
+overall_sentiment_per_month <- data.frame(month=MONTHS_TO_PLOT, sentiment_mean_per_month)
+# colnames(overall_sentiment_per_month)[1] = "topic"
+overall_sentiment_per_month
 ```
 
