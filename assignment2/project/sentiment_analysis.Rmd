@@ -116,6 +116,9 @@ covid_tweets <- list(relevant_DM, relevant_EWN, relevant_News24, relevant_SABC)
 ```
 
 ```{r tidy tweets - remove stopwords and clean data}
+# TODO: remove links
+# TODO: remove mentions
+# TODO: remove numbers
 my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
 
 clean_tweets <- function(df) {
@@ -296,7 +299,6 @@ ggplot(bind_rows(tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=scr
   # scale_x_log10() + 
   scale_colour_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
   custom_line_basic_theme()
-
 ```
 
 
