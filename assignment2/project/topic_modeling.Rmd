@@ -657,10 +657,6 @@ overall_sentiment_per_outlet_month
 <!-- Data Visualisation: Sentiment per topic -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r}
-overall_sentiment_per_topic
-```
-
 ```{r plot overall sentiment per topic on covid-19}
 ggplot(overall_sentiment_per_topic, aes(topic, sentiment_mean_per_topic, fill=topic)) +
   geom_col() +
@@ -680,3 +676,12 @@ ggplot(overall_sentiment_per_month, aes(month, sentiment_mean_per_month, fill=mo
   custom_column_basic_theme()
 ```
 
+```{r plot overall sentiment per outlet on covid-19}
+ggplot(overall_sentiment_per_outlet, aes(media_outlet, sentiment_mean_per_outlet, fill=media_outlet)) +
+  geom_col() +
+  labs(title = "Overall sentiment per media outlet on covid-19",
+       x=NULL,
+       y="Vader Sentiment Score") +
+  scale_fill_manual(values = c(dailymav_colour, ewn_colour, capetalk_colour, news24_colour, sabc_colour)) +
+  custom_column_basic_theme()
+```
