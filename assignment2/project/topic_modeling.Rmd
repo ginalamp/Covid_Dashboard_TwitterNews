@@ -462,7 +462,7 @@ tweets <- bind_rows(relevant_cnn %>% mutate(user = "CNN"),
 ```
 
 ```{r clean external data}
-tidy_tweets <- remove_stopwords(tweets)
+tidy_tweets <- clean_tweets(tweets)
 ```
 
 # Topic Modeling overall
@@ -516,6 +516,11 @@ model_topics_of_org_for_month(tidy_tweets, "BBCworld", "2021-05-01", 3)
 model_topics_of_org_for_month(tidy_tweets, "AP", "2021-05-01", 3)
 model_topics_of_org_for_month(tidy_tweets, "Firefox", "2021-05-01", 3)
 ```
+
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Wrangling: Sentiment per topic -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 # Sentiment per topic
 
@@ -596,6 +601,20 @@ sentiment_mean_per_outlet_month <- unlist(lapply(vader_analysis_per_outlet_month
 # get sentiment mean per per month
 overall_sentiment_per_outlet_month <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet_month)
 overall_sentiment_per_outlet_month
+```
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Visualisation: Sentiment per topic -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+```{r plot overall sentiment per organisation on covid-19}
+ggplot(overall_sentiment_per_topic, aes(topic, sentiment_mean_per_topic, fill=topic)) +
+  geom_col() +
+  labs(title = "Overall sentiment per topic on covid-19",
+       x=NULL,
+       y="Vader Sentiment Score") +
+  scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  custom_column_basic_theme()
 ```
 
 
