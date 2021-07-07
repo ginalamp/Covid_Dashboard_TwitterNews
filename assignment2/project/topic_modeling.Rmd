@@ -9,10 +9,9 @@ output: html_notebook
 <!-- Setup -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-<!-- Set colours according to Stellenbosch Branding manual-->
-<!-- http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf -->
 ```{r set colours}
-# Stellenbosch colours
+# Stellenbosch branding manual colours:
+# http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf 
 arts_orange <- "#FF8F1C"
 law_winered <- "#9e2629"
 theology_purple <- "#84329B"
