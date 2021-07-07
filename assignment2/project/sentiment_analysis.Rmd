@@ -399,7 +399,7 @@ ggplot(global_overall_sentiment_per_outlet, aes(global_name, global_sentiment_me
   labs(title = "Global: Overall sentiment per organisation on covid-19",
        x=NULL,
        y="Vader Sentiment Score") +
-  scale_fill_manual(values = ms_colors) +
+  scale_fill_manual(values = rev(ms_colors)) +
   custom_column_basic_theme()
 ```
 
@@ -409,7 +409,7 @@ ggplot(global_top_retweets_sentiment_per_outlet, aes(global_name, global_top_ret
   labs(title = paste("Global: Sentiment of Top", NUM_TWEETS, "retweeted tweets per organisation on covid-19"),
        x=NULL,
        y="Vader Sentiment Score") +
-  scale_fill_manual(values = ms_colors) +
+  scale_fill_manual(values = rev(ms_colors)) +
   custom_column_basic_theme()
 ```
 
@@ -419,7 +419,7 @@ ggplot(global_top_favourited_sentiment_per_outlet, aes(global_name, global_top_f
   labs(title = paste("Global: Sentiment of Top", NUM_TWEETS, "favourited tweets per organisation on covid-19"),
        x=NULL,
        y="Vader Sentiment Score") +
-  scale_fill_manual(values = ms_colors) +
+  scale_fill_manual(values = rev(ms_colors)) +
   custom_column_basic_theme()
 ```
 
@@ -436,7 +436,7 @@ ggplot(bind_rows(global_tidy_tweets, .id="df"), aes(created_at, rolling_avg, col
        y = "Vader Sentiment Score") +
   # TODO: not working due to date being in POSIXt format
   # scale_x_log10() + 
-  scale_colour_manual(values = ms_colors) +
+  scale_colour_manual(values = rev(ms_colors)) +
   custom_line_basic_theme()
 ```
 
