@@ -447,6 +447,7 @@ nr_of_topics <- 5 # chosen based on ldatuning
 # South Africa
 plot_overall_topics(tidy_tweets_SA, nr_of_topics, "-- South Africa")
 # Global
+nr_of_topics <- 6 # chosen based on ldatuning
 plot_overall_topics(tidy_tweets_global, nr_of_topics, "-- Global")
 ```
 
