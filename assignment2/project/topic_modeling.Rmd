@@ -205,7 +205,9 @@ model_topics_overall <- function(tidy_tweets_in, nr_of_topics) {
     ggplot(aes(beta, term, fill = factor(topic))) +
     geom_col(show.legend = FALSE) +
     facet_wrap(~ topic, scales = "free") +
-    scale_y_reordered()
+    scale_y_reordered() +
+    scale_fill_manual(values = ms_colors) +
+    custom_column_basic_theme()
 }
 ```
 
@@ -284,7 +286,9 @@ model_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
     geom_col(show.legend = FALSE) +
     labs(title = paste("Topics for month starting", past_month)) +
     facet_wrap(~ topic, scales = "free") +
-    scale_y_reordered()
+    scale_y_reordered() +
+    scale_fill_manual(values = ms_colors) +
+    custom_column_basic_theme()
 }
 ```
 
@@ -364,7 +368,9 @@ model_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
     geom_col(show.legend = FALSE) +
     labs(title = paste("Topics for ", org)) +
     facet_wrap(~ topic, scales = "free") +
-    scale_y_reordered()
+    scale_y_reordered() +
+    scale_fill_manual(values = ms_colors) +
+    custom_column_basic_theme()
 }
 ```
 
@@ -457,7 +463,9 @@ model_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_to
     geom_col(show.legend = FALSE) +
     labs(title = paste("Topics for ", org, " for month starting ", past_month)) +
     facet_wrap(~ topic, scales = "free") +
-    scale_y_reordered()
+    scale_y_reordered() +
+    scale_fill_manual(values = ms_colors) +
+    custom_column_basic_theme()
 }
 ```
 
