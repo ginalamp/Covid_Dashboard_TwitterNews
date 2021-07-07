@@ -5,6 +5,55 @@ output: html_notebook
 
 ## adapted from TidyTextMining Ch 6
 
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Setup -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+<!-- Set colours according to Stellenbosch Branding manual-->
+<!-- http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf -->
+```{r set colours}
+dailymav_colour <- "#FF8F1C" # Daily Maveric - arts_orange
+capetalk_colour <- "#9e2629" # Cape Talk - law_winered
+sabc_colour <- "#84329B" # SABC News - theology_purple
+news24_colour <- "#326295" # News24 - education_darkblue
+ewn_colour <- "#509e2f" # EWN - agri_green
+
+# other colours to use
+med_bluegreen <- "#006163"
+military_salmon <- "#e56a54"
+science_red <- "#cb333b"
+ems_lightblue <- "#2dccd3"
+maroon <- "#60223b"
+mustard <- "#F1B434"
+darkgrey <- "#333333"
+lightgrey <- "#8c979a"
+black <- "#000000"
+engineering_yellow <- "#eaaa00"
+```
+
+```{r custom themes}
+custom_column_basic_theme <- function () { 
+    theme_minimal(base_size=12, base_family="Avenir") +
+        theme(
+            panel.background  = element_blank(),
+            panel.grid.minor = element_blank(),
+            legend.position="none", # no legend
+            plot.title = element_text(size = 10, hjust = 0),
+            plot.caption = element_text(size = 8, hjust = 0)
+        )
+}
+
+custom_line_basic_theme <- function () { 
+    theme_minimal(base_size=12, base_family="Avenir") +
+        theme(
+            panel.background  = element_blank(),
+            panel.grid.minor = element_blank(),
+            plot.title = element_text(size = 10, hjust = 0),
+            plot.subtitle = element_text(size = 8, hjust = 0),
+            plot.caption = element_text(size = 8, hjust = 0)
+        )
+}
+```
 
 ```{r import libraries}
 library(tidytext)
@@ -548,14 +597,15 @@ get_sentiment_mean <- function(df) {
 # TODO need to plot nicely (as table?)
 
 # set names of topics
-topic <- list(1:length(term_per_topic_list))
+TOPIC <- list(paste0(1:length(term_per_topic_list)))
+# TOPIC <- TOPIC %>% paste0(sep="")
 
 # get average sentiment
 vader_analysis_per_topic <- lapply(term_per_topic_list, apply_vader)
 sentiment_mean_per_topic <- unlist(lapply(vader_analysis_per_topic, get_sentiment_mean))
 
 # get sentiment mean per topic
-overall_sentiment_per_topic <- data.frame(topic, sentiment_mean_per_topic)
+overall_sentiment_per_topic <- data.frame(TOPIC, sentiment_mean_per_topic)
 colnames(overall_sentiment_per_topic)[1] = "topic"
 overall_sentiment_per_topic
 ```
@@ -607,11 +657,15 @@ overall_sentiment_per_outlet_month
 <!-- Data Visualisation: Sentiment per topic -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
+```{r}
+overall_sentiment_per_topic
+```
+
 ```{r plot overall sentiment per organisation on covid-19}
 ggplot(overall_sentiment_per_topic, aes(topic, sentiment_mean_per_topic, fill=topic)) +
   geom_col() +
   labs(title = "Overall sentiment per topic on covid-19",
-       x=NULL,
+       x="Topic",
        y="Vader Sentiment Score") +
   scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
   custom_column_basic_theme()
