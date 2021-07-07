@@ -50,6 +50,9 @@ ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkbl
 
 # colour picker: http://tristen.ca/hcl-picker/#/hlc/10/1.02/EBB350/48231C
 color_picker<- c("#EBB350", "#ABB14C", "#6EA85F", "#3A9976", "#248686", "#3F6F85", "#585674", "#623F57", "#5B2E37", "#48231C")
+
+# palette generator: https://learnui.design/tools/data-color-picker.html#palette
+palette_generator <- c("#003f5c", "#665191", "#d45087", "#ff7c43", "#ffa600")
 ```
 
 ```{r custom themes}
