@@ -66,8 +66,7 @@ tweets <- bind_rows(relevant_SABC %>% mutate(user = "SABC"),
 ```
 
 ```{r tidy tweets - remove stopwords and clean data}
-# TODO: remove numbers
-remove_stopwords <- function(tweets_in) {
+clean_tweets <- function(tweets_in) {
   # define custom stopwords
   my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
   # remove stopwords
@@ -79,11 +78,13 @@ remove_stopwords <- function(tweets_in) {
            !str_starts(word, "http"), # remove links
            !str_starts(word, "@"), # remove mentions
            str_detect(word, "[a-z]")) %>%
+    mutate(word = gsub("\\d+", "", word)) %>% # remove numbers
     select(screen_name, created_at, name, location, user, word)
+  
   return(tidy_tweets)
 }
 
-tidy_tweets <- remove_stopwords(tweets)
+tidy_tweets <- clean_tweets(tweets)
 ```
 
 
