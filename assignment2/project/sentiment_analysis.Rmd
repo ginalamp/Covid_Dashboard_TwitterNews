@@ -96,20 +96,20 @@ extract_relevant_data <- function(df) {
 ```
 
 ```{r read South Africa data}
-DailyMav_tweets <- extract_relevant_data(read.csv("new_data/dailymaverick.csv"))
-EWN_tweets <- extract_relevant_data(read.csv("new_data/ewnupdates.csv"))
-News24_tweets <- extract_relevant_data(read.csv("new_data/news24.csv"))
-SABCNews_tweets <- extract_relevant_data(read.csv("new_data/sabcnews.csv"))
+DailyMav_tweets <- extract_relevant_data(read.csv("data/dailymaverick.csv"))
+EWN_tweets <- extract_relevant_data(read.csv("data/ewnupdates.csv"))
+News24_tweets <- extract_relevant_data(read.csv("data/news24.csv"))
+SABCNews_tweets <- extract_relevant_data(read.csv("data/sabcnews.csv"))
 # combine tweets into a list of dataframes
 media_outlet_list <- list(DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
 
 head(media_outlet_list[1])
 ```
 ```{r read Global data}
-nytimes_tweets <- extract_relevant_data(read.csv("new_data/nytimes.csv"))
-AP_tweets <- extract_relevant_data(read.csv("new_data/ap.csv"))
-bbcworld_tweets <- extract_relevant_data(read.csv("new_data/bbcworld.csv"))
-economist_tweets <- extract_relevant_data(read.csv("new_data/theeconomist.csv"))
+nytimes_tweets <- extract_relevant_data(read.csv("data/nytimes.csv"))
+AP_tweets <- extract_relevant_data(read.csv("data/ap.csv"))
+bbcworld_tweets <- extract_relevant_data(read.csv("data/bbcworld.csv"))
+economist_tweets <- extract_relevant_data(read.csv("data/theeconomist.csv"))
 # combine tweets into a list of dataframes
 global_media_outlet_list <- list(nytimes_tweets, AP_tweets, bbcworld_tweets, economist_tweets)
 
