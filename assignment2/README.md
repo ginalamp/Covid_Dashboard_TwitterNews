@@ -23,6 +23,7 @@
 ## Report resources
 * [Creating Reports with R Markdown - pdf and word](https://towardsdatascience.com/creating-reports-with-r-markdown-c6031ecdd65c)
 * [Create HTML report](https://jozef.io/r913-spin-with-style/)
+* [Create photo collage](https://www.peko-step.com/en/tool/combine-images.html)
 
 ## Analysis resources
 * [Passing a variable name to a function in R](https://stackoverflow.com/questions/19133980/passing-a-variable-name-to-a-function-in-r)
@@ -35,6 +36,9 @@
 * [TidyTextMining Ch7 Case study: comparing Twitter archives](https://www.tidytextmining.com/twitter.html)
 * [TidyTextMining Ch6 Topic Modeling](https://www.tidytextmining.com/topicmodeling.html#topicmodeling)
     - Topic Modeling using LDA from R's 'topicmodels' library
+
+## Visualisation Resources
+* [plot table](https://cran.r-project.org/web/packages/gridExtra/vignettes/tableGrob.html)
 
 ## Notes
 
