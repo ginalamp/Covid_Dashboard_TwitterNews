@@ -231,6 +231,7 @@ ggplot(number_of_x, aes(name, user_retweet_sum, fill=name)) +
   custom_column_basic_theme()
 ```
 ```{r plot retweets of outlets per media outlet}
+# TODO: empty 
 ggplot(number_of_x, aes(name, outlet_retweet_count, fill=name)) +
   geom_col() +
   labs(title = "Number of outlet retweets per media outlet",
@@ -238,5 +239,62 @@ ggplot(number_of_x, aes(name, outlet_retweet_count, fill=name)) +
        y=NULL) +
   scale_y_continuous(label=comma) +
   scale_fill_manual(values = ms_colors) +
+  custom_column_basic_theme()
+```
+
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Visualisation (Global)-->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+```{r plot global followers per media outlet}
+ggplot(global_number_of_x, aes(name, followers_count, fill=name)) +
+  geom_col() +
+  labs(title = "Global: Number of followers per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = rev(ms_colors))  +
+  custom_column_basic_theme()
+```
+```{r plot global friends per media outlet}
+ggplot(global_number_of_x, aes(name, friends_count, fill=name)) +
+  geom_col() +
+  labs(title = "Global: Number of friends per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = rev(ms_colors)) +
+  custom_column_basic_theme()
+```
+```{r plot global tweets per media outlet}
+ggplot(global_number_of_x, aes(name, tweets_count, fill=name)) +
+  geom_col() +
+  labs(title = "Global: Number of tweets per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = rev(ms_colors)) +
+  custom_column_basic_theme()
+```
+```{r plot global retweets of users per media outlet}
+ggplot(global_number_of_x, aes(name, user_retweet_sum, fill=name)) +
+  geom_col() +
+  labs(title = "Global: Number of user retweets per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = rev(ms_colors)) +
+  custom_column_basic_theme()
+```
+```{r plot global retweets of outlets per media outlet}
+# TODO: empty 
+ggplot(global_number_of_x, aes(name, outlet_retweet_count, fill=name)) +
+  geom_col() +
+  labs(title = "Global: Number of outlet retweets per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = rev(ms_colors)) +
   custom_column_basic_theme()
 ```
