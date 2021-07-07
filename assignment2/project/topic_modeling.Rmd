@@ -5,6 +5,79 @@ output: html_notebook
 
 ## adapted from TidyTextMining Ch 6
 
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Setup -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+<!-- Set colours according to Stellenbosch Branding manual-->
+<!-- http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf -->
+```{r set colours}
+# Stellenbosch colours
+arts_orange <- "#FF8F1C"
+law_winered <- "#9e2629"
+theology_purple <- "#84329B"
+education_darkblue <- "#326295"
+agri_green <- "#509e2f"
+med_bluegreen <- "#006163"
+military_salmon <- "#e56a54"
+science_red <- "#cb333b"
+ems_lightblue <- "#2dccd3"
+engineering_yellow <- "#eaaa00"
+maroon <- "#60223b"
+mustard <- "#F1B434"
+darkgrey <- "#333333"
+lightgrey <- "#8c979a"
+black <- "#000000"
+
+su_colors <- c(arts_orange, law_winered, theology_purple, education_darkblue, agri_green, med_bluegreen, military_salmon, science_red, ems_lightblue, engineering_yellow, maroon, mustard, darkgrey, lightgrey, black)
+
+# microsoft sharepoint main colours
+# https://docs.microsoft.com/en-us/sharepoint/dev/design/themes-colors
+ms_red <- "#A4262C"
+ms_orange <- "#CA5010"
+ms_gold <- "#8F7034"
+ms_green <- "#407855"
+ms_teal <- "#038387"
+ms_blue <- "#0078d4"
+ms_darkblue <- "#40587C"
+ms_indigo <- "#4052AB"
+ms_plum <- "#854085"
+ms_purple <- "#8764B8"
+ms_coolgrey <- "#737373"
+ms_warmgrey <- "#867365"
+
+ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkblue, ms_indigo, ms_plum, ms_purple, ms_coolgrey, ms_warmgrey)
+
+# colour picker: http://tristen.ca/hcl-picker/#/hlc/10/1.02/EBB350/48231C
+color_picker<- c("#EBB350", "#ABB14C", "#6EA85F", "#3A9976", "#248686", "#3F6F85", "#585674", "#623F57", "#5B2E37", "#48231C")
+
+# palette generator: https://learnui.design/tools/data-color-picker.html#palette
+palette_generator <- c("#003f5c", "#665191", "#d45087", "#ff7c43", "#ffa600")
+```
+
+```{r custom themes}
+custom_column_basic_theme <- function () { 
+    theme_minimal(base_size=12, base_family="Avenir") +
+        theme(
+            panel.background  = element_blank(),
+            panel.grid.minor = element_blank(),
+            legend.position="none", # no legend
+            plot.title = element_text(size = 10, hjust = 0),
+            plot.caption = element_text(size = 8, hjust = 0)
+        )
+}
+
+custom_line_basic_theme <- function () { 
+    theme_minimal(base_size=12, base_family="Avenir") +
+        theme(
+            panel.background  = element_blank(),
+            panel.grid.minor = element_blank(),
+            plot.title = element_text(size = 10, hjust = 0),
+            plot.subtitle = element_text(size = 8, hjust = 0),
+            plot.caption = element_text(size = 8, hjust = 0)
+        )
+}
+```
 
 ```{r import libraries}
 library(tidytext)
@@ -131,7 +204,9 @@ model_topics_overall <- function(tidy_tweets_in, nr_of_topics) {
     ggplot(aes(beta, term, fill = factor(topic))) +
     geom_col(show.legend = FALSE) +
     facet_wrap(~ topic, scales = "free") +
-    scale_y_reordered()
+    scale_y_reordered() +
+    scale_fill_manual(values = ms_colors) +
+    custom_column_basic_theme()
 }
 ```
 
@@ -210,7 +285,9 @@ model_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
     geom_col(show.legend = FALSE) +
     labs(title = paste("Topics for month starting", past_month)) +
     facet_wrap(~ topic, scales = "free") +
-    scale_y_reordered()
+    scale_y_reordered() +
+    scale_fill_manual(values = ms_colors) +
+    custom_column_basic_theme()
 }
 ```
 
@@ -290,7 +367,9 @@ model_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
     geom_col(show.legend = FALSE) +
     labs(title = paste("Topics for ", org)) +
     facet_wrap(~ topic, scales = "free") +
-    scale_y_reordered()
+    scale_y_reordered() +
+    scale_fill_manual(values = ms_colors) +
+    custom_column_basic_theme()
 }
 ```
 
@@ -383,7 +462,9 @@ model_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_to
     geom_col(show.legend = FALSE) +
     labs(title = paste("Topics for ", org, " for month starting ", past_month)) +
     facet_wrap(~ topic, scales = "free") +
-    scale_y_reordered()
+    scale_y_reordered() +
+    scale_fill_manual(values = ms_colors) +
+    custom_column_basic_theme()
 }
 ```
 
@@ -462,7 +543,7 @@ tweets <- bind_rows(relevant_cnn %>% mutate(user = "CNN"),
 ```
 
 ```{r clean external data}
-tidy_tweets <- remove_stopwords(tweets)
+tidy_tweets <- clean_tweets(tweets)
 ```
 
 # Topic Modeling overall
@@ -517,6 +598,11 @@ model_topics_of_org_for_month(tidy_tweets, "AP", "2021-05-01", 3)
 model_topics_of_org_for_month(tidy_tweets, "Firefox", "2021-05-01", 3)
 ```
 
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Wrangling: Sentiment per topic -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
 # Sentiment per topic
 
 ```{r split topics into list of dataframes}
@@ -543,14 +629,15 @@ get_sentiment_mean <- function(df) {
 # TODO need to plot nicely (as table?)
 
 # set names of topics
-topic <- list(1:length(term_per_topic_list))
+TOPIC <- list(paste0(1:length(term_per_topic_list)))
+# TOPIC <- TOPIC %>% paste0(sep="")
 
 # get average sentiment
 vader_analysis_per_topic <- lapply(term_per_topic_list, apply_vader)
 sentiment_mean_per_topic <- unlist(lapply(vader_analysis_per_topic, get_sentiment_mean))
 
 # get sentiment mean per topic
-overall_sentiment_per_topic <- data.frame(topic, sentiment_mean_per_topic)
+overall_sentiment_per_topic <- data.frame(TOPIC, sentiment_mean_per_topic)
 colnames(overall_sentiment_per_topic)[1] = "topic"
 overall_sentiment_per_topic
 ```
@@ -598,4 +685,49 @@ overall_sentiment_per_outlet_month <- data.frame(media_outlet=OUTLETS_TO_PLOT, s
 overall_sentiment_per_outlet_month
 ```
 
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Visualisation: Sentiment per topic -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
+```{r plot overall sentiment per topic on covid-19}
+ggplot(overall_sentiment_per_topic, aes(topic, sentiment_mean_per_topic, fill=topic)) +
+  geom_col() +
+  labs(title = "Overall sentiment per topic on covid-19",
+       x="Topic",
+       y="Vader Sentiment Score") +
+  scale_fill_manual(values = ms_colors) +
+  custom_column_basic_theme()
+```
+```{r plot overall sentiment per month on covid-19}
+ggplot(overall_sentiment_per_month, aes(month, sentiment_mean_per_month, fill=month)) +
+  geom_col() +
+  labs(title = "Overall sentiment per month on covid-19",
+       x=NULL,
+       y="Vader Sentiment Score") +
+  scale_fill_manual(values = ms_colors) +
+  custom_column_basic_theme()
+```
+
+```{r plot overall sentiment per outlet on covid-19}
+ggplot(overall_sentiment_per_outlet, aes(media_outlet, sentiment_mean_per_outlet, fill=media_outlet)) +
+  geom_col() +
+  labs(title = "Overall sentiment per media outlet on covid-19",
+       x=NULL,
+       y="Vader Sentiment Score") +
+  scale_fill_manual(values = ms_colors) +
+  custom_column_basic_theme()
+```
+
+
+
+
+
+```{r plot overall sentiment per outlet per month on covid-19}
+ggplot(overall_sentiment_per_outlet_month, aes(media_outlet, sentiment_mean_per_outlet_month, fill=media_outlet)) +
+  geom_col() +
+  labs(title = "Monthly (June) sentiment per media outlet on covid-19",
+       x=NULL,
+       y="Vader Sentiment Score") +
+  scale_fill_manual(values = ms_colors) +
+  custom_column_basic_theme()
+```
