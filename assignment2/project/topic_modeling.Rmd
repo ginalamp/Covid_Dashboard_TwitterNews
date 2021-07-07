@@ -12,13 +12,12 @@ output: html_notebook
 <!-- Set colours according to Stellenbosch Branding manual-->
 <!-- http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf -->
 ```{r set colours}
-dailymav_colour <- "#FF8F1C" # Daily Maveric - arts_orange
-capetalk_colour <- "#9e2629" # Cape Talk - law_winered
-sabc_colour <- "#84329B" # SABC News - theology_purple
-news24_colour <- "#326295" # News24 - education_darkblue
-ewn_colour <- "#509e2f" # EWN - agri_green
-
-# other colours to use
+# Stellenbosch colours
+arts_orange <- "#FF8F1C"
+law_winered <- "#9e2629"
+theology_purple <- "#84329B"
+education_darkblue <- "#326295"
+agri_green <- "#509e2f"
 med_bluegreen <- "#006163"
 military_salmon <- "#e56a54"
 science_red <- "#cb333b"
@@ -30,11 +29,10 @@ darkgrey <- "#333333"
 lightgrey <- "#8c979a"
 black <- "#000000"
 
-su_colors <- c(dailymav_colour, capetalk_colour, sabc_colour, news24_colour, ewn_colour, med_bluegreen, military_salmon, science_red, ems_lightblue, engineering_yellow, maroon, mustard, darkgrey, lightgrey, black)
+su_colors <- c(arts_orange, law_winered, theology_purple, education_darkblue, agri_green, med_bluegreen, military_salmon, science_red, ems_lightblue, engineering_yellow, maroon, mustard, darkgrey, lightgrey, black)
 
 # microsoft sharepoint main colours
 # https://docs.microsoft.com/en-us/sharepoint/dev/design/themes-colors
-
 ms_red <- "#A4262C"
 ms_orange <- "#CA5010"
 ms_gold <- "#8F7034"
@@ -50,10 +48,8 @@ ms_warmgrey <- "#867365"
 
 ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkblue, ms_indigo, ms_plum, ms_purple, ms_coolgrey, ms_warmgrey)
 
-
 # colour picker: http://tristen.ca/hcl-picker/#/hlc/10/1.02/EBB350/48231C
 color_picker<- c("#EBB350", "#ABB14C", "#6EA85F", "#3A9976", "#248686", "#3F6F85", "#585674", "#623F57", "#5B2E37", "#48231C")
-
 ```
 
 ```{r custom themes}
