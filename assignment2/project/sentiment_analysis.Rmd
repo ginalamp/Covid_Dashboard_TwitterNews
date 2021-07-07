@@ -116,8 +116,6 @@ covid_tweets <- list(relevant_DM, relevant_EWN, relevant_News24, relevant_SABC)
 ```
 
 ```{r tidy tweets - remove stopwords and clean data}
-# TODO: remove links
-# TODO: remove mentions
 # TODO: remove numbers
 my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
 
@@ -128,6 +126,8 @@ cleaned_tweets <- df %>%
   filter(!word %in% stop_words$word,
          !word %in% my_stopwords,
          !word %in% str_remove_all(stop_words$word, "'"),
+         !str_starts(word, "http"), # remove links
+         !str_starts(word, "@"), # remove mentions
          str_detect(word, "[a-z]")) %>%
   # group words back together (creating sentences) according to their twitter_id
   group_by(status_id, screen_name, created_at, retweet_count, favorite_count) %>%
