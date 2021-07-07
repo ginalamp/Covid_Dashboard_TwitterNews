@@ -23,13 +23,14 @@ med_bluegreen <- "#006163"
 military_salmon <- "#e56a54"
 science_red <- "#cb333b"
 ems_lightblue <- "#2dccd3"
+engineering_yellow <- "#eaaa00"
 maroon <- "#60223b"
 mustard <- "#F1B434"
 darkgrey <- "#333333"
 lightgrey <- "#8c979a"
 black <- "#000000"
-engineering_yellow <- "#eaaa00"
 
+su_colors <- c(dailymav_colour, capetalk_colour, sabc_colour, news24_colour, ewn_colour, med_bluegreen, military_salmon, science_red, ems_lightblue, engineering_yellow, maroon, mustard, darkgrey, lightgrey, black)
 
 # microsoft sharepoint main colours
 # https://docs.microsoft.com/en-us/sharepoint/dev/design/themes-colors
@@ -46,6 +47,13 @@ ms_plum <- "#854085"
 ms_purple <- "#8764B8"
 ms_coolgrey <- "#737373"
 ms_warmgrey <- "#867365"
+
+ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkblue, ms_indigo, ms_plum, ms_purple, ms_coolgrey, ms_warmgrey)
+
+
+# colour picker: http://tristen.ca/hcl-picker/#/hlc/10/1.02/EBB350/48231C
+color_picker<- c("#EBB350", "#ABB14C", "#6EA85F", "#3A9976", "#248686", "#3F6F85", "#585674", "#623F57", "#5B2E37", "#48231C")
+
 ```
 
 ```{r custom themes}
@@ -680,7 +688,7 @@ ggplot(overall_sentiment_per_topic, aes(topic, sentiment_mean_per_topic, fill=to
   labs(title = "Overall sentiment per topic on covid-19",
        x="Topic",
        y="Vader Sentiment Score") +
-  scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
 ```{r plot overall sentiment per month on covid-19}
@@ -689,20 +697,18 @@ ggplot(overall_sentiment_per_month, aes(month, sentiment_mean_per_month, fill=mo
   labs(title = "Overall sentiment per month on covid-19",
        x=NULL,
        y="Vader Sentiment Score") +
-  scale_fill_manual(values = c(dailymav_colour, ewn_colour, news24_colour)) +
+  scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
 
 ```{r plot overall sentiment per outlet on covid-19}
-library("ggthemes")
 ggplot(overall_sentiment_per_outlet, aes(media_outlet, sentiment_mean_per_outlet, fill=media_outlet)) +
   geom_col() +
   labs(title = "Overall sentiment per media outlet on covid-19",
        x=NULL,
        y="Vader Sentiment Score") +
-  scale_fill_manual(values = c(dailymav_colour, ewn_colour, capetalk_colour, news24_colour, sabc_colour)) +
+  scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
-  # theme_excel() + scale_colour_excel()
 ```
 
 
@@ -715,6 +721,6 @@ ggplot(overall_sentiment_per_outlet_month, aes(media_outlet, sentiment_mean_per_
   labs(title = "Monthly (June) sentiment per media outlet on covid-19",
        x=NULL,
        y="Vader Sentiment Score") +
-  scale_fill_manual(values = c(dailymav_colour, ewn_colour, capetalk_colour, news24_colour, sabc_colour)) +
+  scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
