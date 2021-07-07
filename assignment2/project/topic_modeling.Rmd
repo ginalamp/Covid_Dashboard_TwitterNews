@@ -93,49 +93,85 @@ library(vader) # sentiment analysis
 ```
 
 
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Topic Modeling for SA Media Agencies -->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+```{r extract relevant data from read in csv}
+extract_relevant_data <- function(df) {
+  return(df %>% select(status_id, screen_name, name, location, description, created_at, statuses_count, is_retweet, favorite_count, retweet_count, followers_count, friends_count, text))
+}
+```
 
 ```{r read data}
-SABCNews_tweets <- read.csv("data/SABCNews_tweets.csv")
-DailyMav_tweets <- read.csv("data/DailyMav_tweets.csv")
-CapeTalk_tweets <- read.csv("data/CapeTalk_tweets.csv")
-EWN_tweets <- read.csv("data/EWN_tweets.csv")
-News24_tweets <- read.csv("data/News24_tweets.csv")
+# SA media organisations
+SABCNews_tweets <- extract_relevant_data(read.csv("data/sabcnews.csv"))
+DailyMav_tweets <- extract_relevant_data(read.csv("data/dailymaverick.csv"))
+EWN_tweets <- extract_relevant_data(read.csv("data/ewnupdates.csv"))
+News24_tweets <- extract_relevant_data(read.csv("data/news24.csv"))
 
-# TODO: combine into list as with seniment analysis
-# media_outlet_list <- list(DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets) # Gina added
+SA_media_outlet_list <- list(DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
+
+head(SA_media_outlet_list[1])
+
+# SA government
+govZA_tweets <- extract_relevant_data(read.csv("data/governmentza.csv"))
+
+# Global
+nyTimes_tweets <- extract_relevant_data(read.csv("data/nytimes.csv"))
+economist_tweets <- extract_relevant_data(read.csv("data/theeconomist.csv"))
+bbcworld_tweets <- extract_relevant_data(read.csv("data/bbcworld.csv"))
+AP_tweets <- extract_relevant_data(read.csv("data/ap.csv"))
+
+global_media_outlet_list <- list(nyTimes_tweets, economist_tweets, bbcworld_tweets, AP_tweets)
+
+head(global_media_outlet_list[1])
 ```
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Wrangling -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-
-```{r extract tweets related to covid}
-filter_relevant_tweets <- function(tweets) {
-  relevant_tweets <- tweets[grepl("covid", tweets[["text"]]) | 
-                  grepl("Covid", tweets[["text"]]) |
-                  grepl("corona", tweets[["text"]]) |
-                  grepl("Corona", tweets[["text"]]) |
-                  grepl("Pandemic", tweets[["text"]]) |
-                  grepl("pandemic", tweets[["text"]]), ]
-relevant_tweets <- relevant_tweets %>%
+```{r extract tweets related to covid and combine covid tweets into a list}
+# extract covid tweets function
+get_covid_tweets <- function(df) {
+relevant_df <-  df[grepl("covid", df[["text"]]) | 
+                  grepl("Covid", df[["text"]]) |
+                  grepl("corona", df[["text"]]) |
+                  grepl("Corona", df[["text"]]) |
+                  grepl("Pandemic", df[["text"]]) |
+                  grepl("pandemic", df[["text"]]), ]
+relevant_df <- relevant_df %>%
   mutate(created_at = ymd_hms(created_at))
+return(relevant_df)
 }
 
-# TODO: combine into list as with sentiment analysis
-relevant_SABC <- filter_relevant_tweets(SABCNews_tweets)
-relevant_DM <- filter_relevant_tweets(DailyMav_tweets)
-relevant_CapeTalk <- filter_relevant_tweets(CapeTalk_tweets)
-relevant_EWN <- filter_relevant_tweets(EWN_tweets)
-relevant_News24 <- filter_relevant_tweets(News24_tweets)
+# call get_covid_tweets() function for all media outlets
+relevant_DM <- get_covid_tweets(DailyMav_tweets)
+relevant_EWN <- get_covid_tweets(EWN_tweets)
+relevant_News24 <- get_covid_tweets(News24_tweets)
+relevant_SABC <- get_covid_tweets(SABCNews_tweets)
+
+relevant_govZA <- get_covid_tweets(govZA_tweets)
+
+relevant_NYT <- get_covid_tweets(nyTimes_tweets)
+relevant_economist <- get_covid_tweets(economist_tweets)
+relevant_bbcworld <- get_covid_tweets(bbcworld_tweets)
+relevant_AP <- get_covid_tweets(AP_tweets)
+
+# combine tweets into list
+covid_tweets_SA <- list(relevant_SABC, relevant_DM, relevant_EWN, relevant_News24)
+covid_tweets_global <- list(relevant_NYT, relevant_economist, relevant_bbcworld, relevant_AP)
 ```
 
-```{r combine all tweets into one dataframe}
+```{r}
 # combine all tweets into one dataframe
-tweets <- bind_rows(relevant_SABC %>% mutate(user = "SABC"),
-                    relevant_DM %>% mutate(user = "DailyMaverick"),
-                    relevant_CapeTalk %>% mutate(user = "CapeTalk"),
-                    relevant_EWN %>% mutate(user = "EWN"),
-                    relevant_News24 %>% mutate(user = "News24"))
+# Covid-related tweets
+tweets_SA <- bind_rows(covid_tweets_SA)
+tweets_global <- bind_rows(covid_tweets_global)
+# all tweets
+all_tweets_SA <- bind_rows(SA_media_outlet_list)
+all_tweets_global <- bind_rows(global_media_outlet_list)
+```
+
+```{r media outlets}
+SA_media_outlets <- unique(tweets_SA[c("name")])
+global_media_outlets <- unique(tweets_global[c("name")])
 ```
 
 ```{r tidy tweets - remove stopwords and clean data}
@@ -151,29 +187,43 @@ clean_tweets <- function(tweets_in) {
            !str_starts(word, "http"), # remove links
            !str_starts(word, "@"), # remove mentions
            str_detect(word, "[a-z]")) %>%
-    mutate(word = gsub("\\d+", "", word)) %>% # remove numbers
-    select(screen_name, created_at, name, location, user, word)
-  
+    mutate(word = gsub("\\d+", "", word)) # remove numbers
+
   return(tidy_tweets)
 }
 
-tidy_tweets <- clean_tweets(tweets)
+tidy_tweets_SA <- clean_tweets(tweets_SA)
+tidy_tweets_global <- clean_tweets(tweets_global)
 ```
 
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Topic Modeling Setup -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-# Topic Modelling
+```{r extract top words per topic}
+top_words_per_topic <- function(topics, words_per_topic) {
+  return(topics%>%
+  group_by(topic) %>%
+  slice_max(beta, n = words_per_topic) %>%
+  ungroup() %>%
+  arrange(topic, -beta))
+}
+```
+
+# Overall topics
+
 ```{r apply topic modelling to get overall topics}
 overall_topics <- function(tidy_tweets_in, nr_of_topics) {
   # word count by media organisation
   word_counts <- tidy_tweets_in %>%
-    select(user, word, created_at) %>%
-    count(user, word, sort = TRUE) %>%
+    select(name, word, created_at) %>%
+    count(name, word, sort = TRUE) %>%
     ungroup()
   
   # create document term matrix
   # (treating all tweets from one organisation as one document)
   orgs_dtm <- word_counts %>%
-    cast_dtm(user, word, n)
+    cast_dtm(name, word, n)
   
   # define number of topics
   k_topics = nr_of_topics
@@ -187,73 +237,44 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
 ```
 
 ```{r plot topics}
-model_topics_overall <- function(tidy_tweets_in, nr_of_topics) {
+plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
   
   orgs_topics <- overall_topics(tidy_tweets_in, nr_of_topics)
   
-  # find top words per topic
-  top_terms <- orgs_topics %>%
-    group_by(topic) %>%
-    slice_max(beta, n = 5) %>% 
-    ungroup() %>%
-    arrange(topic, -beta)
+  # top words per topic
+  top_terms <- top_words_per_topic(orgs_topics, 5)
   
   # plot top terms per topic
   top_terms %>%
     mutate(term = reorder_within(term, beta, topic)) %>%
     ggplot(aes(beta, term, fill = factor(topic))) +
     geom_col(show.legend = FALSE) +
+    labs(title = paste("Covid-related Topics for Jan-June 2021", title_suffix)) +
     facet_wrap(~ topic, scales = "free") +
     scale_y_reordered() +
     scale_fill_manual(values = ms_colors) +
     custom_column_basic_theme()
 }
 ```
-
-```{r}
-#topics_overall <- overall_topics(tidy_tweets, 4) %>%
-#  pivot_wider(names_from = topic, values_from = beta)
-```
-
-```{r extract top words per topic}
-top_words_per_topic <- function(topics, words_per_topic) {
-  return(topics%>%
-  group_by(topic) %>%
-  slice_max(beta, n = words_per_topic) %>%
-  ungroup() %>%
-  arrange(topic, -beta))
-}
-```
-
-```{r get overall topics for all media outlets for entire time period}
-# top words per topic (for sentiment analysis)
-nr_of_topics <- 4
-words_per_topic <- 200
-topics_overall <- top_words_per_topic(overall_topics(tidy_tweets, nr_of_topics), words_per_topic)
-```
-
-```{r}
-model_topics_overall(tidy_tweets, nr_of_topics)
-```
-
-# topic modelling over time
-
+ 
+# Overall Topics for Specific Month
+ 
 ```{r get topics per month}
 monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
   # word count by media organisation for specified month
   word_counts <- tidy_tweets_in %>%
     # create time bins (monthly)
     mutate(time_floor = floor_date(created_at, unit = "month")) %>%
-    select(user, word, time_floor) %>%
+    select(name, word, time_floor) %>%
     # filter to specified month
     filter(time_floor == as.Date(past_month)) %>%
-    count(user, word, sort = TRUE) %>%
+    count(name, word, sort = TRUE) %>%
     ungroup()
     
   # create document term matrix
   # (treating all tweets from one organisation as one document)
   orgs_dtm <- word_counts %>%
-    cast_dtm(user, word, n)
+    cast_dtm(name, word, n)
 
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
@@ -266,24 +287,20 @@ monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
 
 ```{r plot topics per month}
 # past_month being the full date of the first day of that month - eg "2021-06-01" for June
-model_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
+plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
 
   #topics for the month
   orgs_topics <- monthly_topics(tidy_tweets_in, past_month, nr_topics)
 
-  # find top words per topic
-  top_terms <- orgs_topics %>%
-    group_by(topic) %>%
-    slice_max(beta, n = 5) %>% 
-    ungroup() %>%
-    arrange(topic, -beta)
+  # top words per topic
+  top_terms <- top_words_per_topic(orgs_topics, 5)
 
   # plot top terms per topic
   top_terms %>%
     mutate(term = reorder_within(term, beta, topic)) %>%
     ggplot(aes(beta, term, fill = factor(topic))) +
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Topics for month starting", past_month)) +
+    labs(title = paste("Covid-related Topics for month starting", past_month)) +
     facet_wrap(~ topic, scales = "free") +
     scale_y_reordered() +
     scale_fill_manual(values = ms_colors) +
@@ -291,51 +308,23 @@ model_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
 }
 ```
 
-```{r get overall topics for all media outlets per month}
-# top words per topic (for sentiment analysis)
-nr_of_topics <- 4
-words_per_topic <- 200
-# TODO: where is June_topics used?
-June_topics <- top_words_per_topic(monthly_topics(tidy_tweets, "2021-06-01", 4), words_per_topic)
-
-# plot
-model_topics_of_month(tidy_tweets, "2021-06-01", 4)
-model_topics_of_month(tidy_tweets, "2021-05-01", 2)
-# note: previous months have fewer topics because SABC only has data for June, anything before is only Daily Maverick
-model_topics_of_month(tidy_tweets, "2021-04-01", 2)
-```
-
-```{r Gina added: create list with topics per month}
-NUM_TOPICS_MONTH <- 4
-NUM_TOPICS_MONTH_REDUCED <- 2 # some months have less topics due to less data being available
-
-# TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_month
-# TODO: optimise this in some way with a loop?
-topics_per_month_list <- list(
-  top_words_per_topic(monthly_topics(tidy_tweets, "2021-04-01", NUM_TOPICS_MONTH_REDUCED), words_per_topic),
-  top_words_per_topic(monthly_topics(tidy_tweets, "2021-05-01", NUM_TOPICS_MONTH), words_per_topic),
-  top_words_per_topic(monthly_topics(tidy_tweets, "2021-06-01", NUM_TOPICS_MONTH), words_per_topic)
-)
-topics_per_month_list
-```
-
-
-# topic modelling per organisation
+ 
+# Topics for Specific Media Outlet
 
 ```{r get topics per organisation}
 org_topics <- function(tidy_tweets_in, org, nr_topics) {
   # word count for specified media organisation
-  word_counts <- tidy_tweets %>%
-    select(user, word) %>%
+  word_counts <- tidy_tweets_in %>%
+    select(name, word) %>%
     # filter to specified org
-    filter(user == org) %>%
-    count(user, word, sort = TRUE) %>%
+    filter(name == org) %>%
+    count(name, word, sort = TRUE) %>%
     ungroup()
     
   # create document term matrix
   # (treating all tweets from one organisation as one document)
   orgs_dtm <- word_counts %>%
-    cast_dtm(user, word, n)
+    cast_dtm(name, word, n)
 
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
@@ -348,24 +337,20 @@ org_topics <- function(tidy_tweets_in, org, nr_topics) {
 
 ```{r plot topics per organisation}
 # org being the name of the media agency as found in the tidy_tweets dataframe
-model_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
+plot_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
 
   # topics for org
   orgs_topics <- org_topics(tidy_tweets_in, org, nr_topics)
 
-  # find top words per topic
-  top_terms <- orgs_topics %>%
-    group_by(topic) %>%
-    slice_max(beta, n = 5) %>% 
-    ungroup() %>%
-    arrange(topic, -beta)
+  # top words per topic
+  top_terms <- top_words_per_topic(orgs_topics, 5)
 
   # plot top terms per topic
   top_terms %>%
     mutate(term = reorder_within(term, beta, topic)) %>%
     ggplot(aes(beta, term, fill = factor(topic))) +
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Topics for ", org)) +
+    labs(title = paste("Covid-related Topics by ", org)) +
     facet_wrap(~ topic, scales = "free") +
     scale_y_reordered() +
     scale_fill_manual(values = ms_colors) +
@@ -373,53 +358,23 @@ model_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
 }
 ```
 
-```{r}
-# top words per topic (for sentiment analysis)
-n_topics <- 3
-words_per_topic <- 200
-# TODO: where is DailyMav_topics used?
-DailyMav_topics <- top_words_per_topic(org_topics(tidy_tweets, "DailyMaverick", n_topics), words_per_topic)
 
-# plot
-model_topics_of_org(tidy_tweets, "DailyMaverick", 3)
-model_topics_of_org(tidy_tweets, "SABC", 2)
-model_topics_of_org(tidy_tweets, "CapeTalk", 2)
-model_topics_of_org(tidy_tweets, "EWN", 2)
-model_topics_of_org(tidy_tweets, "News24", 2)
-```
-
-```{r Gina added: create list with topics per media outlet}
-NUM_TOPICS_OUTLET <- 3
-NUM_TOPICS_OUTLET_REDUCED <- 2
-
-# TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_outlet
-# TODO: optimise this in some way with a loop?
-topics_per_outlet_list <- list(
-  top_words_per_topic(org_topics(tidy_tweets, "DailyMaverick", NUM_TOPICS_OUTLET), words_per_topic),
-  top_words_per_topic(org_topics(tidy_tweets, "SABC", NUM_TOPICS_OUTLET_REDUCED), words_per_topic),
-  top_words_per_topic(org_topics(tidy_tweets, "CapeTalk", NUM_TOPICS_OUTLET_REDUCED), words_per_topic),
-  top_words_per_topic(org_topics(tidy_tweets, "EWN", NUM_TOPICS_OUTLET_REDUCED), words_per_topic),
-  top_words_per_topic(org_topics(tidy_tweets, "News24", NUM_TOPICS_OUTLET_REDUCED), words_per_topic)
-)
-topics_per_outlet_list
-```
-
-# topic modelling for organisation for specific month
+# Topics for specific Media Outlet for specific Month
 
 ```{r get topics per organisation per month}
 monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
   # word count for specified media organisation
   word_counts <- tidy_tweets_in %>%
     mutate(time_floor = floor_date(created_at, unit = "month")) %>%
-    select(user, word, time_floor) %>%
+    select(name, word, time_floor) %>%
     # filter to specified org
-    filter(user == org) %>%
+    filter(name == org) %>%
     # filter to specified month
     filter(time_floor == as.Date(past_month)) %>%
-    count(user, word, sort = TRUE) %>%
+    count(name, word, sort = TRUE) %>%
     ungroup()
   
-  if (length(word_counts$user) == 0) {
+  if (length(word_counts$name) == 0) {
     print(paste(org, "did not tweet the month starting on", past_month))
     return()
   }
@@ -427,7 +382,7 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
   # create document term matrix
   # (treating all tweets from one organisation as one document)
   orgs_dtm <- word_counts %>%
-    cast_dtm(user, word, n)
+    cast_dtm(name, word, n)
 
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
@@ -440,7 +395,7 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
 ```{r plot topics per organisation per month}
 # org being the name of the media agency as found in the tidy_tweets dataframe
 # past_month being the full date of the first day of that month - eg "2021-06-01" for June
-model_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_topics) {
+plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_topics) {
   
   # topics for org for month
   orgs_topics <- monthly_org_topics(tidy_tweets_in, org, past_month, nr_topics)
@@ -448,19 +403,15 @@ model_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_to
     return()
   }
   
-  # find top words per topic
-  top_terms <- orgs_topics %>%
-    group_by(topic) %>%
-    slice_max(beta, n = 5) %>% 
-    ungroup() %>%
-    arrange(topic, -beta)
+  # top words per topic
+  top_terms <- top_words_per_topic(orgs_topics, 5)
 
   # plot top terms per topic
   top_terms %>%
     mutate(term = reorder_within(term, beta, topic)) %>%
     ggplot(aes(beta, term, fill = factor(topic))) +
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Topics for ", org, " for month starting ", past_month)) +
+    labs(title = paste("Covid-related Topics by ", org, " for month starting ", past_month)) +
     facet_wrap(~ topic, scales = "free") +
     scale_y_reordered() +
     scale_fill_manual(values = ms_colors) +
@@ -468,20 +419,235 @@ model_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_to
 }
 ```
 
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Visualisation -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+# Overall topics
+
+```{r}
+nr_of_topics <- 4
+# South Africa
+plot_overall_topics(tidy_tweets_SA, nr_of_topics, "-- South Africa")
+# Global
+plot_overall_topics(tidy_tweets_global, nr_of_topics, "-- Global")
+```
+
+# Overall Topics for Specific Month
+
+```{r}
+# South Africa
+
+# TODO: optimise somehow - for loop doesn't plot...?
+
+nr_of_topics <- 4
+
+plot_topics_of_month(tidy_tweets_SA, "2021-01-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_SA, "2021-02-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_SA, "2021-03-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_SA, "2021-04-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_SA, "2021-05-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_SA, "2021-06-01", nr_of_topics)
+```
+
+```{r}
+# Global
+
+# TODO: optimise somehow - for loop doesn't plot...?
+
+nr_of_topics <- 4
+
+plot_topics_of_month(tidy_tweets_global, "2021-01-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_global, "2021-02-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_global, "2021-03-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_global, "2021-04-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_global, "2021-05-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_global, "2021-06-01", nr_of_topics)
+```
+
+
+# Topics for Specific Media Outlet
+
+```{r}
+# South Africa
+
+nr_of_topics <- 3
+
+# TODO: optimise somehow - for loop doesn't plot...?
+#for (outlet in SA_media_outlets$name) {
+#  print(outlet)
+#  plot_topics_of_org(tidy_tweets_SA, outlet, nr_of_topics)
+#}
+plot_topics_of_org(tidy_tweets_SA, "SABC News", nr_of_topics)
+plot_topics_of_org(tidy_tweets_SA, "Daily Maverick", nr_of_topics)
+plot_topics_of_org(tidy_tweets_SA, "Eyewitness News", nr_of_topics)
+plot_topics_of_org(tidy_tweets_SA, "News24", nr_of_topics)
+```
+
+```{r}
+# Global
+
+nr_of_topics <- 3
+
+# TODO: optimise somehow - for loop doesn't plot...?
+#for (outlet in global_media_outlets$name) {
+#  print(outlet)
+#  plot_topics_of_org(tidy_tweets_global, outlet, nr_of_topics)
+#}
+plot_topics_of_org(tidy_tweets_global, "The New York Times", nr_of_topics)
+plot_topics_of_org(tidy_tweets_global, "The Economist", nr_of_topics)
+plot_topics_of_org(tidy_tweets_global, "BBC News (World)", nr_of_topics)
+plot_topics_of_org(tidy_tweets_global, "The Associated Press", nr_of_topics)
+```
+
+# Topics for specific Media Outlet for specific Month
+
+```{r}
+# South Africa - January
+
+# TODO: optimise somehow - for loop doesn't plot...?
+
+nr_of_topics <- 3
+
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-01-01", 3)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-01-01", 3)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-01-01", 3)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-01-01", 3)
+```
+
+```{r}
+# TODO
+# South Africa - Feb
+# South Africa - March
+# South Africa - April
+# South Africa - May
+```
+
+```{r}
+# South Africa - June
+
+# TODO: optimise somehow - for loop doesn't plot...?
+
+nr_of_topics <- 3
+
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-06-01", 3)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-06-01", 3)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-06-01", 3)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-06-01", 3)
+```
+
+```{r}
+# TODO : same as above for global news outlets
+```
+
+```{r}
+# TODO : SA government topics
+```
+
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Sentiments of Topics -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+```{r}
+# TODO: Whatever you don't need below this point you can remove
+```
+
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Topic Modeling for SA Media Agencies -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+# Topic Modelling
+
+```{r top words for overall topics}
+# top words per topic (for sentiment analysis)
+nr_of_topics <- 4
+words_per_topic <- 200
+topics_overall <- top_words_per_topic(overall_topics(tidy_tweets_SA, nr_of_topics), words_per_topic)
+```
+
+
+# topic modelling over time
+
+```{r get overall topics for all media outlets per month}
+# top words per topic (for sentiment analysis)
+nr_of_topics <- 4
+words_per_topic <- 200
+# TODO: where is June_topics used?
+June_topics <- top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-06-01", 4), words_per_topic)
+
+# plot
+model_topics_of_month(tidy_tweets_SA, "2021-06-01", 4)
+model_topics_of_month(tidy_tweets_SA, "2021-05-01", 2)
+# note: previous months have fewer topics because SABC only has data for June, anything before is only Daily Maverick
+model_topics_of_month(tidy_tweets_SA, "2021-04-01", 2)
+```
+
+```{r Gina added: create list with topics per month}
+NUM_TOPICS_MONTH <- 4
+NUM_TOPICS_MONTH_REDUCED <- 2 # some months have less topics due to less data being available
+
+# TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_month
+# TODO: optimise this in some way with a loop?
+topics_per_month_list <- list(
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-04-01", NUM_TOPICS_MONTH_REDUCED), words_per_topic),
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-05-01", NUM_TOPICS_MONTH), words_per_topic),
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-06-01", NUM_TOPICS_MONTH), words_per_topic)
+)
+topics_per_month_list
+```
+
+
+# topic modelling per organisation
+
+
+
 ```{r}
 # top words per topic (for sentiment analysis)
 n_topics <- 3
 words_per_topic <- 200
-DailyMav_June_topics <- top_words_per_topic(monthly_org_topics(tidy_tweets, "DailyMaverick", "2021-06-01", 3), words_per_topic)
+# TODO: where is DailyMav_topics used?
+DailyMav_topics <- top_words_per_topic(org_topics(tidy_tweets_SA, "DailyMaverick", n_topics), words_per_topic)
+
+# plot
+model_topics_of_org(tidy_tweets_SA, "DailyMaverick", 3)
+model_topics_of_org(tidy_tweets_SA, "SABC", 2)
+model_topics_of_org(tidy_tweets_SA, "EWN", 2)
+model_topics_of_org(tidy_tweets_SA, "News24", 2)
+```
+
+```{r Gina added: create list with topics per media outlet}
+NUM_TOPICS_OUTLET <- 3
+NUM_TOPICS_OUTLET_REDUCED <- 2
+
+# TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_outlet
+# TODO: optimise this in some way with a loop?
+topics_per_outlet_list <- list(
+  top_words_per_topic(org_topics(tidy_tweets, "DailyMaverick", NUM_TOPICS_OUTLET), words_per_topic),
+  top_words_per_topic(org_topics(tidy_tweets, "SABC", NUM_TOPICS_OUTLET_REDUCED), words_per_topic),
+  top_words_per_topic(org_topics(tidy_tweets, "EWN", NUM_TOPICS_OUTLET_REDUCED), words_per_topic),
+  top_words_per_topic(org_topics(tidy_tweets, "News24", NUM_TOPICS_OUTLET_REDUCED), words_per_topic)
+)
+topics_per_outlet_list
+```
+
+# topic modelling for organisation for specific month
+
+
+```{r}
+# top words per topic (for sentiment analysis)
+n_topics <- 3
+words_per_topic <- 200
+DailyMav_June_topics <- top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "DailyMaverick", "2021-06-01", 3), words_per_topic)
 
 # plot
 # Topics per media agency in June
 # TODO: are we only doing June?
-model_topics_of_org_for_month(tidy_tweets, "DailyMaverick", "2021-06-01", 3)
-model_topics_of_org_for_month(tidy_tweets, "SABC", "2021-06-01", 3)
-model_topics_of_org_for_month(tidy_tweets, "CapeTalk", "2021-06-01", 3)
-model_topics_of_org_for_month(tidy_tweets, "EWN", "2021-06-01", 3)
-model_topics_of_org_for_month(tidy_tweets, "News24", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets_SA, "DailyMaverick", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets_SA, "SABC", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets_SA, "EWN", "2021-06-01", 3)
+model_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-06-01", 3)
 ```
 
 ```{r Gina added: create list with topics per media outlet per month}
@@ -491,11 +657,10 @@ JUNE1 <- "2021-06-01"
 # TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_outlet_month_list
 # TODO: optimise this in some way with a loop?
 topics_per_outlet_month_list <- list(
-  top_words_per_topic(monthly_org_topics(tidy_tweets, "DailyMaverick", JUNE1, NUM_TOPICS_OUTLET), words_per_topic),
-  top_words_per_topic(monthly_org_topics(tidy_tweets, "SABC", JUNE1, NUM_TOPICS_OUTLET), words_per_topic),
-  top_words_per_topic(monthly_org_topics(tidy_tweets, "CapeTalk", JUNE1, NUM_TOPICS_OUTLET), words_per_topic),
-  top_words_per_topic(monthly_org_topics(tidy_tweets, "EWN", JUNE1, NUM_TOPICS_OUTLET), words_per_topic),
-  top_words_per_topic(monthly_org_topics(tidy_tweets, "News24", JUNE1, NUM_TOPICS_OUTLET), words_per_topic)
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "DailyMaverick", JUNE1, NUM_TOPICS_OUTLET), words_per_topic),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "SABC", JUNE1, NUM_TOPICS_OUTLET), words_per_topic),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "EWN", JUNE1, NUM_TOPICS_OUTLET), words_per_topic),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "News24", JUNE1, NUM_TOPICS_OUTLET), words_per_topic)
 )
 topics_per_outlet_month_list
 ```
