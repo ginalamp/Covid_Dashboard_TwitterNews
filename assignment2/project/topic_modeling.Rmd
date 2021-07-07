@@ -29,6 +29,23 @@ darkgrey <- "#333333"
 lightgrey <- "#8c979a"
 black <- "#000000"
 engineering_yellow <- "#eaaa00"
+
+
+# microsoft sharepoint main colours
+# https://docs.microsoft.com/en-us/sharepoint/dev/design/themes-colors
+
+ms_red <- "#A4262C"
+ms_orange <- "#CA5010"
+ms_gold <- "#8F7034"
+ms_green <- "#407855"
+ms_teal <- "#038387"
+ms_blue <- "#0078d4"
+ms_darkblue <- "#40587C"
+ms_indigo <- "#4052AB"
+ms_plum <- "#854085"
+ms_purple <- "#8764B8"
+ms_coolgrey <- "#737373"
+ms_warmgrey <- "#867365"
 ```
 
 ```{r custom themes}
@@ -677,6 +694,7 @@ ggplot(overall_sentiment_per_month, aes(month, sentiment_mean_per_month, fill=mo
 ```
 
 ```{r plot overall sentiment per outlet on covid-19}
+library("ggthemes")
 ggplot(overall_sentiment_per_outlet, aes(media_outlet, sentiment_mean_per_outlet, fill=media_outlet)) +
   geom_col() +
   labs(title = "Overall sentiment per media outlet on covid-19",
@@ -684,6 +702,7 @@ ggplot(overall_sentiment_per_outlet, aes(media_outlet, sentiment_mean_per_outlet
        y="Vader Sentiment Score") +
   scale_fill_manual(values = c(dailymav_colour, ewn_colour, capetalk_colour, news24_colour, sabc_colour)) +
   custom_column_basic_theme()
+  # theme_excel() + scale_colour_excel()
 ```
 
 
