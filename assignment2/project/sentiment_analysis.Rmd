@@ -87,6 +87,10 @@ library(tidytext)
 library(lubridate) # date conversion
 library(RcppRoll) # rolling average
 library(ggplot2)
+# plot table
+library(gridExtra)
+library(grid)
+library(gtable)
 ```
 
 ```{r extract relevant data from read in csv}
@@ -333,7 +337,11 @@ global_tidy_tweets
 ```{r plot total overall sentiment}
 # TODO: make a valuebox or something?
 total_overall_sentiment
+
+g <- tableGrob(total_overall_sentiment, rows = "Total Overall Sentiment: ")
+grid.arrange(g)
 ```
+
 
 
 ```{r plot overall sentiment per organisation on covid-19}
