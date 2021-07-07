@@ -12,26 +12,49 @@ output: html_notebook
 <!-- Setup -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-<!-- Set colours according to Stellenbosch Branding manual-->
-<!-- http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf -->
 ```{r set colours}
-dailymav_colour <- "#FF8F1C" # Daily Maveric - arts_orange
-capetalk_colour <- "#9e2629" # Cape Talk - law_winered
-sabc_colour <- "#84329B" # SABC News - theology_purple
-news24_colour <- "#326295" # News24 - education_darkblue
-ewn_colour <- "#509e2f" # EWN - agri_green
-
-# other colours to use
+# Stellenbosch branding manual colours:
+# http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf 
+arts_orange <- "#FF8F1C"
+law_winered <- "#9e2629"
+theology_purple <- "#84329B"
+education_darkblue <- "#326295"
+agri_green <- "#509e2f"
 med_bluegreen <- "#006163"
 military_salmon <- "#e56a54"
 science_red <- "#cb333b"
 ems_lightblue <- "#2dccd3"
+engineering_yellow <- "#eaaa00"
 maroon <- "#60223b"
 mustard <- "#F1B434"
 darkgrey <- "#333333"
 lightgrey <- "#8c979a"
 black <- "#000000"
-engineering_yellow <- "#eaaa00"
+
+su_colors <- c(arts_orange, law_winered, theology_purple, education_darkblue, agri_green, med_bluegreen, military_salmon, science_red, ems_lightblue, engineering_yellow, maroon, mustard, darkgrey, lightgrey, black)
+
+# microsoft sharepoint main colours
+# https://docs.microsoft.com/en-us/sharepoint/dev/design/themes-colors
+ms_red <- "#A4262C"
+ms_orange <- "#CA5010"
+ms_gold <- "#8F7034"
+ms_green <- "#407855"
+ms_teal <- "#038387"
+ms_blue <- "#0078d4"
+ms_darkblue <- "#40587C"
+ms_indigo <- "#4052AB"
+ms_plum <- "#854085"
+ms_purple <- "#8764B8"
+ms_coolgrey <- "#737373"
+ms_warmgrey <- "#867365"
+
+ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkblue, ms_indigo, ms_plum, ms_purple, ms_coolgrey, ms_warmgrey)
+
+# colour picker: http://tristen.ca/hcl-picker/#/hlc/10/1.02/EBB350/48231C
+color_picker<- c("#EBB350", "#ABB14C", "#6EA85F", "#3A9976", "#248686", "#3F6F85", "#585674", "#623F57", "#5B2E37", "#48231C")
+
+# palette generator: https://learnui.design/tools/data-color-picker.html#palette
+palette_generator <- c("#003f5c", "#665191", "#d45087", "#ff7c43", "#ffa600")
 ```
 
 ```{r custom themes}
@@ -49,6 +72,8 @@ custom_column_basic_theme <- function () {
 
 ```{r import libraries}
 library(tidyverse)
+library(scales)
+library(ggplot2)
 ```
 
 ```{r extract relevant data from read in csv}
@@ -57,46 +82,59 @@ extract_relevant_data <- function(df) {
 }
 ```
 
-```{r read data}
-CapeTalk_tweets <- extract_relevant_data(read.csv("data/CapeTalk_tweets.csv"))
-DailyMav_tweets <- extract_relevant_data(read.csv("data/DailyMav_tweets.csv"))
-EWN_tweets <- extract_relevant_data(read.csv("data/EWN_tweets.csv"))
-News24_tweets <- extract_relevant_data(read.csv("data/News24_tweets.csv"))
-SABCNews_tweets <- extract_relevant_data(read.csv("data/SABCNews_tweets.csv"))
+```{r read South Africa data}
+DailyMav_tweets <- extract_relevant_data(read.csv("data/dailymaverick.csv"))
+EWN_tweets <- extract_relevant_data(read.csv("data/ewnupdates.csv"))
+News24_tweets <- extract_relevant_data(read.csv("data/news24.csv"))
+SABCNews_tweets <- extract_relevant_data(read.csv("data/sabcnews.csv"))
+# combine tweets into a list of dataframes
+media_outlet_list <- list(DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
 
-media_outlet_list <- list(CapeTalk_tweets, DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
 head(media_outlet_list[1])
+```
+
+```{r read Global data}
+nytimes_tweets <- extract_relevant_data(read.csv("data/nytimes.csv"))
+AP_tweets <- extract_relevant_data(read.csv("data/ap.csv"))
+bbcworld_tweets <- extract_relevant_data(read.csv("data/bbcworld.csv"))
+economist_tweets <- extract_relevant_data(read.csv("data/theeconomist.csv"))
+# combine tweets into a list of dataframes
+global_media_outlet_list <- list(nytimes_tweets, AP_tweets, bbcworld_tweets, economist_tweets)
+
+head(global_media_outlet_list[1])
 ```
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r get number of followers, friends, tweets, and retweets per media outlet}
-# get name, follower, friend, and tweet values
-names <- unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])}))
-followers_count <- unlist(lapply(media_outlet_list, function(df) {return(df$followers_count[1])}))
-friends_count <- unlist(lapply(media_outlet_list, function(df) {return(df$friends_count[1])}))
-tweets_count <- unlist(lapply(media_outlet_list, function(df) {return(df$statuses_count[1])}))
-# calculate user retweet sum
-user_retweet_sum <- unlist(lapply(media_outlet_list, function(df) {return(sum(df$retweet_count))}))
-# calculate media outlet's number of retweets (is_retweet == TRUE)
-outlet_retweet_count <- unlist(lapply(media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))}))
-
-# join values into a dataframe
-number_of_x <- data.frame(name=names, 
-                          followers_count=followers_count, 
-                          friends_count=friends_count, 
-                          tweets_count=tweets_count, 
-                          user_retweet_sum=user_retweet_sum,
-                          outlet_retweet_count=outlet_retweet_count)
+```{r South African: get number of followers, friends, tweets, and retweets per media outlet}
+# join name, follower, friend, tweet, and calculated retweet values into a dataframe
+number_of_x <- data.frame(name=unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])})), 
+                          followers_count=unlist(lapply(media_outlet_list, function(df) {return(df$followers_count[1])})), 
+                          friends_count=unlist(lapply(media_outlet_list, function(df) {return(df$friends_count[1])})), 
+                          tweets_count=unlist(lapply(media_outlet_list, function(df) {return(df$statuses_count[1])})), 
+                          user_retweet_sum=unlist(lapply(media_outlet_list, function(df) {return(sum(df$retweet_count))})),
+                          # TODO: all False with new data
+                          outlet_retweet_count=unlist(lapply(media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))})))
 head(number_of_x)
 ```
+```{r Global: get number of followers, friends, tweets, and retweets per media outlet}
+# join name, follower, friend, tweet, and calculated retweet values into a dataframe
+global_number_of_x <- data.frame(name=unlist(lapply(global_media_outlet_list, function(df) {return(df$screen_name[1])})),
+                                 followers_count=unlist(lapply(global_media_outlet_list, function(df) {return(df$followers_count[1])})),
+                                 friends_count=unlist(lapply(global_media_outlet_list, function(df) {return(df$friends_count[1])})),
+                                 tweets_count=unlist(lapply(global_media_outlet_list, function(df) {return(df$statuses_count[1])})),
+                                 user_retweet_sum=unlist(lapply(global_media_outlet_list, function(df) {return(sum(df$retweet_count))})),
+                                 # TODO: all False with new data
+                                 outlet_retweet_count=unlist(lapply(global_media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))})))
+head(global_number_of_x)
+```
+
 ```{r in progress - try to combine favourited and retweet functions}
-b <- function(CapeTalk_tweets, column_name){
-    eval(substitute(column_name), CapeTalk_tweets)
+b <- function(DailyMav_tweets, column_name){
+    eval(substitute(column_name), DailyMav_tweets)
 }
-# CapeTalk_tweets
-b(CapeTalk_tweets, favorite_count)
+b(DailyMav_tweets, retweet_count)
 ```
 
 ```{r get top x tweets per media outlet}
@@ -110,9 +148,13 @@ get_top_retweets <- function(df) {
 }
 
 # TODO need to plot nicely (as table?)
-# top 5 user retweeted tweets per media outlet
+# South African: top 5 user retweeted tweets per media outlet
 top_retweets <- lapply(media_outlet_list, get_top_retweets)
-top_retweets
+head(top_retweets)
+
+# Global: top 5 user retweeted tweets per media outlet
+global_top_retweets <- lapply(global_media_outlet_list, get_top_retweets)
+head(global_top_retweets)
 ```
 
 ```{r get top x favourited tweets per media outlet}
@@ -123,25 +165,29 @@ get_top_favorited_tweets <- function(df) {
     slice(1:x) %>% 
     select(status_id, screen_name, created_at, favorite_count, text)
   return(text)
-
-# top 5 favourited tweets per media outlet
-# TODO need to plot nicely (as table?)
-top_favourited <- lapply(media_outlet_list, get_top_favorited_tweets)
-top_favourited
 }
+
+# TODO need to plot nicely (as table?)
+# South African: top 5 favourited tweets per media outlet
+top_favourited <- lapply(media_outlet_list, get_top_favorited_tweets)
+head(top_favourited)
+
+# Global: top 5 favourited tweets per media outlet
+global_top_favourited <- lapply(media_outlet_list, get_top_favorited_tweets)
+head(global_top_favourited)
 ```
 
 
 
 ```{r}
 # select tweet IDs that are retweets
-CapeTalk_tweets$status_id[(CapeTalk_tweets$is_retweet)]
+DailyMav_tweets$status_id[(DailyMav_tweets$is_retweet)]
 ```
 
 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Data Visualisation -->
+<!-- Data Visualisation (South African)-->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 ```{r plot followers per media outlet}
@@ -151,7 +197,7 @@ ggplot(number_of_x, aes(name, followers_count, fill=name)) +
        x=NULL,
        y=NULL) +
   scale_y_continuous(label=comma) +
-  scale_fill_manual(values = c(capetalk_colour, dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
 ```{r plot friends per media outlet}
@@ -161,7 +207,7 @@ ggplot(number_of_x, aes(name, friends_count, fill=name)) +
        x=NULL,
        y=NULL) +
   scale_y_continuous(label=comma) +
-  scale_fill_manual(values = c(capetalk_colour, dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
 ```{r plot tweets per media outlet}
@@ -171,7 +217,7 @@ ggplot(number_of_x, aes(name, tweets_count, fill=name)) +
        x=NULL,
        y=NULL) +
   scale_y_continuous(label=comma) +
-  scale_fill_manual(values = c(capetalk_colour, dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
 ```{r plot retweets of users per media outlet}
@@ -181,16 +227,74 @@ ggplot(number_of_x, aes(name, user_retweet_sum, fill=name)) +
        x=NULL,
        y=NULL) +
   scale_y_continuous(label=comma) +
-  scale_fill_manual(values = c(capetalk_colour, dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
 ```{r plot retweets of outlets per media outlet}
+# TODO: empty 
 ggplot(number_of_x, aes(name, outlet_retweet_count, fill=name)) +
   geom_col() +
   labs(title = "Number of outlet retweets per media outlet",
        x=NULL,
        y=NULL) +
   scale_y_continuous(label=comma) +
-  scale_fill_manual(values = c(capetalk_colour, dailymav_colour, ewn_colour, news24_colour, sabc_colour)) +
+  scale_fill_manual(values = ms_colors) +
+  custom_column_basic_theme()
+```
+
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Data Visualisation (Global)-->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+```{r plot global followers per media outlet}
+ggplot(global_number_of_x, aes(name, followers_count, fill=name)) +
+  geom_col() +
+  labs(title = "Global: Number of followers per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = rev(ms_colors))  +
+  custom_column_basic_theme()
+```
+```{r plot global friends per media outlet}
+ggplot(global_number_of_x, aes(name, friends_count, fill=name)) +
+  geom_col() +
+  labs(title = "Global: Number of friends per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = rev(ms_colors)) +
+  custom_column_basic_theme()
+```
+```{r plot global tweets per media outlet}
+ggplot(global_number_of_x, aes(name, tweets_count, fill=name)) +
+  geom_col() +
+  labs(title = "Global: Number of tweets per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = rev(ms_colors)) +
+  custom_column_basic_theme()
+```
+```{r plot global retweets of users per media outlet}
+ggplot(global_number_of_x, aes(name, user_retweet_sum, fill=name)) +
+  geom_col() +
+  labs(title = "Global: Number of user retweets per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = rev(ms_colors)) +
+  custom_column_basic_theme()
+```
+```{r plot global retweets of outlets per media outlet}
+# TODO: empty 
+ggplot(global_number_of_x, aes(name, outlet_retweet_count, fill=name)) +
+  geom_col() +
+  labs(title = "Global: Number of outlet retweets per media outlet",
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(label=comma) +
+  scale_fill_manual(values = rev(ms_colors)) +
   custom_column_basic_theme()
 ```
