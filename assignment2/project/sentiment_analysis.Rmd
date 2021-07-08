@@ -101,6 +101,7 @@ library(gtable)
 SA_SUFFIX <- "South Africa"
 GLOBAL_SUFFIX <- "Global"
 SA_GOV_SUFFIX <- "SA Government"
+NUM_TWEETS <- 10 # number of (retweeted/favourited) tweets to be extracted
 ```
 
 
@@ -140,7 +141,6 @@ head(global_media_outlet_list[1])
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
 
 ```{r extract tweets related to covid and combine covid tweets into a list}
 # extract covid tweets function
@@ -201,10 +201,19 @@ global_tidy_tweets <- lapply(global_covid_tweets, clean_tweets)
 head(global_tidy_tweets)
 ```
 
-```{r apply vader sentiment analysis to list of cleaned covid tweets}
+```{r vader and sentiment mean functions}
+# apply vader sentiment analysis to list of cleaned covid tweets
 apply_vader <- function(df) {
   return(vader_df(df$text))
 }
+
+# calculate the sentiment mean of the compound value of the vader df given
+get_sentiment_mean <- function(vader_df) {
+  return(mean(vader_df$compound))
+}
+```
+
+```{r apply vader analysis}
 # South African: apply vader analysis to media outlets
 vader_analysis <- lapply(tidy_tweets, apply_vader)
 head(vader_analysis)
@@ -220,9 +229,6 @@ head(global_vader_analysis)
 name <- unlist(lapply(media_outlet_list, function(df) {return(df$name[1])}))
 global_name <- unlist(lapply(global_media_outlet_list, function(df) {return(df$name[1])}))
 
-get_sentiment_mean <- function(df) {
-  return(mean(df$compound))
-}
 # South African: get average sentiment for media outlets
 sentiment_mean_per_outlet <- unlist(lapply(vader_analysis, get_sentiment_mean))
 overall_sentiment_per_outlet <- data.frame(name, sentiment_mean_per_outlet)
@@ -233,6 +239,7 @@ global_sentiment_mean_per_outlet <- unlist(lapply(global_vader_analysis, get_sen
 global_overall_sentiment_per_outlet <- data.frame(global_name, global_sentiment_mean_per_outlet)
 head(global_overall_sentiment_per_outlet)
 ```
+
 ```{r get overall sentiment for all outlets}
 # South African: total overall sentiment
 total_overall_sentiment <- mean(overall_sentiment_per_outlet$sentiment_mean_per_outlet)
@@ -245,72 +252,122 @@ head(global_total_overall_sentiment)
 
 
 # Sentiment on top x tweets
-```{r set number of tweets to be extracted}
-NUM_TWEETS <- 10
-```
 
-```{r sentiment analysis on top retweeted tweets per media outlet}
-# TODO need to plot nicely (as table?)
-
-# get top NUM_TWEETS retweeted tweets per media outlet
-get_top_retweets <- function(df) {
+```{r}
+# get top NUM_TWEETS retweeted/favourited tweets per media outlet
+get_top_count <- function(df, count_col) {
   text <- df %>%
-    arrange(desc(retweet_count)) %>% 
+    arrange(desc(count_col)) %>% 
     slice(1:NUM_TWEETS) %>% 
-    select(status_id, name, created_at, retweet_count, text)
+    select(status_id, name, created_at, names(count_col), text)
   return(text)
 }
+```
 
-# South African: apply sentiment analysis on top NUM_TWEETS user retweeted tweets per media outlet
-top_retweets <- lapply(tidy_tweets, get_top_retweets)
+```{r get top NUM_TWEETS South African retweets and favourited tweets}
+# TODO need to plot nicely (as table?)
+
+# Apply sentiment analysis on top NUM_TWEETS user retweeted tweets per media outlet
+top_retweets <- lapply(tidy_tweets, function(df) {return(get_top_count(df, df$retweet_count))})
 top_retweets_vader_analysis <- lapply(top_retweets, apply_vader)
-
-# Global: apply sentiment analysis on top NUM_TWEETS user retweeted tweets per media outlet
-global_top_retweets <- lapply(global_tidy_tweets, get_top_retweets)
-global_top_retweets_vader_analysis <- lapply(global_top_retweets, apply_vader)
-
-# South African: get average sentiment for top retweets per media outlet
+# Get average sentiment for top retweets per media outlet
 top_retweets_sentiment_mean <- unlist(lapply(top_retweets_vader_analysis, get_sentiment_mean))
 top_retweets_sentiment_per_outlet <- data.frame(name, top_retweets_sentiment_mean)
 head(top_retweets_sentiment_per_outlet)
 
-# Global: get average sentiment for top retweets per media outlet
-global_top_retweets_sentiment_mean <- unlist(lapply(global_top_retweets_vader_analysis, get_sentiment_mean))
-global_top_retweets_sentiment_per_outlet <- data.frame(global_name, global_top_retweets_sentiment_mean)
-head(global_top_retweets_sentiment_per_outlet)
-```
-
-
-
-```{r sentiment analysis on top favourited tweets per media outlet}
-# TODO need to plot nicely (as table?)
-
-# get top NUM_TWEETS favourited tweets per media outlet
-get_top_favorited_tweets <- function(df) {
-  text <- df %>%
-    arrange(desc(favorite_count)) %>% 
-    slice(1:NUM_TWEETS) %>% 
-    select(status_id, name, created_at, favorite_count, text)
-  return(text)
-}
-# South Africa: apply sentiment analysis on top NUM_TWEETS favourited tweets per media outlet
-top_favourited <- lapply(tidy_tweets, get_top_favorited_tweets)
+# Apply sentiment analysis on top NUM_TWEETS favourited tweets per media outlet
+top_favourited <- lapply(tidy_tweets, function(df) {return(get_top_count(df, df$favorite_count))})
 top_favourited_vader_analysis <- lapply(top_favourited, apply_vader)
-
-# Global: apply sentiment analysis on top NUM_TWEETS favourited tweets per media outlet
-global_top_favourited <- lapply(global_tidy_tweets, get_top_favorited_tweets)
-global_top_favourited_vader_analysis <- lapply(global_top_favourited, apply_vader)
-
 # South Africa: get average sentiment for top favourited tweets per media outlet
 top_favourited_sentiment_mean <- unlist(lapply(top_favourited_vader_analysis, get_sentiment_mean))
 top_favourited_sentiment_per_outlet <- data.frame(name, top_favourited_sentiment_mean)
 head(top_favourited_sentiment_per_outlet)
+```
+```{r get top NUM_TWEETS Global retweets and favourited tweets}
+# TODO need to plot nicely (as table?)
 
-# Global: get average sentiment for top favourited tweets per media outlet
+# Apply sentiment analysis on top NUM_TWEETS user retweeted tweets per media outlet
+global_top_retweets <- lapply(global_tidy_tweets, function(df) {return(get_top_count(df, df$retweet_count))})
+global_top_retweets_vader_analysis <- lapply(global_top_retweets, apply_vader)
+# Get average sentiment for top retweets per media outlet
+global_top_retweets_sentiment_mean <- unlist(lapply(global_top_retweets_vader_analysis, get_sentiment_mean))
+global_top_retweets_sentiment_per_outlet <- data.frame(global_name, global_top_retweets_sentiment_mean)
+head(global_top_retweets_sentiment_per_outlet)
+
+# Apply sentiment analysis on top NUM_TWEETS favourited tweets per media outlet
+global_top_favourited <- lapply(global_tidy_tweets, function(df) {return(get_top_count(df, df$favorite_count))})
+global_top_favourited_vader_analysis <- lapply(global_top_favourited, apply_vader)
+# Get average sentiment for top favourited tweets per media outlet
 global_top_favourited_sentiment_mean <- unlist(lapply(global_top_favourited_vader_analysis, get_sentiment_mean))
 global_top_favourited_sentiment_per_outlet <- data.frame(global_name, global_top_favourited_sentiment_mean)
 head(global_top_favourited_sentiment_per_outlet)
 ```
+
+
+<!-- x -->
+<!-- ```{r sentiment analysis on top retweeted tweets per media outlet} -->
+<!-- # TODO need to plot nicely (as table?) -->
+
+<!-- # get top NUM_TWEETS retweeted tweets per media outlet -->
+<!-- get_top_retweets <- function(df) { -->
+<!--   text <- df %>% -->
+<!--     arrange(desc(retweet_count)) %>%  -->
+<!--     slice(1:NUM_TWEETS) %>%  -->
+<!--     select(status_id, name, created_at, retweet_count, text) -->
+<!--   return(text) -->
+<!-- } -->
+
+<!-- # South African: apply sentiment analysis on top NUM_TWEETS user retweeted tweets per media outlet -->
+<!-- top_retweets <- lapply(tidy_tweets, get_top_retweets) -->
+<!-- head(top_retweets) -->
+<!-- top_retweets_vader_analysis <- lapply(top_retweets, apply_vader) -->
+
+<!-- # Global: apply sentiment analysis on top NUM_TWEETS user retweeted tweets per media outlet -->
+<!-- global_top_retweets <- lapply(global_tidy_tweets, get_top_retweets) -->
+<!-- global_top_retweets_vader_analysis <- lapply(global_top_retweets, apply_vader) -->
+
+<!-- # South African: get average sentiment for top retweets per media outlet -->
+<!-- top_retweets_sentiment_mean <- unlist(lapply(top_retweets_vader_analysis, get_sentiment_mean)) -->
+<!-- top_retweets_sentiment_per_outlet <- data.frame(name, top_retweets_sentiment_mean) -->
+<!-- head(top_retweets_sentiment_per_outlet) -->
+
+<!-- # Global: get average sentiment for top retweets per media outlet -->
+<!-- global_top_retweets_sentiment_mean <- unlist(lapply(global_top_retweets_vader_analysis, get_sentiment_mean)) -->
+<!-- global_top_retweets_sentiment_per_outlet <- data.frame(global_name, global_top_retweets_sentiment_mean) -->
+<!-- head(global_top_retweets_sentiment_per_outlet) -->
+<!-- ``` -->
+
+
+<!-- x -->
+<!-- ```{r sentiment analysis on top favourited tweets per media outlet} -->
+<!-- # TODO need to plot nicely (as table?) -->
+
+<!-- # get top NUM_TWEETS favourited tweets per media outlet -->
+<!-- get_top_favorited_tweets <- function(df) { -->
+<!--   text <- df %>% -->
+<!--     arrange(desc(favorite_count)) %>%  -->
+<!--     slice(1:NUM_TWEETS) %>%  -->
+<!--     select(status_id, name, created_at, favorite_count, text) -->
+<!--   return(text) -->
+<!-- } -->
+<!-- # South Africa: apply sentiment analysis on top NUM_TWEETS favourited tweets per media outlet -->
+<!-- top_favourited <- lapply(tidy_tweets, get_top_favorited_tweets) -->
+<!-- top_favourited_vader_analysis <- lapply(top_favourited, apply_vader) -->
+
+<!-- # Global: apply sentiment analysis on top NUM_TWEETS favourited tweets per media outlet -->
+<!-- global_top_favourited <- lapply(global_tidy_tweets, get_top_favorited_tweets) -->
+<!-- global_top_favourited_vader_analysis <- lapply(global_top_favourited, apply_vader) -->
+
+<!-- # South Africa: get average sentiment for top favourited tweets per media outlet -->
+<!-- top_favourited_sentiment_mean <- unlist(lapply(top_favourited_vader_analysis, get_sentiment_mean)) -->
+<!-- top_favourited_sentiment_per_outlet <- data.frame(name, top_favourited_sentiment_mean) -->
+<!-- head(top_favourited_sentiment_per_outlet) -->
+
+<!-- # Global: get average sentiment for top favourited tweets per media outlet -->
+<!-- global_top_favourited_sentiment_mean <- unlist(lapply(global_top_favourited_vader_analysis, get_sentiment_mean)) -->
+<!-- global_top_favourited_sentiment_per_outlet <- data.frame(global_name, global_top_favourited_sentiment_mean) -->
+<!-- head(global_top_favourited_sentiment_per_outlet) -->
+<!-- ``` -->
 
 
 # Sentiment analysis over time
