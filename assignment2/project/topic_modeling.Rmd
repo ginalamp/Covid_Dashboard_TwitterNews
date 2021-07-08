@@ -240,7 +240,7 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
   
   # checking for ideal number of topics
   # set to TRUE to run ldatuning
-  tuning <- TRUE
+  tuning <- FALSE
   if (tuning) {
     result <- FindTopicsNumber(
       orgs_dtm,
@@ -649,42 +649,23 @@ plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-06-01", 3)
 # TODO : SA government topics
 ```
 
-
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Sentiments of Topics -->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-```{r}
-# TODO: Whatever you don't need below this point you can remove
-```
-
-
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Topic Modeling for SA Media Agencies -->
+<!-- Data Wrangling: Sentiment per topic -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-# Topic Modelling
+# Sentiment per topic
 
-```{r top words for overall topics}
-# TODO remove
-# top words per topic (for sentiment analysis)
-nr_of_topics <- 4
+```{r split topics into list of dataframes}
+# split overall topics into a list with each dataframe only containing one topic and the term associated with it
 words_per_topic <- 200
 topics_overall <- top_words_per_topic(overall_topics(tidy_tweets_SA, nr_of_topics), words_per_topic)
+
+term_per_topic_list <- topics_overall %>% 
+  select(topic,term) %>% 
+  group_split(topic)
+term_per_topic_list
 ```
-
-
-# topic modelling over time
-
-```{r get overall topics for all media outlets per month}
-# TODO: remove
-# top words per topic (for sentiment analysis)
-nr_of_topics <- 4
-words_per_topic <- 200
-# TODO: where is June_topics used?
-June_topics <- top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-06-01", 4), words_per_topic)
-```
-
-```{r Gina added: create list with topics per month}
+```{r Create list with topics per month}
 NUM_TOPICS_MONTH <- 4
 NUM_TOPICS_MONTH_REDUCED <- 2 # some months have less topics due to less data being available
 words_per_topic <- 200
@@ -700,9 +681,7 @@ topics_per_month_list
 ```
 
 
-# topic modelling per organisation
-
-```{r Gina added: create list with topics per media outlet}
+```{r Create list with topics per media outlet}
 NUM_TOPICS_OUTLET <- 3
 NUM_TOPICS_OUTLET_REDUCED <- 2
 
@@ -717,18 +696,7 @@ topics_per_outlet_list <- list(
 topics_per_outlet_list
 ```
 
-# topic modelling for organisation for specific month
-
-
-```{r}
-# TODO: remove
-# top words per topic (for sentiment analysis)
-n_topics <- 3
-words_per_topic <- 200
-DailyMav_June_topics <- top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "Daily Maverick", "2021-06-01", 3), words_per_topic)
-```
-
-```{r Gina added: create list with topics per media outlet per month}
+```{r Create list with topics per media outlet per month}
 # TODO: are we only doing June? -> add Jan
 JUNE1 <- "2021-06-01"
 
@@ -743,19 +711,6 @@ topics_per_outlet_month_list <- list(
 topics_per_outlet_month_list
 ```
 
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Data Wrangling: Sentiment per topic -->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
-# Sentiment per topic
-
-```{r split topics into list of dataframes}
-# split overall topics into a list with each dataframe only containing one topic and the term associated with it
-term_per_topic_list <- topics_overall %>% 
-  select(topic,term) %>% 
-  group_split(topic)
-term_per_topic_list
-```
 
 ```{r apply vader sentiment analysis to list of topics on covid tweets}
 # https://towardsdatascience.com/sentimental-analysis-using-vader-a3415fef7664
@@ -772,9 +727,9 @@ get_sentiment_mean <- function(df) {
 ```{r get topic sentiment mean per topic}
 # TODO need to plot nicely (as table?)
 
+# TODO: make sure this works for different topic amounts changed
 # set names of topics
 TOPIC <- list(paste0(1:length(term_per_topic_list)))
-# TOPIC <- TOPIC %>% paste0(sep="")
 
 # get average sentiment
 vader_analysis_per_topic <- lapply(term_per_topic_list, apply_vader)
@@ -789,6 +744,7 @@ overall_sentiment_per_topic
 ```{r get topic sentiment mean per month}
 # TODO need to plot nicely (as table?)
 
+# TODO update this - does not plor correctly (also need updating for new data)
 # set months to plot
 MONTHS_TO_PLOT <- c("April", "May", "June")
 
@@ -832,6 +788,9 @@ overall_sentiment_per_outlet_month
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Visualisation: Sentiment per topic -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
+# TODO: 
+* plot global stuff too
+* plot with new data stuff
 
 ```{r plot overall sentiment per topic on covid-19}
 ggplot(overall_sentiment_per_topic, aes(topic, sentiment_mean_per_topic, fill=topic)) +
