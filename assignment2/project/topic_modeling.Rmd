@@ -150,22 +150,20 @@ relevant_df <- relevant_df %>%
 return(relevant_df)
 }
 
-# call get_covid_tweets() function for all media outlets
-relevant_DM <- get_covid_tweets(DailyMav_tweets)
-relevant_EWN <- get_covid_tweets(EWN_tweets)
-relevant_News24 <- get_covid_tweets(News24_tweets)
-relevant_SABC <- get_covid_tweets(SABCNews_tweets)
+# South African: combine relevant (Covid-related) tweets for all media outlets into list
+covid_tweets_SA <- list(get_covid_tweets(DailyMav_tweets), 
+                     get_covid_tweets(EWN_tweets), 
+                     get_covid_tweets(News24_tweets), 
+                     get_covid_tweets(SABCNews_tweets))
 
+# SA government relevant (Covid-related) tweets
 relevant_govZA <- get_covid_tweets(govZA_tweets)
 
-relevant_NYT <- get_covid_tweets(nyTimes_tweets)
-relevant_economist <- get_covid_tweets(economist_tweets)
-relevant_bbcworld <- get_covid_tweets(bbcworld_tweets)
-relevant_AP <- get_covid_tweets(AP_tweets)
-
-# combine tweets into list
-covid_tweets_SA <- list(relevant_SABC, relevant_DM, relevant_EWN, relevant_News24)
-covid_tweets_global <- list(relevant_NYT, relevant_economist, relevant_bbcworld, relevant_AP)
+# Global: combine relevant (Covid-related) tweets for all media outlets into list
+covid_tweets_global <- list(get_covid_tweets(nyTimes_tweets), 
+                            get_covid_tweets(AP_tweets),
+                            get_covid_tweets(bbcworld_tweets), 
+                            get_covid_tweets(economist_tweets))
 ```
 
 ```{r}
