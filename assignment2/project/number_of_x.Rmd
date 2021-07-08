@@ -81,6 +81,9 @@ library(ggplot2)
 ```
 
 ```{r global (static) variables}
+SA_SUFFIX <- "South Africa"
+GLOBAL_SUFFIX <- "Global"
+SA_GOV_SUFFIX <- "SA Government"
 NUM_TWEETS <- 10 # number of (retweeted/favourited) tweets to be extracted
 ```
 
@@ -115,21 +118,48 @@ head(global_media_outlet_list[1])
 <!-- Data Wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r South African: get number of followers, friends, tweets, and retweets per media outlet}
-# join name, follower, friend, tweet, and calculated retweet values into a dataframe
-number_of_x <- data.frame(name = unlist(lapply(media_outlet_list, function(df) {return(df$name[1])})), 
-                          followers_count = unlist(lapply(media_outlet_list, function(df) {return(df$followers_count[1])})), 
-                          tweets_count = unlist(lapply(media_outlet_list, function(df) {return(df$statuses_count[1])})), 
-                          user_retweet_sum = unlist(lapply(media_outlet_list, function(df) {return(sum(df$retweet_count))})))
-head(number_of_x)
+```{r extract tweets related to covid and combine covid tweets into a list}
+# extract covid tweets function
+get_covid_tweets <- function(df) {
+relevant_df <-  df[grepl("covid", df[["text"]]) | 
+                  grepl("Covid", df[["text"]]) |
+                  grepl("corona", df[["text"]]) |
+                  grepl("Corona", df[["text"]]) |
+                  grepl("Pandemic", df[["text"]]) |
+                  grepl("pandemic", df[["text"]]), ]
+relevant_df <- relevant_df %>%
+  mutate(created_at = as.Date(created_at))
+return(relevant_df)
+}
+
+# South Africa: combine relevant tweets for all media outlets into list
+covid_tweets <- list(get_covid_tweets(DailyMav_tweets), 
+                     get_covid_tweets(EWN_tweets), 
+                     get_covid_tweets(News24_tweets), 
+                     get_covid_tweets(SABCNews_tweets))
+
+# Global: combine relevant tweets for all media outlets into list
+global_covid_tweets <- list(get_covid_tweets(nytimes_tweets), 
+                            get_covid_tweets(AP_tweets),
+                            get_covid_tweets(bbcworld_tweets), 
+                            get_covid_tweets(economist_tweets))
 ```
-```{r Global: get number of followers, friends, tweets, and retweets per media outlet}
-# join name, follower, friend, tweet, and calculated retweet values into a dataframe
-global_number_of_x <- data.frame(name = unlist(lapply(global_media_outlet_list, function(df) {return(df$name[1])})),
-                                 followers_count = unlist(lapply(global_media_outlet_list, function(df) {return(df$followers_count[1])})),
-                                 tweets_count = unlist(lapply(global_media_outlet_list, function(df) {return(df$statuses_count[1])})),
-                                 user_retweet_sum = unlist(lapply(global_media_outlet_list, function(df) {return(sum(df$retweet_count))})))
-head(global_number_of_x)
+
+```{r get number of followers, tweets, and retweets per media outlet}
+extract_number_of_x <- function(df_list) {
+  extracted_list <- data.frame(name = unlist(lapply(df_list, function(df) {return(df$name[1])})),
+                               followers_count = unlist(lapply(df_list, function(df) {return(df$followers_count[1])})),
+                               tweets_count = unlist(lapply(df_list, function(df) {return(df$statuses_count[1])})),
+                               user_retweet_sum = unlist(lapply(df_list, function(df) {return(sum(df$retweet_count))})))
+  return(extracted_list)
+}
+# total tweets per outlet
+number_of_x <- extract_number_of_x(media_outlet_list)
+global_number_of_x <- extract_number_of_x(media_outlet_list)
+
+# covid tweets per outlet
+covid_number_of_x <- extract_number_of_x(covid_tweets)
+covid_global_number_of_x <- extract_number_of_x(global_covid_tweets)
 ```
 
 ```{r get top NUM_TWEETS retweeted/favourited tweets per media outlet}
@@ -163,13 +193,18 @@ head(global_top_favourited)
 <!-- Data Visualisation (South African)-->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
+```{r}
+number_of_x
+```
+
 ```{r plot followers per media outlet}
 ggplot(number_of_x, aes(name, followers_count, fill=name)) +
   geom_col() +
-  labs(title = paste("Number of followers per media outlet", "-- South Africa"),
+  labs(title = "Number of followers per media outlet",
+       subtitle = SA_SUFFIX,
        x=NULL,
        y=NULL) +
-  scale_y_continuous(label=comma) +
+  scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
   scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
@@ -177,20 +212,22 @@ ggplot(number_of_x, aes(name, followers_count, fill=name)) +
 ```{r plot tweets per media outlet}
 ggplot(number_of_x, aes(name, tweets_count, fill=name)) +
   geom_col() +
-  labs(title = paste("Number of tweets per media outlet", "-- South Africa"),
+  labs(title = "Number of tweets per media outlet",
+       subtitle = SA_SUFFIX,
        x=NULL,
        y=NULL) +
-  scale_y_continuous(label=comma) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
 ```{r plot retweets of users per media outlet}
 ggplot(number_of_x, aes(name, user_retweet_sum, fill=name)) +
   geom_col() +
-  labs(title = paste("Number of user retweets per media outlet", "-- South Africa"),
+  labs(title = "Number of retweets per media outlet",
+       subtitle = SA_SUFFIX,
        x=NULL,
        y=NULL) +
-  scale_y_continuous(label=comma) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
@@ -203,10 +240,11 @@ ggplot(number_of_x, aes(name, user_retweet_sum, fill=name)) +
 ```{r plot global followers per media outlet}
 ggplot(global_number_of_x, aes(name, followers_count, fill=name)) +
   geom_col() +
-  labs(title = paste("Number of followers per media outlet", "-- Global"),
+  labs(title = "Number of followers per media outlet",
+       subtitle = GLOBAL_SUFFIX,
        x=NULL,
        y=NULL) +
-  scale_y_continuous(label=comma) +
+  scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
   scale_fill_manual(values = rev(ms_colors))  +
   custom_column_basic_theme()
 ```
@@ -214,20 +252,22 @@ ggplot(global_number_of_x, aes(name, followers_count, fill=name)) +
 ```{r plot global tweets per media outlet}
 ggplot(global_number_of_x, aes(name, tweets_count, fill=name)) +
   geom_col() +
-  labs(title = paste("Number of tweets per media outlet", "-- Global"),
+  labs(title = "Number of tweets per media outlet",
+       subtitle = GLOBAL_SUFFIX,
        x=NULL,
        y=NULL) +
-  scale_y_continuous(label=comma) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_fill_manual(values = rev(ms_colors)) +
   custom_column_basic_theme()
 ```
 ```{r plot global retweets of users per media outlet}
 ggplot(global_number_of_x, aes(name, user_retweet_sum, fill=name)) +
   geom_col() +
-  labs(title = paste("Number of user retweets per media outlet", "-- Global"),
+  labs(title = "Number of retweets per media outlet",
+       subtitle = GLOBAL_SUFFIX,
        x=NULL,
        y=NULL) +
-  scale_y_continuous(label=comma) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_fill_manual(values = rev(ms_colors)) +
   custom_column_basic_theme()
 ```
