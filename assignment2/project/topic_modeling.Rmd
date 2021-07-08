@@ -306,7 +306,7 @@ plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
     mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
     ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Covid-related Topics for Jan-June 2021"),
+    labs(title = paste("Covid-related Topics between Jan-June 2021"),
          subtitle = title_suffix) +
     facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
@@ -371,7 +371,7 @@ plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics, title_su
     mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
     ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Covid-related Topics for month starting", format(as.Date(past_month), "%B")),
+    labs(title = paste("Covid-related Topics in", format(as.Date(past_month), "%B")),
          subtitle = title_suffix) +
     facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
@@ -511,7 +511,7 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
     mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
     ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Covid-related Topics by", org, "for month starting", format(as.Date(past_month), "%B")),
+    labs(title = paste("Covid-related Topics by", org, "in", format(as.Date(past_month), "%B")),
          subtitle = title_suffix) +
     facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
