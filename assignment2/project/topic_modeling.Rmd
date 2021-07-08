@@ -300,7 +300,10 @@ plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
   orgs_topics <- overall_topics(tidy_tweets_in, nr_of_topics)
   
   # top words per topic
-  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS)
+  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS) %>%
+    mutate(term = reorder_within(term, beta, topic)) %>% # order terms to decreasing relevance
+    group_by(topic) %>%
+    filter(row_number()<=TOP_WORDS) # force number of terms to be TOP_WORDS per topic
   
   # plot top terms per topic
   top_terms %>%
@@ -365,7 +368,10 @@ plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics, title_su
   orgs_topics <- monthly_topics(tidy_tweets_in, past_month, nr_topics)
 
   # top words per topic
-  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS)
+  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS) %>%
+    mutate(term = reorder_within(term, beta, topic)) %>% # order terms to decreasing relevance
+    group_by(topic) %>%
+    filter(row_number()<=TOP_WORDS) # force number of terms to be TOP_WORDS per topic
 
   # plot top terms per topic
   top_terms %>%
@@ -428,9 +434,11 @@ plot_topics_of_org <- function(tidy_tweets_in, org, nr_topics, title_suffix) {
   # get the topics for the org to plot
   orgs_topics <- org_topics(tidy_tweets_in, org, nr_topics)
 
-  # apply topic modelling to dtm
-  # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
-  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS)
+  # top words per topic
+  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS) %>%
+    mutate(term = reorder_within(term, beta, topic)) %>% # order terms to decreasing relevance
+    group_by(topic) %>%
+    filter(row_number()<=TOP_WORDS) # force number of terms to be TOP_WORDS per topic
 
   # plot top terms per topic
   top_terms %>%
@@ -505,7 +513,10 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
   }
   
   # top words per topic
-  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS)
+  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS) %>%
+    mutate(term = reorder_within(term, beta, topic)) %>% # order terms to decreasing relevance
+    group_by(topic) %>%
+    filter(row_number()<=TOP_WORDS) # force number of terms to be TOP_WORDS per topic
 
   # plot top terms per topic
   top_terms %>%
