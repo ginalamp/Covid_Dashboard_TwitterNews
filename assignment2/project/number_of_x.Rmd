@@ -9,7 +9,6 @@ output: html_notebook
 * label each column with number
 * perhaps apply logarithmic scale
 * remove friends count?
-* remove oultet retweets
 * condense plotting into function
 * plot all and covid
 
@@ -72,6 +71,7 @@ custom_column_basic_theme <- function () {
             panel.grid.minor = element_blank(),
             legend.position="none", # no legend
             plot.title = element_text(size = 12, hjust = 0),
+            plot.subtitle = element_text(size = 10, hjust = 0),
             axis.title.y = element_text(size = 10)
         )
 }
@@ -83,9 +83,13 @@ library(scales)
 library(ggplot2)
 ```
 
+```{r global (static) variables}
+NUM_TWEETS <- 10 # number of (retweeted/favourited) tweets to be extracted
+```
+
 ```{r extract relevant data from read in csv}
 extract_relevant_data <- function(df) {
-  return(df %>% select(status_id, name, created_at, statuses_count, is_retweet, favorite_count, retweet_count, followers_count, friends_count, text))
+  return(df %>% select(status_id, name, created_at, statuses_count, favorite_count, retweet_count, followers_count, friends_count, text))
 }
 ```
 
@@ -120,9 +124,7 @@ number_of_x <- data.frame(name = unlist(lapply(media_outlet_list, function(df) {
                           followers_count = unlist(lapply(media_outlet_list, function(df) {return(df$followers_count[1])})), 
                           friends_count = unlist(lapply(media_outlet_list, function(df) {return(df$friends_count[1])})), 
                           tweets_count = unlist(lapply(media_outlet_list, function(df) {return(df$statuses_count[1])})), 
-                          user_retweet_sum = unlist(lapply(media_outlet_list, function(df) {return(sum(df$retweet_count))})),
-                          # TODO: all False with new data
-                          outlet_retweet_count = unlist(lapply(media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))})))
+                          user_retweet_sum = unlist(lapply(media_outlet_list, function(df) {return(sum(df$retweet_count))})))
 head(number_of_x)
 ```
 ```{r Global: get number of followers, friends, tweets, and retweets per media outlet}
@@ -131,9 +133,7 @@ global_number_of_x <- data.frame(name = unlist(lapply(global_media_outlet_list, 
                                  followers_count = unlist(lapply(global_media_outlet_list, function(df) {return(df$followers_count[1])})),
                                  friends_count = unlist(lapply(global_media_outlet_list, function(df) {return(df$friends_count[1])})),
                                  tweets_count = unlist(lapply(global_media_outlet_list, function(df) {return(df$statuses_count[1])})),
-                                 user_retweet_sum = unlist(lapply(global_media_outlet_list, function(df) {return(sum(df$retweet_count))})),
-                                 # TODO: all False with new data
-                                 outlet_retweet_count = unlist(lapply(global_media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))})))
+                                 user_retweet_sum = unlist(lapply(global_media_outlet_list, function(df) {return(sum(df$retweet_count))})))
 head(global_number_of_x)
 ```
 
@@ -143,55 +143,31 @@ b <- function(DailyMav_tweets, column_name){
 }
 b(DailyMav_tweets, retweet_count)
 ```
-
-```{r get top x tweets per media outlet}
-get_top_retweets <- function(df) {
-  x <- 5
+```{r get top NUM_TWEETS retweeted/favourited tweets per media outlet}
+get_top_count <- function(df, count_col) {
   text <- df %>%
-    arrange(desc(retweet_count)) %>% 
-    slice(1:x) %>% 
-    select(status_id, name, created_at, retweet_count, text)
+    arrange(desc(count_col)) %>% 
+    slice(1:NUM_TWEETS) %>% 
+    select(status_id, name, created_at, names(count_col), text)
   return(text)
 }
-
-# TODO need to plot nicely (as table?)
-# South African: top 5 user retweeted tweets per media outlet
-top_retweets <- lapply(media_outlet_list, get_top_retweets)
-head(top_retweets)
-
-# Global: top 5 user retweeted tweets per media outlet
-global_top_retweets <- lapply(global_media_outlet_list, get_top_retweets)
-head(global_top_retweets)
 ```
 
-```{r get top x favourited tweets per media outlet}
-get_top_favorited_tweets <- function(df) {
-  x <- 5
-  text <- df %>%
-    arrange(desc(favorite_count)) %>% 
-    slice(1:x) %>% 
-    select(status_id, name, created_at, favorite_count, text)
-  return(text)
-}
-
+```{r South Africa: get top NUM_TWEETS retweets and favourited tweets}
 # TODO need to plot nicely (as table?)
-# South African: top 5 favourited tweets per media outlet
-top_favourited <- lapply(media_outlet_list, get_top_favorited_tweets)
+top_retweets <- lapply(media_outlet_list, function(df) {return(get_top_count(df, df$retweet_count))})
+head(top_retweets)
+top_favourited <- lapply(media_outlet_list, function(df) {return(get_top_count(df, df$favorite_count))})
 head(top_favourited)
+```
 
-# Global: top 5 favourited tweets per media outlet
-global_top_favourited <- lapply(media_outlet_list, get_top_favorited_tweets)
+```{r Global: get top NUM_TWEETS retweets and favourited tweets}
+# TODO need to plot nicely (as table?)
+global_top_retweets <- lapply(global_media_outlet_list, function(df) {return(get_top_count(df, df$retweet_count))})
+head(global_top_retweets)
+global_top_favourited <- lapply(global_media_outlet_list, function(df) {return(get_top_count(df, df$favorite_count))})
 head(global_top_favourited)
 ```
-
-
-
-```{r}
-# select tweet IDs that are retweets
-DailyMav_tweets$status_id[(DailyMav_tweets$is_retweet)]
-```
-
-
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Visualisation (South African)-->
@@ -232,17 +208,6 @@ ggplot(number_of_x, aes(name, tweets_count, fill=name)) +
 ggplot(number_of_x, aes(name, user_retweet_sum, fill=name)) +
   geom_col() +
   labs(title = paste("Number of user retweets per media outlet", "-- South Africa"),
-       x=NULL,
-       y=NULL) +
-  scale_y_continuous(label=comma) +
-  scale_fill_manual(values = ms_colors) +
-  custom_column_basic_theme()
-```
-```{r plot retweets of outlets per media outlet}
-# TODO: remove - empty 
-ggplot(number_of_x, aes(name, outlet_retweet_count, fill=name)) +
-  geom_col() +
-  labs(title = paste("Number of outlet retweets per media outlet", "-- South Africa"),
        x=NULL,
        y=NULL) +
   scale_y_continuous(label=comma) +
@@ -291,17 +256,6 @@ ggplot(global_number_of_x, aes(name, tweets_count, fill=name)) +
 ggplot(global_number_of_x, aes(name, user_retweet_sum, fill=name)) +
   geom_col() +
   labs(title = paste("Number of user retweets per media outlet", "-- Global"),
-       x=NULL,
-       y=NULL) +
-  scale_y_continuous(label=comma) +
-  scale_fill_manual(values = rev(ms_colors)) +
-  custom_column_basic_theme()
-```
-```{r plot global retweets of outlets per media outlet}
-# TODO: remove - empty 
-ggplot(global_number_of_x, aes(name, outlet_retweet_count, fill=name)) +
-  geom_col() +
-  labs(title = paste("Number of outlet retweets per media outlet", "-- Global"),
        x=NULL,
        y=NULL) +
   scale_y_continuous(label=comma) +
