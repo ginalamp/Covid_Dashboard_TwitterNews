@@ -1,11 +1,9 @@
 ---
 title: "Number of x"
-author: "Gina"
 output: html_notebook
 ---
 # TODO
 * combine all charts into one grouped bar chart (one for SA, one for global)
-* label each column with the number of days that spans each variable (for example state that the number of retweets for SABC occured over x days)
 * label each column with number
 * plot all and covid
 
@@ -85,6 +83,9 @@ SA_SUFFIX <- "South Africa"
 GLOBAL_SUFFIX <- "Global"
 SA_GOV_SUFFIX <- "SA Government"
 NUM_TWEETS <- 10 # number of (retweeted/favourited) tweets to be extracted
+THOUSAND <- "K"
+MILLION <- "M"
+COVID <- "(Covid tweets)"
 ```
 
 ```{r extract relevant data from read in csv}
@@ -155,7 +156,7 @@ extract_number_of_x <- function(df_list) {
 }
 # total tweets per outlet
 number_of_x <- extract_number_of_x(media_outlet_list)
-global_number_of_x <- extract_number_of_x(media_outlet_list)
+global_number_of_x <- extract_number_of_x(global_media_outlet_list)
 
 # covid tweets per outlet
 covid_number_of_x <- extract_number_of_x(covid_tweets)
@@ -193,9 +194,67 @@ head(global_top_favourited)
 <!-- Data Visualisation (South African)-->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r}
-number_of_x
+```{r bar plot function template}
+plot_numeric_bar <- function(df, col_plot, title, title_suffix, covid_note, set_scale) {
+  # set plot colors
+  plot_colors <- ms_colors
+  if (title_suffix == GLOBAL_SUFFIX) {
+    plot_colors <- rev(ms_colors)
+  }
+  
+  # set plot scale
+  suffix = THOUSAND
+  scale = 1e-3
+  if (set_scale == MILLION) {
+    suffix = MILLION
+    scale = 1e-6
+  }
+  
+  # plot
+  ggplot(df, aes(name, col_plot, fill=name)) +
+    geom_col() +
+    labs(title = paste("Number of", title, "per media outlet", covid_note),
+         subtitle = title_suffix,
+         x=NULL,
+         y=NULL) +
+    scale_y_continuous(labels = label_number(suffix = suffix, scale = scale)) +
+    scale_fill_manual(values = plot_colors) +
+    custom_column_basic_theme()
+}
 ```
+
+```{r plot South African numerical analysis}
+plot_numeric_bar(number_of_x, number_of_x$followers_count, "followers", SA_SUFFIX, NULL, MILLION)
+plot_numeric_bar(number_of_x, number_of_x$tweets_count, "tweets", SA_SUFFIX, NULL, THOUSAND)
+plot_numeric_bar(number_of_x, number_of_x$user_retweet_sum, "retweets", SA_SUFFIX, NULL, THOUSAND)
+
+plot_numeric_bar(covid_number_of_x, covid_number_of_x$user_retweet_sum, "retweets", SA_SUFFIX, COVID, THOUSAND)
+```
+```{r plot Global numerical analysis}
+plot_numeric_bar(global_number_of_x, global_number_of_x$followers_count, "followers", GLOBAL_SUFFIX, NULL, MILLION)
+plot_numeric_bar(global_number_of_x, global_number_of_x$tweets_count, "tweets", GLOBAL_SUFFIX, NULL, THOUSAND)
+plot_numeric_bar(global_number_of_x, global_number_of_x$user_retweet_sum, "retweets", GLOBAL_SUFFIX, NULL, MILLION)
+
+plot_numeric_bar(covid_global_number_of_x, covid_global_number_of_x$user_retweet_sum, "retweets", GLOBAL_SUFFIX, COVID, THOUSAND)
+```
+
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!--------------------------------------------------------------------  H E R E   --------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- TODO:  @JOHANNA below here are the individual graphs (above I condensed it) - could you please have a look to see whether we can group the graphs? -->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 ```{r plot followers per media outlet}
 ggplot(number_of_x, aes(name, followers_count, fill=name)) +

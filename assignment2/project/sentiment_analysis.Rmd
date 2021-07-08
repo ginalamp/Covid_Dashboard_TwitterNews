@@ -369,13 +369,13 @@ plot_sentiment_line <- function(df, suffix) {
 }
 ```
 
-```{r plot south african sentiment analysis}
+```{r plot South African sentiment analysis}
 plot_sentiment_bar(overall_sentiment_per_outlet, sentiment_mean_per_outlet, "Average sentiment per media outlet", SA_SUFFIX)
 plot_sentiment_bar(top_retweets_sentiment_per_outlet, top_retweets_sentiment_mean, paste("Sentiment of Top", NUM_TWEETS, "retweeted tweets per media outlet"), SA_SUFFIX)
 plot_sentiment_bar(top_favourited_sentiment_per_outlet, top_favourited_sentiment_mean, paste("Sentiment of Top", NUM_TWEETS, "favourited tweets per media outlet"), SA_SUFFIX)
 plot_sentiment_line(tidy_tweets, SA_SUFFIX)
 ```
-```{r plot global sentiment analysis}
+```{r plot Global sentiment analysis}
 plot_sentiment_bar(global_overall_sentiment_per_outlet, global_sentiment_mean_per_outlet, "Average sentiment per media outlet", GLOBAL_SUFFIX)
 plot_sentiment_bar(global_top_retweets_sentiment_per_outlet, global_top_retweets_sentiment_mean, paste("Sentiment of Top", NUM_TWEETS, "retweeted tweets per media outlet"), GLOBAL_SUFFIX)
 plot_sentiment_bar(global_top_favourited_sentiment_per_outlet, global_top_favourited_sentiment_mean, paste("Sentiment of Top", NUM_TWEETS, "favourited tweets per media outlet"), GLOBAL_SUFFIX)
