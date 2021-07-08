@@ -189,15 +189,18 @@ clean_tweets <- function(tweets_in) {
   # remove stopwords
   tidy_tweets <- tweets_in %>% 
     unnest_tokens(word, text, token = "tweets") %>%
-    filter(!word %in% stop_words$word,
-           !word %in% str_remove_all(stop_words$word, "'"),
-           !word %in% my_stopwords,
+    filter(!word %in% stop_words$word, # remove normal english stopwords
+           # remove normal english stopwords that would contain ' that was lost by unnesting
+           # eg "ain't" is a stopwords but wouldn't be recognised as such because it was converted to "aint"
+           !word %in% str_remove_all(stop_words$word, "'"), # remove remaining normal stopwords
+           !word %in% my_stopwords, # remove custom stopwords
            !str_starts(word, "http"), # remove links
            !str_starts(word, "@"), # remove mentions
-           #str_detect(word, "^[a-z#]*"),
-           str_detect(word, "[a-z]")) %>%
+           #str_detect(word, "^[a-z#]*"), # remove special characters
+           str_detect(word, "[a-z]")) %>% # ensure the word contains letters
     mutate(word = gsub("\\d+", "", word)) # remove numbers
 
+  # change "vaccines" to "vaccine" so it is treated as the same word
   tidy_tweets["word"][tidy_tweets["word"] == "vaccines"] <- "vaccine"
   return(tidy_tweets)
 }
@@ -212,12 +215,32 @@ tidy_tweets_govZA <- clean_tweets(relevant_govZA)
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 ```{r extract top words per topic}
+# topics arg: df containing word, topic and beta (probability that the word occurs in that topic) values
+# words_per_topic: number of top words to get
 top_words_per_topic <- function(topics, words_per_topic) {
   return(topics%>%
-  group_by(topic) %>%
-  slice_max(beta, n = words_per_topic) %>%
+  group_by(topic) %>% # group words by topic
+  slice_max(beta, n = words_per_topic) %>% # get most relevant words for that topic
   ungroup() %>%
-  arrange(topic, -beta))
+  arrange(topic, -beta)) # arrange words with decreasing relevance to the topic
+}
+```
+
+```{r LDA tuning}
+# to find uptimal number of topics to model for given document term matrix
+# taken from: https://cran.r-project.org/web/packages/ldatuning/vignettes/topics.html
+lda_tuning <- function(orgs_dtm) {
+  result <- FindTopicsNumber(
+      orgs_dtm,
+      topics = seq(from = 2, to = 8, by = 1),
+      metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
+      method = "Gibbs",
+      control = list(seed = 77),
+      mc.cores = 2L,
+      verbose = TRUE
+    )
+  # choose extremum in following plots as optimal number of topics
+  FindTopicsNumber_plot(result)
 }
 ```
 
@@ -228,28 +251,19 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
   # word count by media organisation
   word_counts <- tidy_tweets_in %>%
     select(name, word, created_at) %>%
-    count(name, word, sort = TRUE) %>%
+    count(name, word, sort = TRUE) %>% # count how often each org uses each word
     ungroup()
   
-  # create document term matrix
+  # create document term matrix from word count
   # (treating all tweets from one organisation as one document)
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
   
   # checking for ideal number of topics
   # set to TRUE to run ldatuning
-  tuning <- FALSE
+  tuning <- TRUE
   if (tuning) {
-    result <- FindTopicsNumber(
-      orgs_dtm,
-      topics = seq(from = 2, to = 8, by = 1),
-      metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
-      method = "Gibbs",
-      control = list(seed = 77),
-      mc.cores = 2L,
-      verbose = TRUE
-    )
-    FindTopicsNumber_plot(result)
+    lda_tuning(orgs_dtm)
   }
   
   # define number of topics
@@ -312,16 +326,7 @@ monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
   # set to TRUE to run ldatuning
   tuning <- FALSE
   if (tuning) {
-    result <- FindTopicsNumber(
-      orgs_dtm,
-      topics = seq(from = 2, to = 8, by = 1),
-      metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
-      method = "Gibbs",
-      control = list(seed = 77),
-      mc.cores = 2L,
-      verbose = TRUE
-    )
-    FindTopicsNumber_plot(result)
+    lda_tuning(orgs_dtm)
   }
   
   # apply topic modelling
@@ -384,16 +389,7 @@ org_topics <- function(tidy_tweets_in, org, nr_topics) {
   # set to TRUE to run ldatuning
   tuning <- FALSE
   if (tuning) {
-    result <- FindTopicsNumber(
-      orgs_dtm,
-      topics = seq(from = 2, to = 8, by = 1),
-      metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
-      method = "Gibbs",
-      control = list(seed = 77),
-      mc.cores = 2L,
-      verbose = TRUE
-    )
-    FindTopicsNumber_plot(result)
+    lda_tuning(orgs_dtm)
   }
 
   # apply topic modelling
@@ -464,16 +460,7 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
   # set to TRUE to run ldatuning
   tuning <- FALSE
   if (tuning) {
-    result <- FindTopicsNumber(
-      orgs_dtm,
-      topics = seq(from = 2, to = 8, by = 1),
-      metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
-      method = "Gibbs",
-      control = list(seed = 77),
-      mc.cores = 2L,
-      verbose = TRUE
-    )
-    FindTopicsNumber_plot(result)
+    lda_tuning(orgs_dtm)
   }
 
   # apply topic modelling
