@@ -6,6 +6,7 @@ output: html_notebook
 # TODO
 * add custom sentiment to vader analysis
 * Cape_Talk was removed due to 5 datasets throwing [this](https://stackoverflow.com/questions/15363076/error-in-gzfilefile-wb-cannot-open-the-connection-or-compressed-file) error when applying `apply_vader()` (was a bit too much to handle) 
+* Extract data wrangling functions to the top? 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
@@ -102,6 +103,7 @@ extract_relevant_data <- function(df) {
 ```
 
 ```{r read South Africa data}
+# TODO: add SA gov
 DailyMav_tweets <- extract_relevant_data(read.csv("data/dailymaverick.csv"))
 EWN_tweets <- extract_relevant_data(read.csv("data/ewnupdates.csv"))
 News24_tweets <- extract_relevant_data(read.csv("data/news24.csv"))
@@ -219,11 +221,11 @@ head(global_overall_sentiment_per_outlet)
 ```
 ```{r get overall sentiment for all outlets}
 # South African: total overall sentiment
-total_overall_sentiment <- sum(overall_sentiment_per_outlet$sentiment_mean_per_outlet)
+total_overall_sentiment <- mean(overall_sentiment_per_outlet$sentiment_mean_per_outlet)
 head(total_overall_sentiment)
 
 # Global: total overall sentiment
-global_total_overall_sentiment <- sum(global_overall_sentiment_per_outlet$global_sentiment_mean_per_outlet)
+global_total_overall_sentiment <- mean(global_overall_sentiment_per_outlet$global_sentiment_mean_per_outlet)
 head(global_total_overall_sentiment)
 ```
 
@@ -309,7 +311,7 @@ for (i in seq(tidy_tweets)) {
   tidy_tweets[[i]]["compound"] <- vader_analysis[[i]]["compound"]
 }
 
-# calculate 7-day rolling average of compound
+# calculate ROLLING_AVERAGE_TIME-day rolling average of compound
 for (i in seq(tidy_tweets)) {
   tidy_tweets[[i]] <- tidy_tweets[[i]] %>% 
     mutate(rolling_avg = roll_mean(compound, n=ROLLING_AVERAGE_TIME, fill = NA, align = "right"))
@@ -376,7 +378,6 @@ ggplot(top_favourited_sentiment_per_outlet, aes(name, top_favourited_sentiment_m
 
 
 ```{r plot sentiment per organisation over time on covid-19}
-# TODO: want to apply log scale (not working due to time format)
 ggplot(bind_rows(tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=screen_name)) + 
   geom_line(size=0.6) +
   labs(title= "South Africa: Sentiment over time per media outlet",
@@ -384,8 +385,6 @@ ggplot(bind_rows(tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=scr
        color=NULL,
        x = NULL,
        y = "Vader Sentiment Score") +
-  # TODO: not working due to date being in POSIXt format
-  # scale_x_log10() + 
   scale_colour_manual(values = ms_colors) +
   custom_line_basic_theme()
 ```
