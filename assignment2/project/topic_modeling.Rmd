@@ -310,7 +310,7 @@ plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
     mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
     ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Covid-related Topics for Jan-June 2021"),
+    labs(title = paste("Covid-related Topics between Jan-June 2021"),
          subtitle = title_suffix) +
     facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
@@ -378,7 +378,7 @@ plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics, title_su
     mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
     ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Covid-related Topics for month starting", past_month),
+    labs(title = paste("Covid-related Topics in", format(as.Date(past_month), "%B")),
          subtitle = title_suffix) +
     facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
@@ -523,7 +523,7 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
     mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
     ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Covid-related Topics by", org, "for month starting", past_month),
+    labs(title = paste("Covid-related Topics by", org, "in", format(as.Date(past_month), "%B")),
          subtitle = title_suffix) +
     facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
@@ -566,6 +566,7 @@ plot_topics_of_month(tidy_tweets_SA, "2021-04-01", nr_of_topics, SA_SUFFIX)
 plot_topics_of_month(tidy_tweets_SA, "2021-05-01", nr_of_topics, SA_SUFFIX)
 plot_topics_of_month(tidy_tweets_SA, "2021-06-01", nr_of_topics, SA_SUFFIX)
 ```
+
 
 ```{r}
 # Global
@@ -732,7 +733,6 @@ plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-0
 
 ```{r}
 # Global - May
-# TODO: graph label running over -> need to center differently (or change date to remove year)
 nr_of_topics <- 3
 
 plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
@@ -743,7 +743,6 @@ plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-0
 
 ```{r}
 # Global - June
-# TODO: graph label running over -> need to center differently (or change date to remove year)
 nr_of_topics <- 3
 
 plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
