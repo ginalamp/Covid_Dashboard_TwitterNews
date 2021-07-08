@@ -7,6 +7,11 @@ output: html_notebook
 * label each column with the number of days that spans each variable (for example state that the number of retweets for SABC occured over x days)
 * perhaps do histogram combining charts?
 * label each column with number
+* perhaps apply logarithmic scale
+* remove friends count?
+* remove oultet retweets
+* condense plotting into function
+* plot all and covid
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
@@ -109,24 +114,24 @@ head(global_media_outlet_list[1])
 
 ```{r South African: get number of followers, friends, tweets, and retweets per media outlet}
 # join name, follower, friend, tweet, and calculated retweet values into a dataframe
-number_of_x <- data.frame(name=unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])})), 
-                          followers_count=unlist(lapply(media_outlet_list, function(df) {return(df$followers_count[1])})), 
-                          friends_count=unlist(lapply(media_outlet_list, function(df) {return(df$friends_count[1])})), 
-                          tweets_count=unlist(lapply(media_outlet_list, function(df) {return(df$statuses_count[1])})), 
-                          user_retweet_sum=unlist(lapply(media_outlet_list, function(df) {return(sum(df$retweet_count))})),
+number_of_x <- data.frame(name = unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])})), 
+                          followers_count = unlist(lapply(media_outlet_list, function(df) {return(df$followers_count[1])})), 
+                          friends_count = unlist(lapply(media_outlet_list, function(df) {return(df$friends_count[1])})), 
+                          tweets_count = unlist(lapply(media_outlet_list, function(df) {return(df$statuses_count[1])})), 
+                          user_retweet_sum = unlist(lapply(media_outlet_list, function(df) {return(sum(df$retweet_count))})),
                           # TODO: all False with new data
-                          outlet_retweet_count=unlist(lapply(media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))})))
+                          outlet_retweet_count = unlist(lapply(media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))})))
 head(number_of_x)
 ```
 ```{r Global: get number of followers, friends, tweets, and retweets per media outlet}
 # join name, follower, friend, tweet, and calculated retweet values into a dataframe
-global_number_of_x <- data.frame(name=unlist(lapply(global_media_outlet_list, function(df) {return(df$screen_name[1])})),
-                                 followers_count=unlist(lapply(global_media_outlet_list, function(df) {return(df$followers_count[1])})),
-                                 friends_count=unlist(lapply(global_media_outlet_list, function(df) {return(df$friends_count[1])})),
-                                 tweets_count=unlist(lapply(global_media_outlet_list, function(df) {return(df$statuses_count[1])})),
-                                 user_retweet_sum=unlist(lapply(global_media_outlet_list, function(df) {return(sum(df$retweet_count))})),
+global_number_of_x <- data.frame(name = unlist(lapply(global_media_outlet_list, function(df) {return(df$screen_name[1])})),
+                                 followers_count = unlist(lapply(global_media_outlet_list, function(df) {return(df$followers_count[1])})),
+                                 friends_count = unlist(lapply(global_media_outlet_list, function(df) {return(df$friends_count[1])})),
+                                 tweets_count = unlist(lapply(global_media_outlet_list, function(df) {return(df$statuses_count[1])})),
+                                 user_retweet_sum = unlist(lapply(global_media_outlet_list, function(df) {return(sum(df$retweet_count))})),
                                  # TODO: all False with new data
-                                 outlet_retweet_count=unlist(lapply(global_media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))})))
+                                 outlet_retweet_count = unlist(lapply(global_media_outlet_list, function(df) {return(NROW(df$status_id[df$is_retweet]))})))
 head(global_number_of_x)
 ```
 
@@ -265,6 +270,7 @@ ggplot(global_number_of_x, aes(name, friends_count, fill=name)) +
        y=NULL) +
   scale_y_continuous(label=comma) +
   scale_fill_manual(values = rev(ms_colors)) +
+  # scale_y_log10() +
   custom_column_basic_theme()
 ```
 ```{r plot global tweets per media outlet}
