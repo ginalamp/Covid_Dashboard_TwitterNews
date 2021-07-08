@@ -136,7 +136,7 @@ relevant_df <-  df[grepl("covid", df[["text"]]) |
                   grepl("Pandemic", df[["text"]]) |
                   grepl("pandemic", df[["text"]]), ]
 relevant_df <- relevant_df %>%
-  mutate(created_at = ymd_hms(created_at))
+  mutate(created_at = as.Date(created_at))
 return(relevant_df)
 }
 
@@ -338,6 +338,7 @@ ggplot(tweets_SA, aes(x = created_at, fill = name)) +
   labs(title = "Frequency of Covid-related Tweets for various SA Media Outlets",
        x = "2021", y = "Tweet Count") +
   scale_fill_manual(values = ms_colors) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   custom_column_basic_theme()
 
 # plot tweet frequency over time by global media outlet
@@ -347,6 +348,7 @@ ggplot(tweets_global, aes(x = created_at, fill = name)) +
   labs(title = "Frequency of Covid-related Tweets for various Global Media Outlets",
        x = "2021", y = "Tweet Count") +
   scale_fill_manual(values = rev(ms_colors)) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   custom_column_basic_theme()
 ```
 
@@ -354,18 +356,19 @@ ggplot(tweets_global, aes(x = created_at, fill = name)) +
 colors <- c("Tweets related to Covid" = "blue", "All Tweets" = "red")
 # plot govZA tweet freq over time
 ggplot() +
-  geom_histogram(govZA_tweets %>% mutate(created_at = ymd_hms(created_at)), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = TRUE) +
+  geom_histogram(govZA_tweets %>% mutate(created_at = as.Date(created_at)), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = TRUE) +
   geom_histogram(relevant_govZA, mapping = aes(x = created_at, fill = "Tweets related to Covid"), position = "identity", bins = 30, show.legend = TRUE) +
   labs(title = "GovZA Tweet Frequency over Time", color = "Tweets") +
     scale_color_manual(values = colors) +
   scale_fill_manual(values = ms_colors) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   custom_column_basic_theme()
 ```
 
 ```{r}
 # plot tweet frequency over time by SA media outlets
 ggplot() +
-  geom_histogram(all_tweets_SA %>% mutate(created_at = ymd_hms(created_at)) %>% filter(created_at > ymd_hms("2021-01-01 00:00:00")), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = FALSE) +
+  geom_histogram(all_tweets_SA %>% mutate(created_at = as.Date(created_at)) %>% filter(created_at > as.Date("2021-01-01 00:00:00")), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = FALSE) +
   geom_histogram(tweets_SA, mapping = aes(x = created_at, fill = "Tweets related to Covid"), position = "identity", bins = 30, show.legend = FALSE) +
   scale_y_continuous(limits = c(0, 400)) +
   facet_wrap(~name, ncol = 1) +
@@ -373,18 +376,20 @@ ggplot() +
        x = "2021", y = "Tweet Count", color = "Tweets") +
     scale_color_manual(values = colors) +
   scale_fill_manual(values = ms_colors) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   custom_column_basic_theme()
 
 # plot tweet frequency over time by global media outlets
 ggplot() +
-  geom_histogram(all_tweets_global %>% mutate(created_at = ymd_hms(created_at)) %>% filter(created_at > ymd_hms("2021-01-01 00:00:00")), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = FALSE) +
+  geom_histogram(all_tweets_global %>% mutate(created_at = as.Date(created_at)) %>% filter(created_at > as.Date("2021-01-01 00:00:00")), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = FALSE) +
   geom_histogram(tweets_global, mapping = aes(x = created_at, fill = "Tweets related to Covid"), position = "identity", bins = 30, show.legend = FALSE) +
   scale_y_continuous(limits = c(0, 400)) +
   facet_wrap(~name, ncol = 1) +
   labs(title = "Frequency of Covid-related Tweets for various Global Media Outlets",
        x = "2021", y = "Tweet Count", color = "Tweets") +
     scale_color_manual(values = colors) +
-  scale_fill_manual(values = c(ms_orange, ms_plum)) +
+  scale_fill_manual(values = c(ms_orange, ms_green)) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   custom_column_basic_theme()
 ```
 
@@ -404,13 +409,17 @@ grid.table(top_words_global)
 ggplot(top_words_SA_overall, aes(word, n)) +
   geom_col() +
   labs(title = "Top 20 words overall used by SA Media Outlets") +
-  coord_flip()
+  coord_flip() +
+  scale_fill_manual(values = ms_colors) +
+  custom_column_basic_theme()
 
 # plot most frequently used words by global Media Outlets in covid-related tweets
 ggplot(top_words_global_overall, aes(word, n)) +
   geom_col() +
   labs(title = "Top 20 words overall used by Global Media Outlets") +
-  coord_flip()
+  coord_flip() +
+  scale_fill_manual(values = ms_colors) +
+  custom_column_basic_theme()
 ```
 # Top Hashtags
 

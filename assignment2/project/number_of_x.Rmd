@@ -53,7 +53,9 @@ ms_purple <- "#8764B8"
 ms_coolgrey <- "#737373"
 ms_warmgrey <- "#867365"
 
-ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkblue, ms_indigo, ms_plum, ms_purple, ms_coolgrey, ms_warmgrey)
+# ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkblue, ms_indigo, ms_plum, ms_purple, ms_coolgrey, ms_warmgrey)
+# ms_colors <- c(ms_darkblue, ms_red, ms_orange, ms_teal, ms_green, ms_blue, ms_indigo, ms_plum)
+ms_colors <- c(ms_darkblue, ms_red, ms_orange, ms_teal, ms_gold, ms_coolgrey, ms_purple, ms_warmgrey, ms_green, ms_blue, ms_indigo, ms_plum)
 
 # colour picker: http://tristen.ca/hcl-picker/#/hlc/10/1.02/EBB350/48231C
 color_picker<- c("#EBB350", "#ABB14C", "#6EA85F", "#3A9976", "#248686", "#3F6F85", "#585674", "#623F57", "#5B2E37", "#48231C")
