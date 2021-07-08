@@ -47,7 +47,9 @@ ms_purple <- "#8764B8"
 ms_coolgrey <- "#737373"
 ms_warmgrey <- "#867365"
 
-ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkblue, ms_indigo, ms_plum, ms_purple, ms_coolgrey, ms_warmgrey)
+# ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkblue, ms_indigo, ms_plum, ms_purple, ms_coolgrey, ms_warmgrey)
+ms_colors <- c(ms_darkblue, ms_red, ms_orange, ms_teal, ms_green, ms_blue, ms_indigo, ms_plum)
+
 
 # colour picker: http://tristen.ca/hcl-picker/#/hlc/10/1.02/EBB350/48231C
 color_picker <- c("#EBB350", "#ABB14C", "#6EA85F", "#3A9976", "#248686", "#3F6F85", "#585674", "#623F57", "#5B2E37", "#48231C")
@@ -337,9 +339,6 @@ global_tidy_tweets
 ```{r plot total overall sentiment}
 # TODO: make a valuebox or something?
 total_overall_sentiment
-
-g <- tableGrob(total_overall_sentiment, rows = "Total Overall Sentiment: ")
-grid.arrange(g)
 ```
 
 
@@ -347,7 +346,7 @@ grid.arrange(g)
 ```{r plot overall sentiment per organisation on covid-19}
 ggplot(overall_sentiment_per_outlet, aes(name, sentiment_mean_per_outlet, fill=name)) +
   geom_col() +
-  labs(title = "Overall sentiment per organisation on covid-19",
+  labs(title = "South Africa: Overall sentiment per organisation on covid-19",
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = ms_colors) +
@@ -357,7 +356,7 @@ ggplot(overall_sentiment_per_outlet, aes(name, sentiment_mean_per_outlet, fill=n
 ```{r plot sentiment on Top x retweeted tweets per organisation (that users retweet)}
 ggplot(top_retweets_sentiment_per_outlet, aes(name, top_retweets_sentiment_mean, fill=name)) +
   geom_col() +
-  labs(title = paste("Sentiment of Top", NUM_TWEETS, "retweeted tweets per organisation on covid-19"),
+  labs(title = paste("South Africa: Sentiment of Top", NUM_TWEETS, "retweeted tweets per organisation on covid-19"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = ms_colors) +
@@ -367,7 +366,7 @@ ggplot(top_retweets_sentiment_per_outlet, aes(name, top_retweets_sentiment_mean,
 ```{r plot sentiment on Top x favourited tweets per organisation}
 ggplot(top_favourited_sentiment_per_outlet, aes(name, top_favourited_sentiment_mean, fill=name)) +
   geom_col() +
-  labs(title = paste("Sentiment of Top", NUM_TWEETS, "favourited tweets per organisation on covid-19"),
+  labs(title = paste("South Africa: Sentiment of Top", NUM_TWEETS, "favourited tweets per organisation on covid-19"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = ms_colors) +
@@ -379,10 +378,10 @@ ggplot(top_favourited_sentiment_per_outlet, aes(name, top_favourited_sentiment_m
 ```{r plot sentiment per organisation over time on covid-19}
 # TODO: want to apply log scale (not working due to time format)
 ggplot(bind_rows(tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=screen_name)) + 
-  geom_line() +
-  labs(title= "Sentiment over time per media outlet",
-       subtitle = paste("A rolling average of", ROLLING_AVERAGE_TIME, "is used."),
-       color="Media outlet",
+  geom_line(size=0.6) +
+  labs(title= "South Africa: Sentiment over time per media outlet",
+       subtitle = paste("A rolling average of", ROLLING_AVERAGE_TIME, "days is used."),
+       color=NULL,
        x = NULL,
        y = "Vader Sentiment Score") +
   # TODO: not working due to date being in POSIXt format
@@ -438,8 +437,8 @@ ggplot(global_top_favourited_sentiment_per_outlet, aes(global_name, global_top_f
 ggplot(bind_rows(global_tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=screen_name)) + 
   geom_line() +
   labs(title= "Global: Sentiment over time per media outlet",
-       subtitle = paste("A rolling average of", ROLLING_AVERAGE_TIME, "is used."),
-       color="Media outlet",
+       subtitle = paste("A rolling average of", ROLLING_AVERAGE_TIME, "days is used."),
+       color=NULL,
        x = NULL,
        y = "Vader Sentiment Score") +
   # TODO: not working due to date being in POSIXt format
