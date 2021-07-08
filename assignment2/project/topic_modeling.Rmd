@@ -261,16 +261,16 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
   
   # checking for ideal number of topics
   # set to TRUE to run ldatuning
-  tuning <- TRUE
+  tuning <- FALSE
   if (tuning) {
     lda_tuning(orgs_dtm)
   }
   
-  # define number of topics
-  k_topics = nr_of_topics
-  # apply topic modelling
-  orgs_lda <- LDA(orgs_dtm, k = k_topics, control = list(seed = 1234))
+  # apply topic modelling to dtm
+  # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
+  orgs_lda <- LDA(orgs_dtm, k = nr_of_topics, control = list(seed = 1234))
   
+  # extract relevant data from the LDA output: topic, term, beta
   orgs_topics_overall <- tidy(orgs_lda, matrix = "beta") # beta = probability that a word is in each topic
   
   return(orgs_topics_overall)
@@ -285,6 +285,7 @@ plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
     plot_colors <- rev(ms_colors)
   }
   
+  # get the topics to plot
   orgs_topics <- overall_topics(tidy_tweets_in, nr_of_topics)
   
   # top words per topic
@@ -292,11 +293,11 @@ plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
   
   # plot top terms per topic
   top_terms %>%
-    mutate(term = reorder_within(term, beta, topic)) %>%
-    ggplot(aes(beta, term, fill = factor(topic))) +
+    mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
+    ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
     labs(title = paste("Covid-related Topics for Jan-June 2021", title_suffix)) +
-    facet_wrap(~ topic, scales = "free") +
+    facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
     scale_fill_manual(values = plot_colors) +
     custom_column_basic_theme()
@@ -314,10 +315,10 @@ monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
     select(name, word, time_floor) %>%
     # filter to specified month
     filter(time_floor == as.Date(past_month)) %>%
-    count(name, word, sort = TRUE) %>%
+    count(name, word, sort = TRUE) %>% # count how often each org uses each word
     ungroup()
     
-  # create document term matrix
+  # create document term matrix from word count
   # (treating all tweets from one organisation as one document)
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
@@ -329,9 +330,11 @@ monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
     lda_tuning(orgs_dtm)
   }
   
-  # apply topic modelling
+  # apply topic modelling to dtm
+  # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
 
+  # extract relevant data from the LDA output: topic, term, beta
   orgs_topics_month <- tidy(orgs_lda, matrix = "beta")
   
   return(orgs_topics_month)
@@ -348,7 +351,7 @@ plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
   #   plot_colors <- rev(ms_colors)
   # }
 
-  #topics for the month
+  # get the topics for the month to plot
   orgs_topics <- monthly_topics(tidy_tweets_in, past_month, nr_topics)
 
   # top words per topic
@@ -356,11 +359,11 @@ plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
 
   # plot top terms per topic
   top_terms %>%
-    mutate(term = reorder_within(term, beta, topic)) %>%
-    ggplot(aes(beta, term, fill = factor(topic))) +
+    mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
+    ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
     labs(title = paste("Covid-related Topics for month starting", past_month)) +
-    facet_wrap(~ topic, scales = "free") +
+    facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
     scale_fill_manual(values = ms_colors) +
     custom_column_basic_theme()
@@ -377,7 +380,7 @@ org_topics <- function(tidy_tweets_in, org, nr_topics) {
     select(name, word) %>%
     # filter to specified org
     filter(name == org) %>%
-    count(name, word, sort = TRUE) %>%
+    count(name, word, sort = TRUE) %>% # count how often the org uses each word
     ungroup()
     
   # create document term matrix
@@ -392,9 +395,11 @@ org_topics <- function(tidy_tweets_in, org, nr_topics) {
     lda_tuning(orgs_dtm)
   }
 
-  # apply topic modelling
+  # apply topic modelling to dtm
+  # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
 
+  # extract relevant data from the LDA output: topic, term, beta
   org_topics <- tidy(orgs_lda, matrix = "beta")
   
   return(org_topics)
@@ -411,19 +416,20 @@ plot_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
   #   plot_colors <- rev(ms_colors)
   # }
   
-  # topics for org
+  # get the topics for the org to plot
   orgs_topics <- org_topics(tidy_tweets_in, org, nr_topics)
 
-  # top words per topic
+  # apply topic modelling to dtm
+  # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
   top_terms <- top_words_per_topic(orgs_topics, 5)
 
   # plot top terms per topic
   top_terms %>%
-    mutate(term = reorder_within(term, beta, topic)) %>%
-    ggplot(aes(beta, term, fill = factor(topic))) +
+    mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
+    ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
     labs(title = paste("Covid-related Topics by ", org)) +
-    facet_wrap(~ topic, scales = "free") +
+    facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
     scale_fill_manual(values = ms_colors) +
     custom_column_basic_theme()
@@ -443,7 +449,7 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
     filter(name == org) %>%
     # filter to specified month
     filter(time_floor == as.Date(past_month)) %>%
-    count(name, word, sort = TRUE) %>%
+    count(name, word, sort = TRUE) %>% # count how often the org uses each word
     ungroup()
   
   if (length(word_counts$name) == 0) {
@@ -463,9 +469,11 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
     lda_tuning(orgs_dtm)
   }
 
-  # apply topic modelling
+  # apply topic modelling to dtm
+  # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
 
+  # extract relevant data from the LDA output: topic, term, beta
   topics <- tidy(orgs_lda, matrix = "beta")
   return(topics)
 }
@@ -493,11 +501,11 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
 
   # plot top terms per topic
   top_terms %>%
-    mutate(term = reorder_within(term, beta, topic)) %>%
-    ggplot(aes(beta, term, fill = factor(topic))) +
+    mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
+    ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
     labs(title = paste("Covid-related Topics by ", org, " for month starting ", past_month)) +
-    facet_wrap(~ topic, scales = "free") +
+    facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
     scale_fill_manual(values = ms_colors) +
     custom_column_basic_theme()
