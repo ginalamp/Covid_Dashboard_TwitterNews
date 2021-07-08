@@ -225,6 +225,11 @@ top_words_per_topic <- function(topics, words_per_topic) {
 }
 ```
 
+```{r global variables}
+TOP_WORDS <- 10 # number of top words to show when plotting topics
+TUNING <- FALSE # controls whether LDA tuning should be performed
+```
+
 ```{r LDA tuning}
 # to find uptimal number of topics to model for given document term matrix
 # taken from: https://cran.r-project.org/web/packages/ldatuning/vignettes/topics.html
@@ -260,8 +265,7 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
   
   # checking for ideal number of topics
   # set to TRUE to run ldatuning
-  tuning <- FALSE
-  if (tuning) {
+  if (TUNING) {
     lda_tuning(orgs_dtm)
   }
   
@@ -288,7 +292,7 @@ plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
   orgs_topics <- overall_topics(tidy_tweets_in, nr_of_topics)
   
   # top words per topic
-  top_terms <- top_words_per_topic(orgs_topics, 5)
+  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS)
   
   # plot top terms per topic
   top_terms %>%
@@ -324,8 +328,7 @@ monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
 
   # checking for ideal number of topics
   # set to TRUE to run ldatuning
-  tuning <- FALSE
-  if (tuning) {
+  if (TUNING) {
     lda_tuning(orgs_dtm)
   }
   
@@ -354,7 +357,7 @@ plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
   orgs_topics <- monthly_topics(tidy_tweets_in, past_month, nr_topics)
 
   # top words per topic
-  top_terms <- top_words_per_topic(orgs_topics, 5)
+  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS)
 
   # plot top terms per topic
   top_terms %>%
@@ -389,8 +392,7 @@ org_topics <- function(tidy_tweets_in, org, nr_topics) {
   
   # checking for ideal number of topics
   # set to TRUE to run ldatuning
-  tuning <- FALSE
-  if (tuning) {
+  if (TUNING) {
     lda_tuning(orgs_dtm)
   }
 
@@ -420,7 +422,7 @@ plot_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
 
   # apply topic modelling to dtm
   # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
-  top_terms <- top_words_per_topic(orgs_topics, 5)
+  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS)
 
   # plot top terms per topic
   top_terms %>%
@@ -463,8 +465,7 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
   
   # checking for ideal number of topics
   # set to TRUE to run ldatuning
-  tuning <- FALSE
-  if (tuning) {
+  if (TUNING) {
     lda_tuning(orgs_dtm)
   }
 
@@ -496,7 +497,7 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
   }
   
   # top words per topic
-  top_terms <- top_words_per_topic(orgs_topics, 5)
+  top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS)
 
   # plot top terms per topic
   top_terms %>%
