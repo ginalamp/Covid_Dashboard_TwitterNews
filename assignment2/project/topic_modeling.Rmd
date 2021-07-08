@@ -676,7 +676,6 @@ plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-06-01", nr_of_topic
 
 ```{r}
 # Global - January
-# TODO: graph label running over -> need to center differently (or change date to remove year)
 # TODO: optimise somehow - for loop doesn't plot...?
 
 nr_of_topics <- 3
@@ -689,7 +688,6 @@ plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-0
 
 ```{r}
 # Global - Feb
-# TODO: graph label running over -> need to center differently (or change date to remove year)
 nr_of_topics <- 3
 
 plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
@@ -700,7 +698,6 @@ plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-0
 
 ```{r}
 # Global - March
-# TODO: graph label running over -> need to center differently (or change date to remove year)
 nr_of_topics <- 3
 
 plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
@@ -711,7 +708,6 @@ plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-0
 
 ```{r}
 # Global - April
-# TODO: graph label running over -> need to center differently (or change date to remove year)
 nr_of_topics <- 3
 
 plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)
