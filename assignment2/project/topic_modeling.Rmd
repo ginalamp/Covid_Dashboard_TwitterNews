@@ -77,11 +77,30 @@ library(vader) # sentiment analysis
 TOP_WORDS <- 10 # number of top words to show when plotting topics
 TUNING <- FALSE # controls whether LDA tuning should be performed
 
+# LDA tuning number of topic variables
 NUM_TOPICS_3 <- 3
 NUM_TOPICS_4 <- 4 # all outlet for month
 NUM_TOPICS_5 <- 5
 NUM_TOPICS_6 <- 6
 
+# sentiment analysis variables
+SENTIMENT_WORDS_PER_TOPIC <- 200
+MONTHS_TO_PLOT <- seq(as.Date("2021/1/1"), by = "month", length.out = 6)
+
+# media outlet string names
+DM_NAME <- "Daily Maverick"
+SABC_NAME <- "SABC News"
+EWN_NAME <- "Eyewitness News"
+N24_NAME <- "News24"
+OUTLETS_TO_PLOT <- c(DM_NAME, SABC_NAME, EWN_NAME, N24_NAME)
+
+NYT_NAME <- "The New York Times"
+ECON_NAME <- "The Economist"
+BBC_NAME <- "BBC News (World)"
+AP_NAME <- "The Associated Press"
+GLOBAL_OUTLETS_TO_PLOT <- c(NYT_NAME, ECON_NAME, BBC_NAME, AP_NAME)
+
+# plotting suffixes
 SA_SUFFIX <- "South Africa"
 GLOBAL_SUFFIX <- "Global"
 SA_GOV_SUFFIX <- "SA Government"
@@ -531,7 +550,6 @@ plot_overall_topics(tidy_tweets_global, nr_of_topics, GLOBAL_SUFFIX)
 # South Africa
 
 # TODO: optimise somehow - for loop doesn't plot...?
-
 nr_of_topics <- 5 # chosen based on ldatuning
 plot_topics_of_month(tidy_tweets_SA, "2021-01-01", nr_of_topics, SA_SUFFIX)
 nr_of_topics <- 4 # chosen based on ldatuning
@@ -571,7 +589,6 @@ plot_topics_of_month(tidy_tweets_global, "2021-06-01", nr_of_topics, GLOBAL_SUFF
 
 ```{r}
 # South Africa
-
 nr_of_topics <- 4
 
 # TODO: optimise somehow - for loop doesn't plot...?
@@ -760,57 +777,96 @@ plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-0
 
 ```{r split topics into list of dataframes}
 # split overall topics into a list with each dataframe only containing one topic and the term associated with it
-SENTIMENT_WORDS_PER_TOPIC <- 200
-topics_overall <- top_words_per_topic(overall_topics(tidy_tweets_SA, nr_of_topics), SENTIMENT_WORDS_PER_TOPIC)
-
-term_per_topic_list <- topics_overall %>% 
-  select(topic,term) %>% 
+term_per_topic_list <- top_words_per_topic(overall_topics(tidy_tweets_SA, NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC) %>% 
+  select(topic, term) %>% 
   group_split(topic)
-term_per_topic_list
-```
-```{r Create list with topics per month}
-NUM_TOPICS_MONTH <- 4
-NUM_TOPICS_MONTH_REDUCED <- 2 # some months have less topics due to less data being available
+head(term_per_topic_list)
 
+global_term_per_topic_list <- top_words_per_topic(overall_topics(tidy_tweets_global, NUM_TOPICS_5), SENTIMENT_WORDS_PER_TOPIC) %>% 
+  select(topic, term) %>% 
+  group_split(topic)
+head(global_term_per_topic_list)
+```
+
+```{r Create list with topics per month}
+# TODO: optimise this somehow by passing tidy tweets, num_topics and date
 # TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_month
 # TODO: optimise this in some way with a loop?
+
+# South Africa: topics per month
 topics_per_month_list <- list(
-  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-04-01", NUM_TOPICS_MONTH_REDUCED), SENTIMENT_WORDS_PER_TOPIC),
-  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-05-01", NUM_TOPICS_MONTH), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-01-01", NUM_TOPICS_5), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-02-01", NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-03-01", NUM_TOPICS_6), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-04-01", NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-05-01", NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
   top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-06-01", NUM_TOPICS_MONTH), SENTIMENT_WORDS_PER_TOPIC)
 )
-topics_per_month_list
+head(topics_per_month_list)
+
+# Global: topics per month
+global_topics_per_month_list <- list(
+  top_words_per_topic(monthly_topics(tidy_tweets_global, "2021-01-01", NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_global, "2021-02-01", NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_global, "2021-03-01", NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_global, "2021-04-01", NUM_TOPICS_6), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_global, "2021-05-01", NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_global, "2021-06-01", NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC)
+)
+head(global_topics_per_month_list)
 ```
+
 
 
 ```{r Create list with topics per media outlet}
-NUM_TOPICS_OUTLET <- 3
-NUM_TOPICS_OUTLET_REDUCED <- 2
-
+# TODO: optimise this somehow by passing tidy tweet, num_topics and media outlet name
 # TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_outlet
 # TODO: optimise this in some way with a loop?
+
+# South Africa: topics per outlet
 topics_per_outlet_list <- list(
-  top_words_per_topic(org_topics(tidy_tweets_SA, "Daily Maverick", NUM_TOPICS_OUTLET), SENTIMENT_WORDS_PER_TOPIC),
-  top_words_per_topic(org_topics(tidy_tweets_SA, "SABC News", NUM_TOPICS_OUTLET_REDUCED), SENTIMENT_WORDS_PER_TOPIC),
-  top_words_per_topic(org_topics(tidy_tweets_SA, "Eyewitness News", NUM_TOPICS_OUTLET_REDUCED), SENTIMENT_WORDS_PER_TOPIC),
-  top_words_per_topic(org_topics(tidy_tweets_SA, "News24", NUM_TOPICS_OUTLET_REDUCED), SENTIMENT_WORDS_PER_TOPIC)
+  top_words_per_topic(org_topics(tidy_tweets_SA, DM_NAME, NUM_TOPICS_3), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(org_topics(tidy_tweets_SA, SABC_NAME, NUM_TOPICS_3), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(org_topics(tidy_tweets_SA, EWN_NAME, NUM_TOPICS_3), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(org_topics(tidy_tweets_SA, N24_NAME, NUM_TOPICS_5), SENTIMENT_WORDS_PER_TOPIC)
 )
-topics_per_outlet_list
+head(topics_per_outlet_list)
+
+# Global: topics per outlet
+global_topics_per_outlet_list <- list(
+  top_words_per_topic(org_topics(tidy_tweets_global, NYT_NAME, NUM_TOPICS_3), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(org_topics(tidy_tweets_global, ECON_NAME, NUM_TOPICS_3), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(org_topics(tidy_tweets_global, BBC_NAME, NUM_TOPICS_5), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(org_topics(tidy_tweets_global, AP_NAME, NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC)
+)
+head(global_topics_per_outlet_list)
 ```
 
 ```{r Create list with topics per media outlet per month}
-# TODO: are we only doing June? -> add Jan
+# TODO: optimise this somehow by passing tidy tweet, date, and media outlet name
+# TODO: add Jan and figure out how to group bar plot
 JUNE1 <- "2021-06-01"
 
 # TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_outlet_month_list
 # TODO: optimise this in some way with a loop?
+
+# South Africa: topics per outlet per month
 topics_per_outlet_month_list <- list(
-  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "Daily Maverick", JUNE1, NUM_TOPICS_OUTLET), SENTIMENT_WORDS_PER_TOPIC),
-  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "SABC News", JUNE1, NUM_TOPICS_OUTLET), SENTIMENT_WORDS_PER_TOPIC),
-  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "Eyewitness News", JUNE1, NUM_TOPICS_OUTLET), SENTIMENT_WORDS_PER_TOPIC),
-  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "News24", JUNE1, NUM_TOPICS_OUTLET), SENTIMENT_WORDS_PER_TOPIC)
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, DM_NAME, JUNE1, NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, SABC_NAME, JUNE1, NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, EWN_NAME, JUNE1, NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, N24_NAME, JUNE1, NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC)
 )
-topics_per_outlet_month_list
+head(topics_per_outlet_month_list)
+
+# Global: topics per outlet per month
+global_topics_per_outlet_month_list <- list(
+  top_words_per_topic(monthly_org_topics(tidy_tweets_global, NYT_NAME, JUNE1, NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_global, ECON_NAME, JUNE1, NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_global, BBC_NAME, JUNE1, NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_global, AP_NAME, JUNE1, NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC)
+)
+head(global_topics_per_outlet_month_list)
 ```
 
 
@@ -826,10 +882,9 @@ get_sentiment_mean <- function(df) {
 }
 ```
 
-```{r get topic sentiment mean per topic}
+```{r South Africa: get topic sentiment mean per topic}
 # TODO need to plot nicely (as table?)
 
-# TODO: make sure this works for different topic amounts changed
 # set names of topics
 TOPIC <- list(paste0(1:length(term_per_topic_list)))
 
@@ -840,52 +895,71 @@ sentiment_mean_per_topic <- unlist(lapply(vader_analysis_per_topic, get_sentimen
 # get sentiment mean per topic
 overall_sentiment_per_topic <- data.frame(TOPIC, sentiment_mean_per_topic)
 colnames(overall_sentiment_per_topic)[1] = "topic"
-overall_sentiment_per_topic
+head(overall_sentiment_per_topic)
 ```
-
-```{r get topic sentiment mean per month}
+```{r Global: get topic sentiment mean per topic}
 # TODO need to plot nicely (as table?)
 
-# TODO update this - does not plor correctly (also need updating for new data)
-# set months to plot
-MONTHS_TO_PLOT <- c("April", "May", "June")
+# set names of topics
+GLOBAL_TOPIC <- list(paste0(1:length(global_term_per_topic_list)))
+
+# get average sentiment
+global_vader_analysis_per_topic <- lapply(global_term_per_topic_list, apply_vader)
+global_sentiment_mean_per_topic <- unlist(lapply(global_vader_analysis_per_topic, get_sentiment_mean))
+
+# get sentiment mean per topic
+global_overall_sentiment_per_topic <- data.frame(GLOBAL_TOPIC, global_sentiment_mean_per_topic)
+colnames(global_overall_sentiment_per_topic)[1] = "topic"
+head(global_overall_sentiment_per_topic)
+```
+
+```{r South Africa: get topic sentiment mean per month, outlet, and month per outlet}
+# TODO need to plot nicely (as table?)
 
 # get average sentiment
 vader_analysis_per_month <- lapply(topics_per_month_list, apply_vader)
 sentiment_mean_per_month <- unlist(lapply(vader_analysis_per_month, get_sentiment_mean))
 
-# get sentiment mean per per month
-overall_sentiment_per_month <- data.frame(month=MONTHS_TO_PLOT, sentiment_mean_per_month)
-overall_sentiment_per_month
-```
-```{r set outlet names to plot}
-# set outlet names to plot
-OUTLETS_TO_PLOT <- c("Daily Maverick", "SABC News", "Eyewitness News", "News24")
-```
-
-
-```{r get topic sentiment mean per media outlet}
-# TODO need to plot nicely (as table?)
-
-# get average sentiment
 vader_analysis_per_outlet <- lapply(topics_per_outlet_list, apply_vader)
 sentiment_mean_per_outlet <- unlist(lapply(vader_analysis_per_outlet, get_sentiment_mean))
 
-# get sentiment mean per per month
-overall_sentiment_per_outlet <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet)
-overall_sentiment_per_outlet
-```
-```{r get topic sentiment mean per media outlet per month}
-# TODO need to plot nicely (as table?)
-
-# get average sentiment
 vader_analysis_per_outlet_month <- lapply(topics_per_outlet_month_list, apply_vader)
 sentiment_mean_per_outlet_month <- unlist(lapply(vader_analysis_per_outlet_month, get_sentiment_mean))
 
-# get sentiment mean per per month
+# get sentiment mean per  month
+overall_sentiment_per_month <- data.frame(month=MONTHS_TO_PLOT, sentiment_mean_per_month)
+head(overall_sentiment_per_month)
+
+overall_sentiment_per_outlet <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet)
+head(overall_sentiment_per_outlet)
+
 overall_sentiment_per_outlet_month <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet_month)
-overall_sentiment_per_outlet_month
+head(overall_sentiment_per_outlet_month)
 ```
+```{r Global: get topic sentiment mean per month, outlet, and month per outlet}
+# TODO need to plot nicely (as table?)
+
+# get average sentiment
+global_vader_analysis_per_month <- lapply(global_topics_per_month_list, apply_vader)
+global_sentiment_mean_per_month <- unlist(lapply(global_vader_analysis_per_month, get_sentiment_mean))
+
+global_vader_analysis_per_outlet <- lapply(global_topics_per_outlet_list, apply_vader)
+global_sentiment_mean_per_outlet <- unlist(lapply(global_vader_analysis_per_outlet, get_sentiment_mean))
+
+global_vader_analysis_per_outlet_month <- lapply(global_topics_per_outlet_month_list, apply_vader)
+global_sentiment_mean_per_outlet_month <- unlist(lapply(global_vader_analysis_per_outlet_month, get_sentiment_mean))
+
+# get sentiment mean per  month
+global_overall_sentiment_per_month <- data.frame(month=MONTHS_TO_PLOT, global_sentiment_mean_per_month)
+head(global_overall_sentiment_per_month)
+
+global_overall_sentiment_per_outlet <- data.frame(media_outlet=OUTLETS_TO_PLOT, global_sentiment_mean_per_outlet)
+head(global_overall_sentiment_per_outlet)
+
+global_overall_sentiment_per_outlet_month <- data.frame(media_outlet=OUTLETS_TO_PLOT, global_sentiment_mean_per_outlet_month)
+head(global_overall_sentiment_per_outlet_month)
+```
+
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Visualisation: Sentiment per topic -->
@@ -894,45 +968,41 @@ overall_sentiment_per_outlet_month
 * plot global stuff too
 * plot with new data stuff
 
-```{r plot overall sentiment per topic on covid-19}
-ggplot(overall_sentiment_per_topic, aes(topic, sentiment_mean_per_topic, fill=topic)) +
+```{r bar plot function template}
+plot_sentiment_topic_bar <- function(df, plot_row, plot_col, title, suffix) {
+  # set plot colors
+  plot_colors <- ms_colors
+  if (suffix == GLOBAL_SUFFIX) {
+    plot_colors <- rev(ms_colors)
+  }
+  
+  fill = plot_row
+  if (title == "month") {
+    fill = format(plot_row, "%B")
+  }
+  
+  # plot
+ggplot(df, aes(plot_row, plot_col, fill=fill)) +
   geom_col() +
-  labs(title = paste("Average sentiment per topic", "-- South Africa"),
-       x="Topic",
-       y="Vader Sentiment Score") +
-  scale_fill_manual(values = ms_colors) +
-  custom_column_basic_theme()
-```
-```{r plot overall sentiment per month on covid-19}
-ggplot(overall_sentiment_per_month, aes(month, sentiment_mean_per_month, fill=month)) +
-  geom_col() +
-  labs(title = paste("Average sentiment per month", "-- South Africa"),
+  labs(title = paste("Average sentiment per", title),
+       subtitle = suffix,
        x=NULL,
        y="Vader Sentiment Score") +
-  scale_fill_manual(values = ms_colors) +
-  custom_column_basic_theme()
+  scale_fill_manual(values = plot_colors) +
+  custom_column_basic_theme() + 
+  theme(axis.text.x = element_text(size = 10))
+}
 ```
 
-```{r plot overall sentiment per outlet on covid-19}
-ggplot(overall_sentiment_per_outlet, aes(media_outlet, sentiment_mean_per_outlet, fill=media_outlet)) +
-  geom_col() +
-  labs(title = paste("Average sentiment per media outlet", "-- South Africa"),
-       x=NULL,
-       y="Vader Sentiment Score") +
-  scale_fill_manual(values = ms_colors) +
-  custom_column_basic_theme()
+```{r South Africa: plot topic sentiment}
+plot_sentiment_topic_bar(overall_sentiment_per_topic, overall_sentiment_per_topic$topic, sentiment_mean_per_topic, "topic", SA_SUFFIX)
+plot_sentiment_topic_bar(overall_sentiment_per_month, overall_sentiment_per_month$month, sentiment_mean_per_month, "month", SA_SUFFIX)
+plot_sentiment_topic_bar(overall_sentiment_per_outlet, overall_sentiment_per_outlet$media_outlet, sentiment_mean_per_outlet, "outlet", SA_SUFFIX)
+plot_sentiment_topic_bar(overall_sentiment_per_outlet_month, overall_sentiment_per_outlet_month$media_outlet, sentiment_mean_per_outlet_month, "outlet (June)", SA_SUFFIX)
 ```
-
-
-
-
-
-```{r plot overall sentiment per outlet per month on covid-19}
-ggplot(overall_sentiment_per_outlet_month, aes(media_outlet, sentiment_mean_per_outlet_month, fill=media_outlet)) +
-  geom_col() +
-  labs(title = paste("Monthly (June) sentiment per media outlet", "-- South Africa"),
-       x=NULL,
-       y="Vader Sentiment Score") +
-  scale_fill_manual(values = ms_colors) +
-  custom_column_basic_theme()
+```{r Global: plot topic sentiment}
+plot_sentiment_topic_bar(global_overall_sentiment_per_topic, global_overall_sentiment_per_topic$topic, global_sentiment_mean_per_topic, "topic", GLOBAL_SUFFIX)
+plot_sentiment_topic_bar(global_overall_sentiment_per_month, global_overall_sentiment_per_month$month, global_sentiment_mean_per_month, "month", GLOBAL_SUFFIX)
+plot_sentiment_topic_bar(global_overall_sentiment_per_outlet, global_overall_sentiment_per_outlet$media_outlet, global_sentiment_mean_per_outlet, "outlet", GLOBAL_SUFFIX)
+plot_sentiment_topic_bar(global_overall_sentiment_per_outlet_month, global_overall_sentiment_per_outlet_month$media_outlet, global_sentiment_mean_per_outlet_month, "outlet (June)", GLOBAL_SUFFIX)
 ```
