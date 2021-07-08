@@ -9,7 +9,6 @@ output: html_notebook
 * set `nr_of_topics` as Global variables
 * sometimes setting `nr_of_topics` but not using it
 * Try change plotting to loop maybe - changing the date?
-* add title_suffix to all plots (need to decide how we're doing this to be consistent with the sentiment analysis too)
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
@@ -75,6 +74,14 @@ library(reshape2) # threw an error when assigning org_lda for not having this pa
 library(vader) # sentiment analysis
 ```
 ```{r global (static) variables}
+TOP_WORDS <- 10 # number of top words to show when plotting topics
+TUNING <- FALSE # controls whether LDA tuning should be performed
+
+NUM_TOPICS_3 <- 3
+NUM_TOPICS_4 <- 4 # all outlet for month
+NUM_TOPICS_5 <- 5
+NUM_TOPICS_6 <- 6
+
 SA_SUFFIX <- "South Africa"
 GLOBAL_SUFFIX <- "Global"
 SA_GOV_SUFFIX <- "SA Government"
@@ -206,10 +213,6 @@ top_words_per_topic <- function(topics, words_per_topic) {
 }
 ```
 
-```{r global variables}
-TOP_WORDS <- 10 # number of top words to show when plotting topics
-TUNING <- FALSE # controls whether LDA tuning should be performed
-```
 
 ```{r LDA tuning}
 # to find uptimal number of topics to model for given document term matrix
@@ -518,7 +521,7 @@ nr_of_topics <- 4 # chosen based on ldatuning
 plot_overall_topics(tidy_tweets_SA, nr_of_topics, SA_SUFFIX)
 plot_overall_topics(tidy_tweets_govZA, nr_of_topics, SA_GOV_SUFFIX)
 # Global
-nr_of_topics <-5 # chosen based on ldatuning
+nr_of_topics <- 5 # chosen based on ldatuning
 plot_overall_topics(tidy_tweets_global, nr_of_topics, GLOBAL_SUFFIX)
 ```
 
@@ -757,8 +760,8 @@ plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-0
 
 ```{r split topics into list of dataframes}
 # split overall topics into a list with each dataframe only containing one topic and the term associated with it
-words_per_topic <- 200
-topics_overall <- top_words_per_topic(overall_topics(tidy_tweets_SA, nr_of_topics), words_per_topic)
+SENTIMENT_WORDS_PER_TOPIC <- 200
+topics_overall <- top_words_per_topic(overall_topics(tidy_tweets_SA, nr_of_topics), SENTIMENT_WORDS_PER_TOPIC)
 
 term_per_topic_list <- topics_overall %>% 
   select(topic,term) %>% 
@@ -768,14 +771,13 @@ term_per_topic_list
 ```{r Create list with topics per month}
 NUM_TOPICS_MONTH <- 4
 NUM_TOPICS_MONTH_REDUCED <- 2 # some months have less topics due to less data being available
-words_per_topic <- 200
 
 # TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_month
 # TODO: optimise this in some way with a loop?
 topics_per_month_list <- list(
-  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-04-01", NUM_TOPICS_MONTH_REDUCED), words_per_topic),
-  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-05-01", NUM_TOPICS_MONTH), words_per_topic),
-  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-06-01", NUM_TOPICS_MONTH), words_per_topic)
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-04-01", NUM_TOPICS_MONTH_REDUCED), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-05-01", NUM_TOPICS_MONTH), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-06-01", NUM_TOPICS_MONTH), SENTIMENT_WORDS_PER_TOPIC)
 )
 topics_per_month_list
 ```
@@ -788,10 +790,10 @@ NUM_TOPICS_OUTLET_REDUCED <- 2
 # TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_outlet
 # TODO: optimise this in some way with a loop?
 topics_per_outlet_list <- list(
-  top_words_per_topic(org_topics(tidy_tweets_SA, "Daily Maverick", NUM_TOPICS_OUTLET), words_per_topic),
-  top_words_per_topic(org_topics(tidy_tweets_SA, "SABC News", NUM_TOPICS_OUTLET_REDUCED), words_per_topic),
-  top_words_per_topic(org_topics(tidy_tweets_SA, "Eyewitness News", NUM_TOPICS_OUTLET_REDUCED), words_per_topic),
-  top_words_per_topic(org_topics(tidy_tweets_SA, "News24", NUM_TOPICS_OUTLET_REDUCED), words_per_topic)
+  top_words_per_topic(org_topics(tidy_tweets_SA, "Daily Maverick", NUM_TOPICS_OUTLET), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(org_topics(tidy_tweets_SA, "SABC News", NUM_TOPICS_OUTLET_REDUCED), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(org_topics(tidy_tweets_SA, "Eyewitness News", NUM_TOPICS_OUTLET_REDUCED), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(org_topics(tidy_tweets_SA, "News24", NUM_TOPICS_OUTLET_REDUCED), SENTIMENT_WORDS_PER_TOPIC)
 )
 topics_per_outlet_list
 ```
@@ -803,10 +805,10 @@ JUNE1 <- "2021-06-01"
 # TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_outlet_month_list
 # TODO: optimise this in some way with a loop?
 topics_per_outlet_month_list <- list(
-  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "Daily Maverick", JUNE1, NUM_TOPICS_OUTLET), words_per_topic),
-  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "SABC News", JUNE1, NUM_TOPICS_OUTLET), words_per_topic),
-  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "Eyewitness News", JUNE1, NUM_TOPICS_OUTLET), words_per_topic),
-  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "News24", JUNE1, NUM_TOPICS_OUTLET), words_per_topic)
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "Daily Maverick", JUNE1, NUM_TOPICS_OUTLET), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "SABC News", JUNE1, NUM_TOPICS_OUTLET), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "Eyewitness News", JUNE1, NUM_TOPICS_OUTLET), SENTIMENT_WORDS_PER_TOPIC),
+  top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "News24", JUNE1, NUM_TOPICS_OUTLET), SENTIMENT_WORDS_PER_TOPIC)
 )
 topics_per_outlet_month_list
 ```
