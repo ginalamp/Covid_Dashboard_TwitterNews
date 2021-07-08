@@ -146,7 +146,7 @@ relevant_df <-  df[grepl("covid", df[["text"]]) |
                   grepl("Pandemic", df[["text"]]) |
                   grepl("pandemic", df[["text"]]), ]
 relevant_df <- relevant_df %>%
-  mutate(created_at = ymd_hms(created_at))
+  mutate(created_at = as.Date(created_at))
 return(relevant_df)
 }
 
