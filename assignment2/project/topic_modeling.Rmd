@@ -82,7 +82,7 @@ custom_line_basic_theme <- function () {
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
             plot.title = element_text(size = 12, hjust = 0),
-            plot.subtitle = element_text(size = 8, hjust = 0),
+            plot.subtitle = element_text(size = 10, hjust = 0),
             axis.title.y = element_text(size = 10)
         )
 }
@@ -293,7 +293,7 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
 plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
   # set plot colors
   plot_colors <- ms_colors
-  if (title_suffix == "-- Global") {
+  if (title_suffix == GLOBAL_SUFFIX) {
     plot_colors <- rev(ms_colors)
   }
   
@@ -361,7 +361,7 @@ monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
 plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics, title_suffix) {
   # set plot colors
   plot_colors <- ms_colors
-  if (title_suffix == "-- Global") {
+  if (title_suffix == GLOBAL_SUFFIX) {
     plot_colors <- rev(ms_colors)
   }
 
@@ -428,7 +428,7 @@ org_topics <- function(tidy_tweets_in, org, nr_topics) {
 plot_topics_of_org <- function(tidy_tweets_in, org, nr_topics, title_suffix) {
   # set plot colors
   plot_colors <- ms_colors
-  if (title_suffix == "-- Global") {
+  if (title_suffix == GLOBAL_SUFFIX) {
     plot_colors <- rev(ms_colors)
   }
   
@@ -503,7 +503,7 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
 plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_topics, title_suffix) {
   # set plot colors
   plot_colors <- ms_colors
-  if (title_suffix == "-- Global") {
+  if (title_suffix == GLOBAL_SUFFIX) {
     plot_colors <- rev(ms_colors)
   }
   
