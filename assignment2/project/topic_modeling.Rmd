@@ -191,7 +191,8 @@ global_media_outlets <- unique(tweets_global[c("name")])
 clean_tweets <- function(tweets_in) {
   # define custom stopwords
   my_stopwords <- c("covid", "covid19", "corona", "coronavirus", "pandemic", "#sabcnews",
-                    "maverick", "amp")
+                    "maverick", "amp", "#covid", "#covid19", "#coronavirus",
+                    "south", "africa")
   # remove stopwords
   tidy_tweets <- tweets_in %>% 
     unnest_tokens(word, text, token = "tweets") %>%
