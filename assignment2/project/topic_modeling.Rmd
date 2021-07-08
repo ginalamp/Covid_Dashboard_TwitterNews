@@ -800,7 +800,7 @@ topics_per_month_list <- list(
   top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-03-01", NUM_TOPICS_6), SENTIMENT_WORDS_PER_TOPIC),
   top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-04-01", NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
   top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-05-01", NUM_TOPICS_4), SENTIMENT_WORDS_PER_TOPIC),
-  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-06-01", NUM_TOPICS_MONTH), SENTIMENT_WORDS_PER_TOPIC)
+  top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-06-01", NUM_TOPICS_6), SENTIMENT_WORDS_PER_TOPIC)
 )
 head(topics_per_month_list)
 
