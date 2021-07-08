@@ -7,6 +7,11 @@ output: html_notebook
 * add custom sentiment to vader analysis
 * Cape_Talk was removed due to 5 datasets throwing [this](https://stackoverflow.com/questions/15363076/error-in-gzfilefile-wb-cannot-open-the-connection-or-compressed-file) error when applying `apply_vader()` (was a bit too much to handle) 
 * Extract data wrangling functions to the top? 
+* Replace screen_name -> name
+# ```{r media outlets}
+# SA_media_outlets <- unique(tweets_SA[c("name")])
+# global_media_outlets <- unique(tweets_global[c("name")])
+# ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
