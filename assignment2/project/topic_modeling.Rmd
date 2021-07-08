@@ -187,6 +187,7 @@ clean_tweets <- function(tweets_in) {
            !word %in% my_stopwords,
            !str_starts(word, "http"), # remove links
            !str_starts(word, "@"), # remove mentions
+           #str_detect(word, "^[a-z#]*"),
            str_detect(word, "[a-z]")) %>%
     mutate(word = gsub("\\d+", "", word)) # remove numbers
 
@@ -196,6 +197,7 @@ clean_tweets <- function(tweets_in) {
 
 tidy_tweets_SA <- clean_tweets(tweets_SA)
 tidy_tweets_global <- clean_tweets(tweets_global)
+tidy_tweets_govZA <- clean_tweets(relevant_govZA)
 ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -227,6 +229,8 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
   
+  # checking for ideal number of topics
+  # set to TRUE to run ldatuning
   tuning <- FALSE
   if (tuning) {
     result <- FindTopicsNumber(
@@ -292,6 +296,22 @@ monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
 
+  # checking for ideal number of topics
+  # set to TRUE to run ldatuning
+  tuning <- FALSE
+  if (tuning) {
+    result <- FindTopicsNumber(
+      orgs_dtm,
+      topics = seq(from = 2, to = 8, by = 1),
+      metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
+      method = "Gibbs",
+      control = list(seed = 77),
+      mc.cores = 2L,
+      verbose = TRUE
+    )
+    FindTopicsNumber_plot(result)
+  }
+  
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
 
@@ -341,6 +361,22 @@ org_topics <- function(tidy_tweets_in, org, nr_topics) {
   # (treating all tweets from one organisation as one document)
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
+  
+  # checking for ideal number of topics
+  # set to TRUE to run ldatuning
+  tuning <- FALSE
+  if (tuning) {
+    result <- FindTopicsNumber(
+      orgs_dtm,
+      topics = seq(from = 2, to = 8, by = 1),
+      metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
+      method = "Gibbs",
+      control = list(seed = 77),
+      mc.cores = 2L,
+      verbose = TRUE
+    )
+    FindTopicsNumber_plot(result)
+  }
 
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
@@ -399,6 +435,22 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
   # (treating all tweets from one organisation as one document)
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
+  
+  # checking for ideal number of topics
+  # set to TRUE to run ldatuning
+  tuning <- FALSE
+  if (tuning) {
+    result <- FindTopicsNumber(
+      orgs_dtm,
+      topics = seq(from = 2, to = 8, by = 1),
+      metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
+      method = "Gibbs",
+      control = list(seed = 77),
+      mc.cores = 2L,
+      verbose = TRUE
+    )
+    FindTopicsNumber_plot(result)
+  }
 
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
@@ -443,9 +495,11 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
 # Overall topics
 
 ```{r}
-nr_of_topics <- 5 # chosen based on ldatuning
 # South Africa
+nr_of_topics <- 5 # chosen based on ldatuning
 plot_overall_topics(tidy_tweets_SA, nr_of_topics, "-- South Africa")
+nr_of_topics <- 4 # chosen based on ldatuning
+plot_overall_topics(tidy_tweets_govZA, nr_of_topics, "-- SA Government")
 # Global
 nr_of_topics <- 6 # chosen based on ldatuning
 plot_overall_topics(tidy_tweets_global, nr_of_topics, "-- Global")
@@ -489,7 +543,7 @@ plot_topics_of_month(tidy_tweets_global, "2021-06-01", nr_of_topics)
 ```{r}
 # South Africa
 
-nr_of_topics <- 3
+nr_of_topics <- 4
 
 # TODO: optimise somehow - for loop doesn't plot...?
 #for (outlet in SA_media_outlets$name) {
