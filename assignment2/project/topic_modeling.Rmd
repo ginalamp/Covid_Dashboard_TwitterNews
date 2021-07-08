@@ -240,7 +240,7 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
   
   # checking for ideal number of topics
   # set to TRUE to run ldatuning
-  tuning <- FALSE
+  tuning <- TRUE
   if (tuning) {
     result <- FindTopicsNumber(
       orgs_dtm,
@@ -259,7 +259,7 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
   # apply topic modelling
   orgs_lda <- LDA(orgs_dtm, k = k_topics, control = list(seed = 1234))
   
-  orgs_topics_overall <- tidy(orgs_lda, matrix = "beta")
+  orgs_topics_overall <- tidy(orgs_lda, matrix = "beta") # beta = probability that a word is in each topic
   
   return(orgs_topics_overall)
 }
@@ -582,6 +582,7 @@ nr_of_topics <- 4
 #  print(outlet)
 #  plot_topics_of_org(tidy_tweets_SA, outlet, nr_of_topics)
 #}
+
 plot_topics_of_org(tidy_tweets_SA, "SABC News", nr_of_topics)
 plot_topics_of_org(tidy_tweets_SA, "Daily Maverick", nr_of_topics)
 plot_topics_of_org(tidy_tweets_SA, "Eyewitness News", nr_of_topics)
@@ -664,6 +665,7 @@ plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-06-01", 3)
 # Topic Modelling
 
 ```{r top words for overall topics}
+# TODO remove
 # top words per topic (for sentiment analysis)
 nr_of_topics <- 4
 words_per_topic <- 200
@@ -674,6 +676,7 @@ topics_overall <- top_words_per_topic(overall_topics(tidy_tweets_SA, nr_of_topic
 # topic modelling over time
 
 ```{r get overall topics for all media outlets per month}
+# TODO: remove
 # top words per topic (for sentiment analysis)
 nr_of_topics <- 4
 words_per_topic <- 200
@@ -684,6 +687,7 @@ June_topics <- top_words_per_topic(monthly_topics(tidy_tweets_SA, "2021-06-01", 
 ```{r Gina added: create list with topics per month}
 NUM_TOPICS_MONTH <- 4
 NUM_TOPICS_MONTH_REDUCED <- 2 # some months have less topics due to less data being available
+words_per_topic <- 200
 
 # TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_month
 # TODO: optimise this in some way with a loop?
@@ -717,15 +721,15 @@ topics_per_outlet_list
 
 
 ```{r}
+# TODO: remove
 # top words per topic (for sentiment analysis)
 n_topics <- 3
 words_per_topic <- 200
 DailyMav_June_topics <- top_words_per_topic(monthly_org_topics(tidy_tweets_SA, "Daily Maverick", "2021-06-01", 3), words_per_topic)
-
 ```
 
 ```{r Gina added: create list with topics per media outlet per month}
-# TODO: are we only doing June?
+# TODO: are we only doing June? -> add Jan
 JUNE1 <- "2021-06-01"
 
 # TODO: Should indicate date on dataframe such that we know which month is associated with which dataframe in topics_per_outlet_month_list
