@@ -5,13 +5,7 @@ output: html_notebook
 
 # TODO
 * add custom sentiment to vader analysis
-* Cape_Talk was removed due to 5 datasets throwing [this](https://stackoverflow.com/questions/15363076/error-in-gzfilefile-wb-cannot-open-the-connection-or-compressed-file) error when applying `apply_vader()` (was a bit too much to handle) 
 * Extract data wrangling functions to the top? 
-* Replace screen_name -> name
-# ```{r media outlets}
-# SA_media_outlets <- unique(tweets_SA[c("name")])
-# global_media_outlets <- unique(tweets_global[c("name")])
-# ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
@@ -72,8 +66,8 @@ custom_column_basic_theme <- function () {
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
             legend.position="none", # no legend
-            # plot.title = element_text(size = 10, hjust = 0),
-            # plot.caption = element_text(size = 8, hjust = 0)
+            plot.title = element_text(size = 12, hjust = 0),
+            axis.title.y = element_text(size = 10)
         )
 }
 
@@ -82,9 +76,9 @@ custom_line_basic_theme <- function () {
         theme(
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
-            # plot.title = element_text(size = 10, hjust = 0),
-            # plot.subtitle = element_text(size = 8, hjust = 0),
-            # plot.caption = element_text(size = 8, hjust = 0)
+            plot.title = element_text(size = 12, hjust = 0),
+            plot.subtitle = element_text(size = 10, hjust = 0),
+            axis.title.y = element_text(size = 10)
         )
 }
 ```
@@ -104,8 +98,13 @@ library(gtable)
 
 ```{r extract relevant data from read in csv}
 extract_relevant_data <- function(df) {
-  return(df %>% select(status_id, screen_name, created_at, statuses_count, is_retweet, favorite_count, retweet_count, followers_count, friends_count, text))
+  return(df %>% select(status_id, name, created_at, statuses_count, is_retweet, favorite_count, retweet_count, followers_count, friends_count, text))
 }
+```
+
+
+```{r}
+read.csv("data/dailymaverick.csv")
 ```
 
 ```{r read South Africa data}
@@ -178,7 +177,7 @@ cleaned_tweets <- df %>%
          str_detect(word, "^[a-z#]*$")) %>% # remove special characters
   mutate(word = gsub("\\d+", "", word)) %>% # remove numbers
   # group words back together (creating sentences) according to their twitter_id
-  group_by(status_id, screen_name, created_at, retweet_count, favorite_count) %>%
+  group_by(status_id, name, created_at, retweet_count, favorite_count) %>%
   summarize(text=str_c(word, collapse = " ")) %>%
   ungroup()
 
@@ -210,8 +209,8 @@ head(global_vader_analysis)
 
 ```{r get sentiment mean per oulet}
 # get names of media outlets
-name <- unlist(lapply(media_outlet_list, function(df) {return(df$screen_name[1])}))
-global_name <- unlist(lapply(global_media_outlet_list, function(df) {return(df$screen_name[1])}))
+name <- unlist(lapply(media_outlet_list, function(df) {return(df$name[1])}))
+global_name <- unlist(lapply(global_media_outlet_list, function(df) {return(df$name[1])}))
 
 get_sentiment_mean <- function(df) {
   return(mean(df$compound))
@@ -250,7 +249,7 @@ get_top_retweets <- function(df) {
   text <- df %>%
     arrange(desc(retweet_count)) %>% 
     slice(1:NUM_TWEETS) %>% 
-    select(status_id, screen_name, created_at, retweet_count, text)
+    select(status_id, name, created_at, retweet_count, text)
   return(text)
 }
 
@@ -283,7 +282,7 @@ get_top_favorited_tweets <- function(df) {
   text <- df %>%
     arrange(desc(favorite_count)) %>% 
     slice(1:NUM_TWEETS) %>% 
-    select(status_id, screen_name, created_at, favorite_count, text)
+    select(status_id, name, created_at, favorite_count, text)
   return(text)
 }
 # South Africa: apply sentiment analysis on top NUM_TWEETS favourited tweets per media outlet
@@ -352,10 +351,10 @@ total_overall_sentiment
 
 
 
-```{r plot overall sentiment per organisation on covid-19}
+```{r plot average sentiment per organisation on covid-19}
 ggplot(overall_sentiment_per_outlet, aes(name, sentiment_mean_per_outlet, fill=name)) +
   geom_col() +
-  labs(title = "South Africa: Overall sentiment per organisation on covid-19",
+  labs(title = paste("Average sentiment per media outlet", "-- South Africa"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = ms_colors) +
@@ -365,7 +364,7 @@ ggplot(overall_sentiment_per_outlet, aes(name, sentiment_mean_per_outlet, fill=n
 ```{r plot sentiment on Top x retweeted tweets per organisation (that users retweet)}
 ggplot(top_retweets_sentiment_per_outlet, aes(name, top_retweets_sentiment_mean, fill=name)) +
   geom_col() +
-  labs(title = paste("South Africa: Sentiment of Top", NUM_TWEETS, "retweeted tweets per organisation on covid-19"),
+  labs(title = paste("Sentiment of Top", NUM_TWEETS, "retweeted tweets per media outlet", "-- South Africa"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = ms_colors) +
@@ -375,7 +374,7 @@ ggplot(top_retweets_sentiment_per_outlet, aes(name, top_retweets_sentiment_mean,
 ```{r plot sentiment on Top x favourited tweets per organisation}
 ggplot(top_favourited_sentiment_per_outlet, aes(name, top_favourited_sentiment_mean, fill=name)) +
   geom_col() +
-  labs(title = paste("South Africa: Sentiment of Top", NUM_TWEETS, "favourited tweets per organisation on covid-19"),
+  labs(title = paste("Sentiment of Top", NUM_TWEETS, "favourited tweets per media outlet", "-- South Africa"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = ms_colors) +
@@ -385,15 +384,16 @@ ggplot(top_favourited_sentiment_per_outlet, aes(name, top_favourited_sentiment_m
 
 
 ```{r plot sentiment per organisation over time on covid-19}
-ggplot(bind_rows(tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=screen_name)) + 
+ggplot(bind_rows(tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=name)) + 
   geom_line(size=0.6) +
-  labs(title= "South Africa: Sentiment over time per media outlet",
+  labs(title = paste("Sentiment over time per media outlet", "-- South Africa"),
        subtitle = paste("A rolling average of", ROLLING_AVERAGE_TIME, "days is used."),
        color=NULL,
        x = NULL,
        y = "Vader Sentiment Score") +
   scale_colour_manual(values = ms_colors) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
+  scale_y_continuous(breaks = seq(-0.4, 0.4, by = 0.1)) +
   custom_line_basic_theme()
 ```
 
@@ -410,7 +410,7 @@ global_total_overall_sentiment
 ```{r plot global overall sentiment per organisation on covid-19}
 ggplot(global_overall_sentiment_per_outlet, aes(global_name, global_sentiment_mean_per_outlet, fill=global_name)) +
   geom_col() +
-  labs(title = "Global: Overall sentiment per organisation on covid-19",
+  labs(title = paste("Average sentiment per media outlet", "-- Global"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = rev(ms_colors)) +
@@ -420,7 +420,7 @@ ggplot(global_overall_sentiment_per_outlet, aes(global_name, global_sentiment_me
 ```{r plot globalsentiment on Top x retweeted tweets per organisation (that users retweet)}
 ggplot(global_top_retweets_sentiment_per_outlet, aes(global_name, global_top_retweets_sentiment_mean, fill=global_name)) +
   geom_col() +
-  labs(title = paste("Global: Sentiment of Top", NUM_TWEETS, "retweeted tweets per organisation on covid-19"),
+  labs(title = paste("Sentiment of Top", NUM_TWEETS, "retweeted tweets per media outlet", "-- Global"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = rev(ms_colors)) +
@@ -430,7 +430,7 @@ ggplot(global_top_retweets_sentiment_per_outlet, aes(global_name, global_top_ret
 ```{r plot global sentiment on Top x favourited tweets per organisation}
 ggplot(global_top_favourited_sentiment_per_outlet, aes(global_name, global_top_favourited_sentiment_mean, fill=global_name)) +
   geom_col() +
-  labs(title = paste("Global: Sentiment of Top", NUM_TWEETS, "favourited tweets per organisation on covid-19"),
+  labs(title = paste("Sentiment over time per media outlet", "-- Global"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = rev(ms_colors)) +
@@ -440,15 +440,16 @@ ggplot(global_top_favourited_sentiment_per_outlet, aes(global_name, global_top_f
 
 
 ```{r plot global sentiment per organisation over time on covid-19}
-ggplot(bind_rows(global_tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=screen_name)) + 
+ggplot(bind_rows(global_tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=name)) + 
   geom_line(size=0.6) +
-  labs(title= "Global: Sentiment over time per media outlet",
+  labs(title = paste("Sentiment over time per media outlet", "-- Global"),
        subtitle = paste("A rolling average of", ROLLING_AVERAGE_TIME, "days is used."),
        color=NULL,
        x = NULL,
        y = "Vader Sentiment Score") +
   scale_colour_manual(values = rev(ms_colors)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
+  scale_y_continuous(breaks = seq(-0.4, 0.4, by = 0.1)) +
   custom_line_basic_theme()
 ```
 

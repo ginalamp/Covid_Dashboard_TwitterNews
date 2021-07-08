@@ -69,8 +69,8 @@ custom_column_basic_theme <- function () {
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
             legend.position="none", # no legend
-            # plot.title = element_text(size = 10, hjust = 0),
-            # plot.caption = element_text(size = 8, hjust = 0)
+            plot.title = element_text(size = 12, hjust = 0),
+            axis.title.y = element_text(size = 10)
         )
 }
 
@@ -79,9 +79,9 @@ custom_line_basic_theme <- function () {
         theme(
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
-            # plot.title = element_text(size = 10, hjust = 0),
-            # plot.subtitle = element_text(size = 8, hjust = 0),
-            # plot.caption = element_text(size = 8, hjust = 0)
+            plot.title = element_text(size = 12, hjust = 0),
+            plot.subtitle = element_text(size = 10, hjust = 0),
+            axis.title.y = element_text(size = 10)
         )
 }
 ```
@@ -100,6 +100,12 @@ library(ldatuning) # NOTE: (Gina) for Ubuntu needed to install (gmp package firs
 library(reshape2) # threw an error when assigning org_lda for not having this package
 library(vader) # sentiment analysis
 ```
+```{r global (static) variables}
+SA_SUFFIX <- "-- South Africa"
+GLOBAL_SUFFIX <- "-- Global"
+SA_GOV_SUFFIX <- "-- SA Government"
+```
+
 
 
 ```{r extract relevant data from read in csv}
@@ -146,7 +152,7 @@ relevant_df <-  df[grepl("covid", df[["text"]]) |
                   grepl("Pandemic", df[["text"]]) |
                   grepl("pandemic", df[["text"]]), ]
 relevant_df <- relevant_df %>%
-  mutate(created_at = ymd_hms(created_at))
+  mutate(created_at = as.Date(created_at))
 return(relevant_df)
 }
 
@@ -299,7 +305,8 @@ plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
     mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
     ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Covid-related Topics for Jan-June 2021", title_suffix)) +
+    labs(title = paste("Covid-related Topics for Jan-June 2021"),
+         subtitle = title_suffix) +
     facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
     scale_fill_manual(values = plot_colors) +
@@ -345,13 +352,12 @@ monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
 
 ```{r plot topics per month}
 # past_month being the full date of the first day of that month - eg "2021-06-01" for June
-plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
-  # TODO: add plot suffix - uncomment below and change ms_colrs -> plot_colors once this is done
+plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics, title_suffix) {
   # set plot colors
-  # plot_colors <- ms_colors
-  # if (title_suffix == "-- Global") {
-  #   plot_colors <- rev(ms_colors)
-  # }
+  plot_colors <- ms_colors
+  if (title_suffix == "-- Global") {
+    plot_colors <- rev(ms_colors)
+  }
 
   # get the topics for the month to plot
   orgs_topics <- monthly_topics(tidy_tweets_in, past_month, nr_topics)
@@ -364,10 +370,11 @@ plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics) {
     mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
     ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Covid-related Topics for month starting", past_month)) +
+    labs(title = paste("Covid-related Topics for month starting", past_month),
+         subtitle = title_suffix) +
     facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
-    scale_fill_manual(values = ms_colors) +
+    scale_fill_manual(values = plot_colors) +
     custom_column_basic_theme()
 }
 ```
@@ -409,13 +416,12 @@ org_topics <- function(tidy_tweets_in, org, nr_topics) {
 
 ```{r plot topics per organisation}
 # org being the name of the media agency as found in the tidy_tweets dataframe
-plot_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
-  # TODO: add plot suffix - uncomment below and change ms_colrs -> plot_colors once this is done
+plot_topics_of_org <- function(tidy_tweets_in, org, nr_topics, title_suffix) {
   # set plot colors
-  # plot_colors <- ms_colors
-  # if (title_suffix == "-- Global") {
-  #   plot_colors <- rev(ms_colors)
-  # }
+  plot_colors <- ms_colors
+  if (title_suffix == "-- Global") {
+    plot_colors <- rev(ms_colors)
+  }
   
   # get the topics for the org to plot
   orgs_topics <- org_topics(tidy_tweets_in, org, nr_topics)
@@ -429,10 +435,11 @@ plot_topics_of_org <- function(tidy_tweets_in, org, nr_topics) {
     mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
     ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Covid-related Topics by ", org)) +
+    labs(title = paste("Covid-related Topics by", org),
+         subtitle = title_suffix) +
     facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
-    scale_fill_manual(values = ms_colors) +
+    scale_fill_manual(values = plot_colors) +
     custom_column_basic_theme()
 }
 ```
@@ -482,13 +489,12 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
 ```{r plot topics per organisation per month}
 # org being the name of the media agency as found in the tidy_tweets dataframe
 # past_month being the full date of the first day of that month - eg "2021-06-01" for June
-plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_topics) {
-  # TODO: add plot suffix - uncomment below and change ms_colrs -> plot_colors once this is done
+plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_topics, title_suffix) {
   # set plot colors
-  # plot_colors <- ms_colors
-  # if (title_suffix == "-- Global") {
-  #   plot_colors <- rev(ms_colors)
-  # }
+  plot_colors <- ms_colors
+  if (title_suffix == "-- Global") {
+    plot_colors <- rev(ms_colors)
+  }
   
   # topics for org for month
   orgs_topics <- monthly_org_topics(tidy_tweets_in, org, past_month, nr_topics)
@@ -504,10 +510,11 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
     mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
     ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
     geom_col(show.legend = FALSE) +
-    labs(title = paste("Covid-related Topics by ", org, " for month starting ", past_month)) +
+    labs(title = paste("Covid-related Topics by", org, "for month starting", past_month),
+         subtitle = title_suffix) +
     facet_wrap(~ topic, scales = "free") + # plot for each topic
     scale_y_reordered() +
-    scale_fill_manual(values = ms_colors) +
+    scale_fill_manual(values = plot_colors) +
     custom_column_basic_theme()
 }
 ```
@@ -522,12 +529,12 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
 ```{r}
 # South Africa
 nr_of_topics <- 5 # chosen based on ldatuning
-plot_overall_topics(tidy_tweets_SA, nr_of_topics, "-- South Africa")
+plot_overall_topics(tidy_tweets_SA, nr_of_topics, SA_SUFFIX)
 nr_of_topics <- 4 # chosen based on ldatuning
-plot_overall_topics(tidy_tweets_govZA, nr_of_topics, "-- SA Government")
+plot_overall_topics(tidy_tweets_govZA, nr_of_topics, SA_GOV_SUFFIX)
 # Global
 nr_of_topics <- 6 # chosen based on ldatuning
-plot_overall_topics(tidy_tweets_global, nr_of_topics, "-- Global")
+plot_overall_topics(tidy_tweets_global, nr_of_topics, GLOBAL_SUFFIX)
 ```
 
 # Overall Topics for Specific Month
@@ -539,12 +546,12 @@ plot_overall_topics(tidy_tweets_global, nr_of_topics, "-- Global")
 
 nr_of_topics <- 4
 
-plot_topics_of_month(tidy_tweets_SA, "2021-01-01", nr_of_topics)
-plot_topics_of_month(tidy_tweets_SA, "2021-02-01", nr_of_topics)
-plot_topics_of_month(tidy_tweets_SA, "2021-03-01", nr_of_topics)
-plot_topics_of_month(tidy_tweets_SA, "2021-04-01", nr_of_topics)
-plot_topics_of_month(tidy_tweets_SA, "2021-05-01", nr_of_topics)
-plot_topics_of_month(tidy_tweets_SA, "2021-06-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_SA, "2021-01-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-02-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-03-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-04-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-05-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-06-01", nr_of_topics, SA_SUFFIX)
 ```
 
 ```{r}
@@ -554,12 +561,12 @@ plot_topics_of_month(tidy_tweets_SA, "2021-06-01", nr_of_topics)
 
 nr_of_topics <- 4
 
-plot_topics_of_month(tidy_tweets_global, "2021-01-01", nr_of_topics)
-plot_topics_of_month(tidy_tweets_global, "2021-02-01", nr_of_topics)
-plot_topics_of_month(tidy_tweets_global, "2021-03-01", nr_of_topics)
-plot_topics_of_month(tidy_tweets_global, "2021-04-01", nr_of_topics)
-plot_topics_of_month(tidy_tweets_global, "2021-05-01", nr_of_topics)
-plot_topics_of_month(tidy_tweets_global, "2021-06-01", nr_of_topics)
+plot_topics_of_month(tidy_tweets_global, "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
 ```
 
 
@@ -576,10 +583,10 @@ nr_of_topics <- 4
 #  plot_topics_of_org(tidy_tweets_SA, outlet, nr_of_topics)
 #}
 
-plot_topics_of_org(tidy_tweets_SA, "SABC News", nr_of_topics)
-plot_topics_of_org(tidy_tweets_SA, "Daily Maverick", nr_of_topics)
-plot_topics_of_org(tidy_tweets_SA, "Eyewitness News", nr_of_topics)
-plot_topics_of_org(tidy_tweets_SA, "News24", nr_of_topics)
+plot_topics_of_org(tidy_tweets_SA, "SABC News", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, "Daily Maverick", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, "Eyewitness News", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, "News24", nr_of_topics, SA_SUFFIX)
 ```
 
 ```{r}
@@ -592,10 +599,10 @@ nr_of_topics <- 3
 #  print(outlet)
 #  plot_topics_of_org(tidy_tweets_global, outlet, nr_of_topics)
 #}
-plot_topics_of_org(tidy_tweets_global, "The New York Times", nr_of_topics)
-plot_topics_of_org(tidy_tweets_global, "The Economist", nr_of_topics)
-plot_topics_of_org(tidy_tweets_global, "BBC News (World)", nr_of_topics)
-plot_topics_of_org(tidy_tweets_global, "The Associated Press", nr_of_topics)
+plot_topics_of_org(tidy_tweets_global, "The New York Times", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, "The Economist", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, "BBC News (World)", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, "The Associated Press", nr_of_topics, GLOBAL_SUFFIX)
 ```
 
 # Topics for specific Media Outlet for specific Month
@@ -607,10 +614,10 @@ plot_topics_of_org(tidy_tweets_global, "The Associated Press", nr_of_topics)
 
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-01-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-01-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-01-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-01-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-01-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-01-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-01-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-01-01", nr_of_topics, SA_SUFFIX)
 ```
 
 ```{r}
@@ -618,10 +625,10 @@ plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-01-01", nr_of_topic
 
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-02-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-02-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-02-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-02-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-02-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-02-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-02-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-02-01", nr_of_topics, SA_SUFFIX)
 ```
 
 ```{r}
@@ -629,10 +636,10 @@ plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-02-01", nr_of_topic
 
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-03-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-03-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-03-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-03-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-03-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-03-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-03-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-03-01", nr_of_topics, SA_SUFFIX)
 ```
 
 ```{r}
@@ -640,10 +647,10 @@ plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-03-01", nr_of_topic
 
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-04-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-04-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-04-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-04-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-04-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-04-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-04-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-04-01", nr_of_topics, SA_SUFFIX)
 ```
 
 ```{r}
@@ -651,10 +658,10 @@ plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-04-01", nr_of_topic
 
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-05-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-05-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-05-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-05-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-05-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-05-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-05-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-05-01", nr_of_topics, SA_SUFFIX)
 ```
 
 ```{r}
@@ -662,78 +669,74 @@ plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-05-01", nr_of_topic
 
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-06-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-06-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-06-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-06-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-06-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-06-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-06-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-06-01", nr_of_topics, SA_SUFFIX)
 ```
 
 ```{r}
 # Global - January
-
 # TODO: optimise somehow - for loop doesn't plot...?
 
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-01-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-01-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-01-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-01-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)
 ```
 
 ```{r}
 # Global - Feb
-
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-02-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-02-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-02-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-02-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
 ```
 
 ```{r}
 # Global - March
-
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-03-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-03-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-03-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-03-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
 ```
 
 ```{r}
 # Global - April
-
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-04-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-04-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-04-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-04-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)
 ```
 
 ```{r}
 # Global - May
-
+# TODO: graph label running over -> need to center differently (or change date to remove year)
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-05-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-05-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-05-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-05-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
 ```
 
 ```{r}
 # Global - June
-
+# TODO: graph label running over -> need to center differently (or change date to remove year)
 nr_of_topics <- 3
 
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-06-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-06-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-06-01", nr_of_topics)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-06-01", nr_of_topics)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
 ```
 
 ```{r}
@@ -887,7 +890,7 @@ overall_sentiment_per_outlet_month
 ```{r plot overall sentiment per topic on covid-19}
 ggplot(overall_sentiment_per_topic, aes(topic, sentiment_mean_per_topic, fill=topic)) +
   geom_col() +
-  labs(title = "Overall sentiment per topic on covid-19",
+  labs(title = paste("Average sentiment per topic", "-- South Africa"),
        x="Topic",
        y="Vader Sentiment Score") +
   scale_fill_manual(values = ms_colors) +
@@ -896,7 +899,7 @@ ggplot(overall_sentiment_per_topic, aes(topic, sentiment_mean_per_topic, fill=to
 ```{r plot overall sentiment per month on covid-19}
 ggplot(overall_sentiment_per_month, aes(month, sentiment_mean_per_month, fill=month)) +
   geom_col() +
-  labs(title = "Overall sentiment per month on covid-19",
+  labs(title = paste("Average sentiment per month", "-- South Africa"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = ms_colors) +
@@ -906,7 +909,7 @@ ggplot(overall_sentiment_per_month, aes(month, sentiment_mean_per_month, fill=mo
 ```{r plot overall sentiment per outlet on covid-19}
 ggplot(overall_sentiment_per_outlet, aes(media_outlet, sentiment_mean_per_outlet, fill=media_outlet)) +
   geom_col() +
-  labs(title = "Overall sentiment per media outlet on covid-19",
+  labs(title = paste("Average sentiment per media outlet", "-- South Africa"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = ms_colors) +
@@ -920,7 +923,7 @@ ggplot(overall_sentiment_per_outlet, aes(media_outlet, sentiment_mean_per_outlet
 ```{r plot overall sentiment per outlet per month on covid-19}
 ggplot(overall_sentiment_per_outlet_month, aes(media_outlet, sentiment_mean_per_outlet_month, fill=media_outlet)) +
   geom_col() +
-  labs(title = "Monthly (June) sentiment per media outlet on covid-19",
+  labs(title = paste("Monthly (June) sentiment per media outlet", "-- South Africa"),
        x=NULL,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = ms_colors) +
