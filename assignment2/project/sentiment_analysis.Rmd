@@ -54,7 +54,8 @@ ms_coolgrey <- "#737373"
 ms_warmgrey <- "#867365"
 
 # ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkblue, ms_indigo, ms_plum, ms_purple, ms_coolgrey, ms_warmgrey)
-ms_colors <- c(ms_darkblue, ms_red, ms_orange, ms_teal, ms_green, ms_blue, ms_indigo, ms_plum)
+# ms_colors <- c(ms_darkblue, ms_red, ms_orange, ms_teal, ms_green, ms_blue, ms_indigo, ms_plum)
+ms_colors <- c(ms_darkblue, ms_red, ms_orange, ms_teal, ms_gold, ms_coolgrey, ms_purple, ms_warmgrey, ms_green, ms_blue, ms_indigo, ms_plum)
 
 
 # colour picker: http://tristen.ca/hcl-picker/#/hlc/10/1.02/EBB350/48231C
@@ -71,8 +72,8 @@ custom_column_basic_theme <- function () {
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
             legend.position="none", # no legend
-            plot.title = element_text(size = 10, hjust = 0),
-            plot.caption = element_text(size = 8, hjust = 0)
+            # plot.title = element_text(size = 10, hjust = 0),
+            # plot.caption = element_text(size = 8, hjust = 0)
         )
 }
 
@@ -81,9 +82,9 @@ custom_line_basic_theme <- function () {
         theme(
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
-            plot.title = element_text(size = 10, hjust = 0),
-            plot.subtitle = element_text(size = 8, hjust = 0),
-            plot.caption = element_text(size = 8, hjust = 0)
+            # plot.title = element_text(size = 10, hjust = 0),
+            # plot.subtitle = element_text(size = 8, hjust = 0),
+            # plot.caption = element_text(size = 8, hjust = 0)
         )
 }
 ```
@@ -144,7 +145,8 @@ relevant_df <-  df[grepl("covid", df[["text"]]) |
                   grepl("Pandemic", df[["text"]]) |
                   grepl("pandemic", df[["text"]]), ]
 relevant_df <- relevant_df %>%
-  mutate(created_at = ymd_hms(created_at))
+  # mutate(created_at = ymd_hms(created_at))
+  mutate(created_at = as.Date(created_at))
 return(relevant_df)
 }
 
@@ -391,6 +393,7 @@ ggplot(bind_rows(tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=scr
        x = NULL,
        y = "Vader Sentiment Score") +
   scale_colour_manual(values = ms_colors) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   custom_line_basic_theme()
 ```
 
@@ -437,17 +440,15 @@ ggplot(global_top_favourited_sentiment_per_outlet, aes(global_name, global_top_f
 
 
 ```{r plot global sentiment per organisation over time on covid-19}
-# TODO: want to apply log scale (not working due to time format)
 ggplot(bind_rows(global_tidy_tweets, .id="df"), aes(created_at, rolling_avg, colour=screen_name)) + 
-  geom_line() +
+  geom_line(size=0.6) +
   labs(title= "Global: Sentiment over time per media outlet",
        subtitle = paste("A rolling average of", ROLLING_AVERAGE_TIME, "days is used."),
        color=NULL,
        x = NULL,
        y = "Vader Sentiment Score") +
-  # TODO: not working due to date being in POSIXt format
-  # scale_x_log10() + 
   scale_colour_manual(values = rev(ms_colors)) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   custom_line_basic_theme()
 ```
 
