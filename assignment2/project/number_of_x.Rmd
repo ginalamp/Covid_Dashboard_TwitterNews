@@ -254,6 +254,23 @@ plot_numeric_bar(covid_global_number_of_x, covid_global_number_of_x$user_retweet
 <!-- TODO:  @JOHANNA below here are the individual graphs (above I condensed it) - could you please have a look to see whether we can group the graphs? -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
+```{r}
+# https://stackoverflow.com/questions/29131976/multiple-series-barplot
+library(reshape2)
+number_of_x_melted = melt(number_of_x, id.vars=c("name"))
+
+ggplot(number_of_x_melted, aes(name, value, fill=variable)) +
+  geom_bar(stat='Identity',position=position_dodge()) +
+  labs(title = "Number of...",
+       subtitle = SA_SUFFIX,
+       x=NULL,
+       y=NULL) +
+  scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
+  scale_fill_manual(values = ms_colors) +
+  custom_column_basic_theme() +
+  theme(legend.position = "right")
+```
+
 ```{r plot followers per media outlet}
 ggplot(number_of_x, aes(name, followers_count, fill=name)) +
   geom_col() +
