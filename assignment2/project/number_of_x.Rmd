@@ -12,26 +12,6 @@ output: html_notebook
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 ```{r set colours}
-# Stellenbosch branding manual colours:
-# http://stbweb01.stb.sun.ac.za/centenarybrandtoolkit/SU_Brand_Manual_2019.pdf 
-arts_orange <- "#FF8F1C"
-law_winered <- "#9e2629"
-theology_purple <- "#84329B"
-education_darkblue <- "#326295"
-agri_green <- "#509e2f"
-med_bluegreen <- "#006163"
-military_salmon <- "#e56a54"
-science_red <- "#cb333b"
-ems_lightblue <- "#2dccd3"
-engineering_yellow <- "#eaaa00"
-maroon <- "#60223b"
-mustard <- "#F1B434"
-darkgrey <- "#333333"
-lightgrey <- "#8c979a"
-black <- "#000000"
-
-su_colors <- c(arts_orange, law_winered, theology_purple, education_darkblue, agri_green, med_bluegreen, military_salmon, science_red, ems_lightblue, engineering_yellow, maroon, mustard, darkgrey, lightgrey, black)
-
 # Microsoft Sharepoint main colours
 # https://docs.microsoft.com/en-us/sharepoint/dev/design/themes-colors
 ms_red <- "#A4262C"
@@ -62,7 +42,7 @@ custom_column_basic_theme <- function () {
         theme(
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
-            legend.position="none", # no legend
+            legend.title = element_blank(), # no legend
             plot.title = element_text(size = 12, hjust = 0),
             plot.subtitle = element_text(size = 10, hjust = 0),
             axis.title.y = element_text(size = 10)
@@ -74,6 +54,7 @@ custom_column_basic_theme <- function () {
 library(tidyverse)
 library(scales)
 library(ggplot2)
+library(reshape2) # create multiple seties bar plot
 ```
 
 ```{r global (static) variables}
@@ -81,8 +62,6 @@ SA_SUFFIX <- "South Africa"
 GLOBAL_SUFFIX <- "Global"
 SA_GOV_SUFFIX <- "SA Government"
 NUM_TWEETS <- 10 # number of (retweeted/favourited) tweets to be extracted
-THOUSAND <- "K"
-MILLION <- "M"
 COVID <- "(Covid tweets)"
 ```
 
@@ -148,8 +127,8 @@ global_covid_tweets <- list(get_covid_tweets(nytimes_tweets),
 extract_number_of_x <- function(df_list) {
   extracted_list <- data.frame(name = unlist(lapply(df_list, function(df) {return(df$name[1])})),
                                followers_count = unlist(lapply(df_list, function(df) {return(df$followers_count[1])})),
-                               tweets_count = unlist(lapply(df_list, function(df) {return(df$statuses_count[1])})),
-                               user_retweet_sum = unlist(lapply(df_list, function(df) {return(sum(df$retweet_count))})))
+                               tweets_count = unlist(lapply(df_list, function(df) {return(nrow(df))})),
+                               retweet_count = unlist(lapply(df_list, function(df) {return(sum(df$retweet_count))})))
   return(extracted_list)
 }
 # total tweets per outlet
@@ -192,156 +171,57 @@ head(global_top_favourited)
 <!-- Data Visualisation (South African)-->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r bar plot function template}
-plot_numeric_bar <- function(df, col_plot, title, title_suffix, covid_note, set_scale) {
+```{r plot number of tweets and retweets per media outlet}
+plot_re_tweets <- function(df, title_suffix, covid_note) {
+  # condense df such that multiple series bar plot can be plotted
+  number_of_x_melted = melt(df %>% select(name, tweets_count, retweet_count), id.vars=c("name"))
+  
+  # set plot colors
+  plot_colors <- c(ms_teal, ms_plum, ms_orange, ms_blue)
+  if (title_suffix == GLOBAL_SUFFIX) {
+    plot_colors <- rev(plot_colors)
+  }
+  
+  ggplot(number_of_x_melted, aes(name, value, fill=variable)) +
+    geom_bar(stat='Identity', position=position_dodge()) +
+    labs(title = paste("Number of tweets and retweets per media outlet", covid_note),
+         subtitle = title_suffix,
+         x=NULL,
+         y=NULL) +
+    scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
+    scale_fill_manual(values = rev(plot_colors)) +
+    custom_column_basic_theme() +
+    theme(legend.position = "right") +
+    custom_column_basic_theme()
+}
+```
+```{r}
+plot_re_tweets(number_of_x, SA_SUFFIX, NULL)
+plot_re_tweets(global_number_of_x, GLOBAL_SUFFIX, NULL)
+```
+
+
+
+```{r plot number of followers per media outlet}
+plot_followers <- function(df, title_suffix, covid_note) {
   # set plot colors
   plot_colors <- ms_colors
   if (title_suffix == GLOBAL_SUFFIX) {
     plot_colors <- rev(ms_colors)
   }
   
-  # set plot scale
-  suffix = THOUSAND
-  scale = 1e-3
-  if (set_scale == MILLION) {
-    suffix = MILLION
-    scale = 1e-6
-  }
-  
   # plot
-  ggplot(df, aes(name, col_plot, fill=name)) +
+  ggplot(df, aes(name, followers_count, fill=name)) +
     geom_col() +
-    labs(title = paste("Number of", title, "per media outlet", covid_note),
+    labs(title = paste("Number of followers per media outlet", covid_note),
          subtitle = title_suffix,
          x=NULL,
          y=NULL) +
-    scale_y_continuous(labels = label_number(suffix = suffix, scale = scale)) +
+    scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
     scale_fill_manual(values = plot_colors) +
     custom_column_basic_theme()
 }
-```
 
-```{r plot South African numerical analysis}
-plot_numeric_bar(number_of_x, number_of_x$followers_count, "followers", SA_SUFFIX, NULL, MILLION)
-plot_numeric_bar(number_of_x, number_of_x$tweets_count, "tweets", SA_SUFFIX, NULL, THOUSAND)
-plot_numeric_bar(number_of_x, number_of_x$user_retweet_sum, "retweets", SA_SUFFIX, NULL, THOUSAND)
-
-plot_numeric_bar(covid_number_of_x, covid_number_of_x$user_retweet_sum, "retweets", SA_SUFFIX, COVID, THOUSAND)
-```
-```{r plot Global numerical analysis}
-plot_numeric_bar(global_number_of_x, global_number_of_x$followers_count, "followers", GLOBAL_SUFFIX, NULL, MILLION)
-plot_numeric_bar(global_number_of_x, global_number_of_x$tweets_count, "tweets", GLOBAL_SUFFIX, NULL, THOUSAND)
-plot_numeric_bar(global_number_of_x, global_number_of_x$user_retweet_sum, "retweets", GLOBAL_SUFFIX, NULL, MILLION)
-
-plot_numeric_bar(covid_global_number_of_x, covid_global_number_of_x$user_retweet_sum, "retweets", GLOBAL_SUFFIX, COVID, THOUSAND)
-```
-
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!--------------------------------------------------------------------  H E R E   --------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- TODO:  @JOHANNA below here are the individual graphs (above I condensed it) - could you please have a look to see whether we can group the graphs? -->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
-```{r}
-# https://stackoverflow.com/questions/29131976/multiple-series-barplot
-library(reshape2)
-number_of_x_melted = melt(number_of_x, id.vars=c("name"))
-
-ggplot(number_of_x_melted, aes(name, value, fill=variable)) +
-  geom_bar(stat='Identity',position=position_dodge()) +
-  labs(title = "Number of...",
-       subtitle = SA_SUFFIX,
-       x=NULL,
-       y=NULL) +
-  scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
-  scale_fill_manual(values = ms_colors) +
-  custom_column_basic_theme() +
-  theme(legend.position = "right")
-```
-
-```{r plot followers per media outlet}
-ggplot(number_of_x, aes(name, followers_count, fill=name)) +
-  geom_col() +
-  labs(title = "Number of followers per media outlet",
-       subtitle = SA_SUFFIX,
-       x=NULL,
-       y=NULL) +
-  scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
-  scale_fill_manual(values = ms_colors) +
-  custom_column_basic_theme()
-```
-
-```{r plot tweets per media outlet}
-ggplot(number_of_x, aes(name, tweets_count, fill=name)) +
-  geom_col() +
-  labs(title = "Number of tweets per media outlet",
-       subtitle = SA_SUFFIX,
-       x=NULL,
-       y=NULL) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-  scale_fill_manual(values = ms_colors) +
-  custom_column_basic_theme()
-```
-```{r plot retweets of users per media outlet}
-ggplot(number_of_x, aes(name, user_retweet_sum, fill=name)) +
-  geom_col() +
-  labs(title = "Number of retweets per media outlet",
-       subtitle = SA_SUFFIX,
-       x=NULL,
-       y=NULL) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-  scale_fill_manual(values = ms_colors) +
-  custom_column_basic_theme()
-```
-
-
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Data Visualisation (Global)-->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
-```{r plot global followers per media outlet}
-ggplot(global_number_of_x, aes(name, followers_count, fill=name)) +
-  geom_col() +
-  labs(title = "Number of followers per media outlet",
-       subtitle = GLOBAL_SUFFIX,
-       x=NULL,
-       y=NULL) +
-  scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
-  scale_fill_manual(values = rev(ms_colors))  +
-  custom_column_basic_theme()
-```
-
-```{r plot global tweets per media outlet}
-ggplot(global_number_of_x, aes(name, tweets_count, fill=name)) +
-  geom_col() +
-  labs(title = "Number of tweets per media outlet",
-       subtitle = GLOBAL_SUFFIX,
-       x=NULL,
-       y=NULL) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-  scale_fill_manual(values = rev(ms_colors)) +
-  custom_column_basic_theme()
-```
-```{r plot global retweets of users per media outlet}
-ggplot(global_number_of_x, aes(name, user_retweet_sum, fill=name)) +
-  geom_col() +
-  labs(title = "Number of retweets per media outlet",
-       subtitle = GLOBAL_SUFFIX,
-       x=NULL,
-       y=NULL) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-  scale_fill_manual(values = rev(ms_colors)) +
-  custom_column_basic_theme()
+plot_followers(number_of_x, SA_SUFFIX, NULL)
+plot_followers(global_number_of_x, GLOBAL_SUFFIX, NULL)
 ```
