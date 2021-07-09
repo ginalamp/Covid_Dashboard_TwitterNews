@@ -353,7 +353,6 @@ plot_sentiment_bar <- function(average, top_retweeted, top_favourited, suffix) {
            x=NULL,
            y="Vader Sentiment Score") +
       scale_fill_manual(values = plot_colors, labels = legend_labels, name = "Average sentiment") +
-      scale_y_continuous(breaks = seq(-0.4, 0.2, by = 0.05)) +
       custom_column_basic_theme()
 }
 
