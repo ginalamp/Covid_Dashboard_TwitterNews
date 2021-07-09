@@ -542,7 +542,7 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
 
 ```{r}
 # South Africa
-nr_of_topics <- 4 # chosen based on ldatuning
+nr_of_topics <- 6 # chosen based on ldatuning
 plot_overall_topics(tidy_tweets_SA, nr_of_topics, SA_SUFFIX)
 plot_overall_topics(tidy_tweets_govZA, nr_of_topics, SA_GOV_SUFFIX)
 # Global
@@ -563,11 +563,11 @@ nr_of_topics <- 4 # chosen based on ldatuning
 plot_topics_of_month(tidy_tweets_SA, "2021-02-01", nr_of_topics, SA_SUFFIX)
 nr_of_topics <- 6 # chosen based on ldatuning
 plot_topics_of_month(tidy_tweets_SA, "2021-03-01", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 4 # chosen based on ldatuning
+nr_of_topics <- 5 # chosen based on ldatuning
 plot_topics_of_month(tidy_tweets_SA, "2021-04-01", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 4 # chosen based on ldatuning
+nr_of_topics <- 5 # chosen based on ldatuning
 plot_topics_of_month(tidy_tweets_SA, "2021-05-01", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 6 # chosen based on ldatuning 5 or 6
+nr_of_topics <- 6 # chosen based on ldatuning 4, 5 or 6
 plot_topics_of_month(tidy_tweets_SA, "2021-06-01", nr_of_topics, SA_SUFFIX)
 ```
 
@@ -577,7 +577,7 @@ plot_topics_of_month(tidy_tweets_SA, "2021-06-01", nr_of_topics, SA_SUFFIX)
 
 # TODO: optimise somehow - for loop doesn't plot...?
 
-nr_of_topics <- 4 # chosen based on ldatuning
+nr_of_topics <- 6 # chosen based on ldatuning
 plot_topics_of_month(tidy_tweets_global, "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)
 nr_of_topics <- 4 # chosen based on ldatuning
 plot_topics_of_month(tidy_tweets_global, "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
@@ -625,9 +625,9 @@ nr_of_topics <- 3
 #  print(outlet)
 #  plot_topics_of_org(tidy_tweets_global, outlet, nr_of_topics)
 #}
-nr_of_topics <- 3 # chosen based on ldatuning
+nr_of_topics <- 5 # chosen based on ldatuning
 plot_topics_of_org(tidy_tweets_global, "The New York Times", nr_of_topics, GLOBAL_SUFFIX) # TODO: still has overlapping x labels
-nr_of_topics <- 3 # chosen based on ldatuning 4 or 7
+nr_of_topics <- 4 # chosen based on ldatuning 4 or 7
 plot_topics_of_org(tidy_tweets_global, "The Economist", nr_of_topics, GLOBAL_SUFFIX)
 nr_of_topics <- 5 # chosen based on ldatuning
 plot_topics_of_org(tidy_tweets_global, "BBC News (World)", nr_of_topics, GLOBAL_SUFFIX)
