@@ -36,10 +36,10 @@ custom_column_basic_theme <- function () {
         theme(
             panel.background  = element_blank(),
             panel.grid.minor = element_blank(),
-            legend.title = element_blank(), # no legend title
             plot.title = element_text(size = 12, hjust = 0),
             plot.subtitle = element_text(size = 10, hjust = 0),
-            axis.title.y = element_text(size = 10)
+            axis.title.y = element_text(size = 10),
+            axis.text.x = element_text(size = 7)
         )
 }
 
@@ -62,6 +62,7 @@ library(tidytext)
 library(lubridate) # date conversion
 library(RcppRoll) # rolling average
 library(ggplot2)
+library(reshape2) # combine dataframes for multibar plot
 # plot table
 library(gridExtra)
 library(grid)
@@ -291,33 +292,7 @@ total_overall_sentiment
 global_total_overall_sentiment
 ```
 
-```{r bar plot function template}
-plot_sentiment_bar <- function(df, plot_col, title, suffix) {
-  # set x-axis media outlet names to plot
-  x_axis <- name
-  if (suffix == GLOBAL_SUFFIX) {
-    x_axis <- global_name
-  }
-  
-  # set plot colors
-  plot_colors <- ms_colors
-  if (suffix == GLOBAL_SUFFIX) {
-    plot_colors <- rev(ms_colors)
-  }
-  
-  # plot
-  ggplot(df, aes(x_axis, plot_col, fill=x_axis)) +
-    geom_col() +
-    labs(title = title,
-         subtitle = suffix,
-         x=NULL,
-         y="Vader Sentiment Score") +
-    scale_fill_manual(values = plot_colors) +
-    custom_column_basic_theme()
-}
-```
-
-```{r line plot function template - sentiment over time per media outlet}
+```{r plot sentiment over time per media outlet}
 plot_sentiment_line <- function(df, suffix) {
   # set plot colors
   plot_colors <- ms_colors
@@ -338,82 +313,52 @@ plot_sentiment_line <- function(df, suffix) {
     scale_y_continuous(breaks = seq(-0.4, 0.4, by = 0.1)) +
     custom_line_basic_theme()
 }
+
+plot_sentiment_line(tidy_tweets, SA_SUFFIX)
+plot_sentiment_line(global_tidy_tweets, GLOBAL_SUFFIX)
 ```
 
 
-
 ```{r}
-
-```
-
-```{r}
-f <- function(suffix) {
-  if (suffix == SA_SUFFIX) {
-    # condense df such that multiple series bar plot can be plotted
-    sentiment_merged <- merge(overall_sentiment_per_outlet, top_retweets_sentiment_per_outlet, by = "name")
-    sentiment_merged <- merge(sentiment_merged, top_favourited_sentiment_per_outlet, by="name")
-    sentiment_melted <- melt(sentiment_merged %>% 
-                               select(name, sentiment_mean_per_outlet, top_retweets_sentiment_mean, top_favourited_sentiment_mean), id.vars=c("name"))
-    # set plot colors
+plot_sentiment_bar <- function(average, top_retweeted, top_favourited, suffix) {
+    # set plot colors and labels
     plot_colors <- ms_colors
-  } else {
-    colnames(global_overall_sentiment_per_outlet)[1] <- "name"
-    colnames(global_top_retweets_sentiment_per_outlet)[1] <- "name"
-    colnames(global_top_favourited_sentiment_per_outlet)[1] <- "name"
+    legend_labels = c("Overall", "Top 10 Retweets", "Top 10 Favourited Tweets")
+    
+    if (suffix == GLOBAL_SUFFIX) {
+      # rename global_name -> name
+      colnames(average)[1] <- "name"
+      colnames(top_retweeted)[1] <- "name"
+      colnames(top_favourited)[1] <- "name"
+      # set global plot colors
+      plot_colors <- rev(ms_colors)
+    }
+    
     # condense df such that multiple series bar plot can be plotted
-    sentiment_merged <- merge(global_overall_sentiment_per_outlet, global_top_retweets_sentiment_per_outlet, by = "name")
-    sentiment_merged <- merge(sentiment_merged, global_top_favourited_sentiment_per_outlet, by="name")
-    head(sentiment_merged)
-    sentiment_melted <- melt(sentiment_merged %>% 
+    sentiment_merged <- merge(average, top_retweeted, by = "name")
+    sentiment_merged <- merge(sentiment_merged, top_favourited, by="name")
+    if (suffix == SA_SUFFIX) {
+      sentiment_melted <- melt(sentiment_merged %>%
+                                 select(name, sentiment_mean_per_outlet, top_retweets_sentiment_mean, top_favourited_sentiment_mean), id.vars=c("name"))
+    } else {
+        sentiment_melted <- melt(sentiment_merged %>%
                                select(name, global_sentiment_mean_per_outlet, global_top_retweets_sentiment_mean, global_top_favourited_sentiment_mean), id.vars=c("name"))
-    # set plot colors
-    plot_colors <- rev(ms_colors)
-  }
-  
-  # plot
+    }
+
+  # # plot
   ggplot(sentiment_melted, aes(name, value, fill=variable)) +
     geom_bar(stat='Identity', position=position_dodge()) +
-      labs(title = "title",
+      labs(title = "Sentiment comparison per media outlet",
            subtitle = suffix,
            x=NULL,
            y="Vader Sentiment Score") +
-      scale_fill_manual(values = plot_colors) +
+      scale_fill_manual(values = plot_colors, labels = legend_labels, name = "Average sentiment") +
+      scale_y_continuous(breaks = seq(-0.4, 0.2, by = 0.05)) +
       custom_column_basic_theme()
 }
-f(SA_SUFFIX)
-f(GLOBAL_SUFFIX)
+
+plot_sentiment_bar(overall_sentiment_per_outlet, top_retweets_sentiment_per_outlet, top_favourited_sentiment_per_outlet, SA_SUFFIX)
+plot_sentiment_bar(global_overall_sentiment_per_outlet, global_top_retweets_sentiment_per_outlet, global_top_favourited_sentiment_per_outlet, GLOBAL_SUFFIX)
 ```
 
-```{r}
-# condense df such that multiple series bar plot can be plotted
-sentiment_merged <- merge(overall_sentiment_per_outlet, top_retweets_sentiment_per_outlet, by = "name")
-sentiment_merged <- merge(sentiment_merged, top_favourited_sentiment_per_outlet, by="name")
-sentiment_melted <- melt(sentiment_merged %>% 
-                           select(name, sentiment_mean_per_outlet, top_retweets_sentiment_mean, top_favourited_sentiment_mean), id.vars=c("name"))
-# set plot colors
-plot_colors <- ms_colors
-
-# plot
-ggplot(sentiment_melted, aes(name, value, fill=variable)) +
-  geom_bar(stat='Identity', position=position_dodge()) +
-    labs(title = "title",
-         subtitle = SA_SUFFIX,
-         x=NULL,
-         y="Vader Sentiment Score") +
-    scale_fill_manual(values = plot_colors) +
-    custom_column_basic_theme()
-```
-
-```{r plot South African sentiment analysis}
-plot_sentiment_bar(overall_sentiment_per_outlet, sentiment_mean_per_outlet, "Average sentiment per media outlet", SA_SUFFIX)
-plot_sentiment_bar(top_retweets_sentiment_per_outlet, top_retweets_sentiment_mean, paste("Sentiment of Top", NUM_TWEETS, "retweeted tweets per media outlet"), SA_SUFFIX)
-plot_sentiment_bar(top_favourited_sentiment_per_outlet, top_favourited_sentiment_mean, paste("Sentiment of Top", NUM_TWEETS, "favourited tweets per media outlet"), SA_SUFFIX)
-plot_sentiment_line(tidy_tweets, SA_SUFFIX)
-```
-```{r plot Global sentiment analysis}
-plot_sentiment_bar(global_overall_sentiment_per_outlet, global_sentiment_mean_per_outlet, "Average sentiment per media outlet", GLOBAL_SUFFIX)
-plot_sentiment_bar(global_top_retweets_sentiment_per_outlet, global_top_retweets_sentiment_mean, paste("Sentiment of Top", NUM_TWEETS, "retweeted tweets per media outlet"), GLOBAL_SUFFIX)
-plot_sentiment_bar(global_top_favourited_sentiment_per_outlet, global_top_favourited_sentiment_mean, paste("Sentiment of Top", NUM_TWEETS, "favourited tweets per media outlet"), GLOBAL_SUFFIX)
-plot_sentiment_line(global_tidy_tweets, GLOBAL_SUFFIX)
-```
 
