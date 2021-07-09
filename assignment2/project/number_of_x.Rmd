@@ -12,57 +12,30 @@ output: html_notebook
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 ```{r set colours}
-# Microsoft Sharepoint main colours
-# https://docs.microsoft.com/en-us/sharepoint/dev/design/themes-colors
-ms_red <- "#A4262C"
-ms_orange <- "#CA5010"
-ms_gold <- "#8F7034"
-ms_green <- "#407855"
-ms_teal <- "#038387"
-ms_blue <- "#0078d4"
-ms_darkblue <- "#40587C"
-ms_indigo <- "#4052AB"
-ms_plum <- "#854085"
-ms_purple <- "#8764B8"
-ms_coolgrey <- "#737373"
-ms_warmgrey <- "#867365"
-
-ms_colors <- c(ms_darkblue, ms_red, ms_orange, ms_teal, ms_gold, ms_coolgrey, ms_purple, ms_warmgrey, ms_green, ms_blue, ms_indigo, ms_plum)
-
-# colour picker: http://tristen.ca/hcl-picker/#/hlc/10/1.02/EBB350/48231C
-color_picker<- c("#EBB350", "#ABB14C", "#6EA85F", "#3A9976", "#248686", "#3F6F85", "#585674", "#623F57", "#5B2E37", "#48231C")
-
 # palette generator: https://learnui.design/tools/data-color-picker.html#palette
-palette_generator <- c("#003f5c", "#665191", "#d45087", "#ff7c43", "#ffa600")
+table_palette <- c("#6996b3", "#abd2ec", "#c1e7ff")
 ```
 
 ```{r custom themes}
-custom_column_basic_theme <- function () { 
-    theme_minimal(base_size=12, base_family="Avenir") +
-        theme(
-            panel.background  = element_blank(),
-            panel.grid.minor = element_blank(),
-            legend.title = element_blank(), # no legend
-            plot.title = element_text(size = 12, hjust = 0),
-            plot.subtitle = element_text(size = 10, hjust = 0),
-            axis.title.y = element_text(size = 10)
-        )
-}
+custom_table_theme <- ttheme_default(
+  core = list(fg_params=list(hjust = 1.05, x=1),
+              bg_params=list(fill=c(table_palette[2], table_palette[3]))), # Alternate the row fill colours
+  colhead = list(bg_params=list(fill=table_palette[1]))
+ )
 ```
 
 ```{r import libraries}
 library(tidyverse)
 library(scales)
 library(ggplot2)
-library(reshape2) # create multiple seties bar plot
+# plot table
+library(gridExtra)
+library(grid)
+library(data.table)
 ```
 
 ```{r global (static) variables}
-SA_SUFFIX <- "South Africa"
-GLOBAL_SUFFIX <- "Global"
-SA_GOV_SUFFIX <- "SA Government"
 NUM_TWEETS <- 10 # number of (retweeted/favourited) tweets to be extracted
-COVID <- "(Covid tweets)"
 ```
 
 ```{r extract relevant data from read in csv}
@@ -167,61 +140,26 @@ head(global_top_favourited)
 ```
 
 
+
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Visualisation (South African)-->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-```{r plot number of tweets and retweets per media outlet}
-plot_re_tweets <- function(df, title_suffix, covid_note) {
-  # condense df such that multiple series bar plot can be plotted
-  number_of_x_melted = melt(df %>% select(name, tweets_count, retweet_count), id.vars=c("name"))
-  
-  # set plot colors
-  plot_colors <- c(ms_teal, ms_plum, ms_orange, ms_blue)
-  if (title_suffix == GLOBAL_SUFFIX) {
-    plot_colors <- rev(plot_colors)
-  }
-  
-  ggplot(number_of_x_melted, aes(name, value, fill=variable)) +
-    geom_bar(stat='Identity', position=position_dodge()) +
-    labs(title = paste("Number of tweets and retweets per media outlet", covid_note),
-         subtitle = title_suffix,
-         x=NULL,
-         y=NULL) +
-    scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
-    scale_fill_manual(values = rev(plot_colors)) +
-    custom_column_basic_theme() +
-    theme(legend.position = "right") +
-    custom_column_basic_theme()
-}
-```
-```{r}
-plot_re_tweets(number_of_x, SA_SUFFIX, NULL)
-plot_re_tweets(global_number_of_x, GLOBAL_SUFFIX, NULL)
-```
+```{r plot tables of dataframes}
+# add covid columns to df for table plot
+number_of_x$covid_tweets <- covid_number_of_x$tweets_count
+number_of_x$covid_retweets <- covid_number_of_x$retweet_count
+global_number_of_x$covid_tweets <- covid_global_number_of_x$tweets_count
+global_number_of_x$covid_retweets <- covid_global_number_of_x$retweet_count
 
+# set column names for table plotting
+new_colnames <-c("Media outlet", "Followers", "Tweets", "Retweets", "Covid Tweets", "Covid Retweets")
+setnames(number_of_x, old = names(number_of_x), new = new_colnames)
+setnames(global_number_of_x, old = names(global_number_of_x), new = new_colnames)
 
-
-```{r plot number of followers per media outlet}
-plot_followers <- function(df, title_suffix, covid_note) {
-  # set plot colors
-  plot_colors <- ms_colors
-  if (title_suffix == GLOBAL_SUFFIX) {
-    plot_colors <- rev(ms_colors)
-  }
-  
-  # plot
-  ggplot(df, aes(name, followers_count, fill=name)) +
-    geom_col() +
-    labs(title = paste("Number of followers per media outlet", covid_note),
-         subtitle = title_suffix,
-         x=NULL,
-         y=NULL) +
-    scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
-    scale_fill_manual(values = plot_colors) +
-    custom_column_basic_theme()
-}
-
-plot_followers(number_of_x, SA_SUFFIX, NULL)
-plot_followers(global_number_of_x, GLOBAL_SUFFIX, NULL)
+# plot tables
+grid.newpage()
+grid.draw(tableGrob(format(number_of_x, big.mark=","), theme=custom_table_theme, rows=NULL))
+grid.newpage()
+grid.draw(tableGrob(format(global_number_of_x, big.mark=","), theme=custom_table_theme, rows=NULL))
 ```
