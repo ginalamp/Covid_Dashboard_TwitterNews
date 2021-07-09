@@ -32,7 +32,7 @@ black <- "#000000"
 
 su_colors <- c(arts_orange, law_winered, theology_purple, education_darkblue, agri_green, med_bluegreen, military_salmon, science_red, ems_lightblue, engineering_yellow, maroon, mustard, darkgrey, lightgrey, black)
 
-# microsoft sharepoint main colours
+# Microsoft Sharepoint main colours
 # https://docs.microsoft.com/en-us/sharepoint/dev/design/themes-colors
 ms_red <- "#A4262C"
 ms_orange <- "#CA5010"
@@ -47,8 +47,6 @@ ms_purple <- "#8764B8"
 ms_coolgrey <- "#737373"
 ms_warmgrey <- "#867365"
 
-# ms_colors <- c(ms_red, ms_orange, ms_gold, ms_green, ms_teal, ms_blue, ms_darkblue, ms_indigo, ms_plum, ms_purple, ms_coolgrey, ms_warmgrey)
-# ms_colors <- c(ms_darkblue, ms_red, ms_orange, ms_teal, ms_green, ms_blue, ms_indigo, ms_plum)
 ms_colors <- c(ms_darkblue, ms_red, ms_orange, ms_teal, ms_gold, ms_coolgrey, ms_purple, ms_warmgrey, ms_green, ms_blue, ms_indigo, ms_plum)
 
 # colour picker: http://tristen.ca/hcl-picker/#/hlc/10/1.02/EBB350/48231C
