@@ -39,7 +39,7 @@ custom_column_basic_theme <- function () {
             plot.title = element_text(size = 12, hjust = 0),
             plot.subtitle = element_text(size = 10, hjust = 0),
             axis.title.y = element_text(size = 10),
-            axis.text.x = element_text(size = 7)
+            axis.text.x = element_text(size = 8)
         )
 }
 
@@ -319,7 +319,7 @@ plot_sentiment_line(global_tidy_tweets, GLOBAL_SUFFIX)
 ```
 
 
-```{r}
+```{r fig.width=8}
 plot_sentiment_bar <- function(average, top_retweeted, top_favourited, suffix) {
     # set plot colors and labels
     plot_colors <- ms_colors
