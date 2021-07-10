@@ -6,8 +6,8 @@ output: html_notebook
 ## adapted from TidyTextMining Ch 6
 
 # TODO
-* Try change plotting to loop maybe - changing the date?
-* TODO: (nice to have) update report graphs with new x-axis title size
+* Remove SA gov code (data read in and usage)
+* (nice to have) update report graphs with new x-axis title size
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
@@ -66,8 +66,8 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 library(ggplot2)
-library(topicmodels) # NOTE: (Gina) for Ubuntu need to install gsl package first with sudo apt-get install libgsl0-dev
-library(ldatuning) # NOTE: (Gina) for Ubuntu needed to install (gmp package first with sudo apt-get install libgmp-dev) and (Rmpfr package with sudo apt-get install libmpfr-dev)
+library(topicmodels)
+library(ldatuning)
 library(reshape2)
 library(vader) # sentiment analysis
 ```
@@ -77,7 +77,7 @@ TUNING <- FALSE # NOTE: set to TRUE to run ldatuning
 
 # LDA tuning number of topic variables
 NUM_TOPICS_3 <- 3
-NUM_TOPICS_4 <- 4 # all outlet for month
+NUM_TOPICS_4 <- 4 # all outlet topics per month have this number of topics
 NUM_TOPICS_5 <- 5
 NUM_TOPICS_6 <- 6
 
@@ -100,7 +100,7 @@ GLOBAL_OUTLETS_TO_PLOT <- c(NYT_NAME, ECON_NAME, BBC_NAME, AP_NAME)
 # plotting variables
 SA_SUFFIX <- "South Africa"
 GLOBAL_SUFFIX <- "Global"
-SA_GOV_SUFFIX <- "SA Government"
+SA_GOV_SUFFIX <- "SA Government" # TODO: remove
 MONTHS_TO_PLOT <- seq(as.Date("2021/1/1"), by = "month", length.out = 6)
 MONTH_LIST <- c("2021-01-01", "2021-02-01", "2021-03-01", "2021-04-01", "2021-05-01", "2021-06-01")
 ```
@@ -125,7 +125,7 @@ SA_media_outlet_list <- list(DailyMav_tweets, SABCNews_tweets, EWN_tweets, News2
 head(SA_media_outlet_list)
 
 # SA government
-govZA_tweets <- extract_relevant_data(read.csv("data/governmentza.csv"))
+govZA_tweets <- extract_relevant_data(read.csv("data/governmentza.csv")) # TODO: remove
 
 # Global
 nyTimes_tweets <- extract_relevant_data(read.csv("data/nytimes.csv"))
@@ -161,6 +161,7 @@ covid_tweets_SA <- list(get_covid_tweets(DailyMav_tweets),
                         get_covid_tweets(EWN_tweets),
                         get_covid_tweets(News24_tweets))
 
+# TODO: remove
 # SA government relevant (Covid-related) tweets
 relevant_govZA <- get_covid_tweets(govZA_tweets)
 
@@ -206,7 +207,7 @@ clean_tweets <- function(tweets_in) {
 
 tidy_tweets_SA <- clean_tweets(tweets_SA)
 tidy_tweets_global <- clean_tweets(tweets_global)
-tidy_tweets_govZA <- clean_tweets(relevant_govZA)
+tidy_tweets_govZA <- clean_tweets(relevant_govZA) # TODO: remove
 ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -506,7 +507,7 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
 ```{r plot overall topics using selected number of topics (lda tuning)}
 # South Africa
 plot_overall_topics(tidy_tweets_SA, NUM_TOPICS_6, SA_SUFFIX)
-plot_overall_topics(tidy_tweets_govZA, NUM_TOPICS_6, SA_GOV_SUFFIX)
+plot_overall_topics(tidy_tweets_govZA, NUM_TOPICS_6, SA_GOV_SUFFIX) # TODO: remove
 
 # Global
 plot_overall_topics(tidy_tweets_global, NUM_TOPICS_5, GLOBAL_SUFFIX)
