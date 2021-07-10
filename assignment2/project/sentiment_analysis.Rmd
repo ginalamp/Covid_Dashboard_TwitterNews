@@ -231,8 +231,6 @@ get_top_count <- function(df, count_col) {
 ```
 
 ```{r South Africa: get top NUM_TWEETS retweets and favourited tweets}
-# TODO need to plot nicely (as table?)
-
 # Get average sentiment on top NUM_TWEETS retweets
 top_retweets <- lapply(tidy_tweets, function(df) {return(get_top_count(df, df$retweet_count))})
 top_retweets_sentiment_mean <- unlist(lapply(lapply(top_retweets, apply_vader), get_sentiment_mean))
@@ -246,8 +244,6 @@ top_favourited_sentiment_per_outlet <- data.frame(name, top_favourited_sentiment
 head(top_favourited_sentiment_per_outlet)
 ```
 ```{r Global: get top NUM_TWEETS retweets and favourited tweets}
-# TODO need to plot nicely (as table?)
-
 # Get average sentiment on top NUM_TWEETS retweets
 global_top_retweets <- lapply(global_tidy_tweets, function(df) {return(get_top_count(df, df$retweet_count))})
 global_top_retweets_sentiment_mean <- unlist(lapply(lapply(global_top_retweets, apply_vader), get_sentiment_mean))
