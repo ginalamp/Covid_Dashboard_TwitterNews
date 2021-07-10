@@ -16,14 +16,6 @@ output: html_notebook
 table_palette <- c("#6996b3", "#abd2ec", "#c1e7ff")
 ```
 
-```{r custom themes}
-custom_table_theme <- ttheme_default(
-  core = list(fg_params=list(hjust = 1.05, x=1),
-              bg_params=list(fill=c(table_palette[2], table_palette[3]))), # Alternate the row fill colours
-  colhead = list(bg_params=list(fill=table_palette[1]))
- )
-```
-
 ```{r import libraries}
 library(tidyverse)
 library(scales)
@@ -32,6 +24,14 @@ library(ggplot2)
 library(gridExtra)
 library(grid)
 library(data.table)
+```
+
+```{r custom themes}
+custom_table_theme <- ttheme_default(
+  core = list(fg_params=list(hjust = 1.05, x=1),
+              bg_params=list(fill=c(table_palette[2], table_palette[3]))), # Alternate the row fill colours
+  colhead = list(bg_params=list(fill=table_palette[1]))
+ )
 ```
 
 ```{r global (static) variables}
