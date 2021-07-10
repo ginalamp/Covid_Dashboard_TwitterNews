@@ -536,12 +536,10 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
 
 ```{r}
 # South Africa
-nr_of_topics <- 6 # chosen based on ldatuning
-plot_overall_topics(tidy_tweets_SA, nr_of_topics, SA_SUFFIX)
-plot_overall_topics(tidy_tweets_govZA, nr_of_topics, SA_GOV_SUFFIX)
+plot_overall_topics(tidy_tweets_SA, NUM_TOPICS_6, SA_SUFFIX)
+plot_overall_topics(tidy_tweets_govZA, NUM_TOPICS_6, SA_GOV_SUFFIX)
 # Global
-nr_of_topics <- 5 # chosen based on ldatuning
-plot_overall_topics(tidy_tweets_global, nr_of_topics, GLOBAL_SUFFIX)
+plot_overall_topics(tidy_tweets_global, NUM_TOPICS_5, GLOBAL_SUFFIX)
 ```
 
 # Overall Topics for Specific Month
@@ -550,18 +548,12 @@ plot_overall_topics(tidy_tweets_global, nr_of_topics, GLOBAL_SUFFIX)
 # South Africa
 
 # TODO: optimise somehow - for loop doesn't plot...?
-nr_of_topics <- 5 # chosen based on ldatuning
-plot_topics_of_month(tidy_tweets_SA, "2021-01-01", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 4 # chosen based on ldatuning
-plot_topics_of_month(tidy_tweets_SA, "2021-02-01", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 6 # chosen based on ldatuning
-plot_topics_of_month(tidy_tweets_SA, "2021-03-01", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 5 # chosen based on ldatuning
-plot_topics_of_month(tidy_tweets_SA, "2021-04-01", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 5 # chosen based on ldatuning
-plot_topics_of_month(tidy_tweets_SA, "2021-05-01", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 6 # chosen based on ldatuning 4, 5 or 6
-plot_topics_of_month(tidy_tweets_SA, "2021-06-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-01-01", NUM_TOPICS_5, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-02-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-03-01", NUM_TOPICS_6, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-04-01", NUM_TOPICS_5, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-05-01", NUM_TOPICS_5, SA_SUFFIX)
+plot_topics_of_month(tidy_tweets_SA, "2021-06-01", NUM_TOPICS_6, SA_SUFFIX)
 ```
 
 
@@ -570,18 +562,12 @@ plot_topics_of_month(tidy_tweets_SA, "2021-06-01", nr_of_topics, SA_SUFFIX)
 
 # TODO: optimise somehow - for loop doesn't plot...?
 
-nr_of_topics <- 6 # chosen based on ldatuning
-plot_topics_of_month(tidy_tweets_global, "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)
-nr_of_topics <- 4 # chosen based on ldatuning
-plot_topics_of_month(tidy_tweets_global, "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
-nr_of_topics <- 4 # chosen based on ldatuning
-plot_topics_of_month(tidy_tweets_global, "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
-nr_of_topics <- 6 # chosen based on ldatuning
-plot_topics_of_month(tidy_tweets_global, "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)
-nr_of_topics <- 4 # chosen based on ldatuning 4 or 7
-plot_topics_of_month(tidy_tweets_global, "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
-nr_of_topics <- 4 # chosen based on ldatuning 4 or 7
-plot_topics_of_month(tidy_tweets_global, "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-01-01", NUM_TOPICS_6, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-02-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-03-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-04-01", NUM_TOPICS_6, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-05-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_month(tidy_tweets_global, "2021-06-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
 ```
 
 
@@ -589,42 +575,30 @@ plot_topics_of_month(tidy_tweets_global, "2021-06-01", nr_of_topics, GLOBAL_SUFF
 
 ```{r}
 # South Africa
-nr_of_topics <- 4
-
 # TODO: optimise somehow - for loop doesn't plot...?
 #for (outlet in SA_media_outlets$name) {
 #  print(outlet)
 #  plot_topics_of_org(tidy_tweets_SA, outlet, nr_of_topics)
 #}
 
-nr_of_topics <- 3 # chosen based on ldatuning
-plot_topics_of_org(tidy_tweets_SA, "SABC News", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 3 # chosen based on ldatuning
-plot_topics_of_org(tidy_tweets_SA, "Daily Maverick", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 3 # chosen based on ldatuning
-plot_topics_of_org(tidy_tweets_SA, "Eyewitness News", nr_of_topics, SA_SUFFIX)
-nr_of_topics <- 5 # chosen based on ldatuning
-plot_topics_of_org(tidy_tweets_SA, "News24", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, "SABC News", NUM_TOPICS_3, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, "Daily Maverick", NUM_TOPICS_3, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, "Eyewitness News", NUM_TOPICS_3, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, "News24", NUM_TOPICS_5, SA_SUFFIX)
 ```
 
 ```{r}
 # Global
-
-nr_of_topics <- 3
 
 # TODO: optimise somehow - for loop doesn't plot...?
 #for (outlet in global_media_outlets$name) {
 #  print(outlet)
 #  plot_topics_of_org(tidy_tweets_global, outlet, nr_of_topics)
 #}
-nr_of_topics <- 5 # chosen based on ldatuning
-plot_topics_of_org(tidy_tweets_global, "The New York Times", nr_of_topics, GLOBAL_SUFFIX) # TODO: still has overlapping x labels
-nr_of_topics <- 4 # chosen based on ldatuning 4 or 7
-plot_topics_of_org(tidy_tweets_global, "The Economist", nr_of_topics, GLOBAL_SUFFIX)
-nr_of_topics <- 5 # chosen based on ldatuning
-plot_topics_of_org(tidy_tweets_global, "BBC News (World)", nr_of_topics, GLOBAL_SUFFIX)
-nr_of_topics <- 4 # chosen based on ldatuning
-plot_topics_of_org(tidy_tweets_global, "The Associated Press", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, "The New York Times", NUM_TOPICS_5, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, "The Economist", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, "BBC News (World)", NUM_TOPICS_5, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, "The Associated Press", NUM_TOPICS_4, GLOBAL_SUFFIX)
 ```
 
 # Topics for specific Media Outlet for specific Month
@@ -634,134 +608,110 @@ plot_topics_of_org(tidy_tweets_global, "The Associated Press", nr_of_topics, GLO
 
 # TODO: optimise somehow - for loop doesn't plot...?
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-01-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-01-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-01-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-01-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-01-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-01-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-01-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-01-01", NUM_TOPICS_4, SA_SUFFIX)
 ```
 
 ```{r}
 # South Africa - Feb
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-02-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-02-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-02-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-02-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-02-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-02-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-02-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-02-01", NUM_TOPICS_4, SA_SUFFIX)
 ```
 
 ```{r}
 # South Africa - March
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-03-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-03-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-03-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-03-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-03-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-03-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-03-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-03-01", NUM_TOPICS_4, SA_SUFFIX)
 ```
 
 ```{r}
 # South Africa - April
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-04-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-04-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-04-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-04-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-04-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-04-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-04-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-04-01", NUM_TOPICS_4, SA_SUFFIX)
 ```
 
 ```{r}
 # South Africa - May
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-05-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-05-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-05-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-05-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-05-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-05-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-05-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-05-01", NUM_TOPICS_4, SA_SUFFIX)
 ```
 
 ```{r}
 # South Africa - June
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-06-01", nr_of_topics, SA_SUFFIX)  # TODO: still has overlapping x labels
-plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-06-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-06-01", nr_of_topics, SA_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-06-01", nr_of_topics, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "SABC News", "2021-06-01", NUM_TOPICS_4, SA_SUFFIX)  # TODO: still has overlapping x labels
+plot_topics_of_org_for_month(tidy_tweets_SA, "Daily Maverick", "2021-06-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "Eyewitness News", "2021-06-01", NUM_TOPICS_4, SA_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_SA, "News24", "2021-06-01", NUM_TOPICS_4, SA_SUFFIX)
 ```
 
 ```{r}
 # Global - January
 # TODO: optimise somehow - for loop doesn't plot...?
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)  # TODO: still has overlapping x labels
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-01-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-01-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-01-01", NUM_TOPICS_4, GLOBAL_SUFFIX)  # TODO: still has overlapping x labels
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-01-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-01-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
 ```
 
 ```{r}
 # Global - Feb
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)  # TODO: still has overlapping x labels
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-02-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-02-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-02-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-02-01", NUM_TOPICS_4, GLOBAL_SUFFIX)  # TODO: still has overlapping x labels
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-02-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
 ```
 
 ```{r}
 # Global - March
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-03-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-03-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-03-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-03-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-03-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
 ```
 
 ```{r}
 # Global - April
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-04-01", nr_of_topics, GLOBAL_SUFFIX)  # TODO: still has overlapping x labels
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-04-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-04-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-04-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-04-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
 ```
 
 ```{r}
 # Global - May
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-05-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-05-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-05-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-05-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-05-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
 ```
 
 ```{r}
 # Global - June
 
-nr_of_topics <- 4 # chosen based on ldatuning
-
-plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
-plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-06-01", nr_of_topics, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The New York Times", "2021-06-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Economist", "2021-06-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "BBC News (World)", "2021-06-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org_for_month(tidy_tweets_global, "The Associated Press", "2021-06-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
 ```
 
 ```{r}
