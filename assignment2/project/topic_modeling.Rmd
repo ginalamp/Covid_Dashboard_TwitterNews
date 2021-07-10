@@ -6,9 +6,8 @@ output: html_notebook
 ## adapted from TidyTextMining Ch 6
 
 # TODO
-* set `nr_of_topics` as Global variables
-* sometimes setting `nr_of_topics` but not using it
 * Try change plotting to loop maybe - changing the date?
+* TODO: (nice to have) update report graphs with new x-axis title size
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
@@ -43,6 +42,7 @@ custom_column_basic_theme <- function () {
             plot.title = element_text(size = 12, hjust = 0),
             plot.subtitle = element_text(size = 10, hjust = 0),
             axis.title.y = element_text(size = 10),
+            axis.title.x = element_text(size = 10),
             axis.text.x = element_text(size = 6)
         )
 }
@@ -927,8 +927,15 @@ plot_sentiment_topic_bar <- function(df, plot_row, plot_col, title, suffix) {
   }
   
   fill = plot_row
+  # set fill to month if plotting by month
   if (title == "month") {
     fill = format(plot_row, "%B")
+  }
+  
+  x_axis_title <- NULL
+  # set x-axis title to Topic if plotting by topic
+  if (title == "topic") {
+    x_axis_title <- "Topic"
   }
   
   # plot
@@ -936,7 +943,7 @@ ggplot(df, aes(plot_row, plot_col, fill=fill)) +
   geom_col() +
   labs(title = paste("Average sentiment per", title),
        subtitle = suffix,
-       x=NULL,
+       x=x_axis_title,
        y="Vader Sentiment Score") +
   scale_fill_manual(values = plot_colors) +
   custom_column_basic_theme() + 
