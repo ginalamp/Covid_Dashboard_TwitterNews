@@ -878,7 +878,8 @@ plot_sentiment_topic_outlet_bar <- function(average, jan, june, suffix) {
            x=NULL,
            y="Vader Sentiment Score") +
       scale_fill_manual(values = plot_colors, labels = legend_labels, name = "Average sentiment") +
-      custom_column_basic_theme() + theme(legend.position = "right")
+    custom_column_basic_theme() + 
+    theme(legend.position = "right", axis.text.x = element_text(size = 7.5))
 }
 
 plot_sentiment_topic_outlet_bar(overall_sentiment_per_outlet, overall_sentiment_per_outlet_month_jan, overall_sentiment_per_outlet_month_june, SA_SUFFIX)
