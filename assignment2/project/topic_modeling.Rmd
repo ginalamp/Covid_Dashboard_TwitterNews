@@ -108,6 +108,7 @@ MONTH_LIST <- c("2021-01-01", "2021-02-01", "2021-03-01", "2021-04-01", "2021-05
 
 
 ```{r extract relevant data from read in csv}
+# TODO: update this to only have relevant fields
 extract_relevant_data <- function(df) {
   return(df %>% select(status_id, screen_name, name, location, description, created_at, statuses_count, is_retweet, favorite_count, retweet_count, followers_count, friends_count, text))
 }
@@ -138,7 +139,7 @@ global_media_outlet_list <- list(nyTimes_tweets, economist_tweets, bbcworld_twee
 head(global_media_outlet_list[1])
 ```
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Data Wrangling -->
+<!-- Data Wrangling: Topic modelling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 ```{r extract tweets related to covid and combine covid tweets into a list}
@@ -473,7 +474,7 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Data Visualisation -->
+<!-- Data Visualisation: Topic modelling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 # Overall topics
