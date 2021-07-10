@@ -574,19 +574,19 @@ plot_topics_of_month(tidy_tweets_global, "2021-06-01", NUM_TOPICS_4, GLOBAL_SUFF
 ```{r}
 # South Africa
 
-plot_topics_of_org(tidy_tweets_SA, "SABC News", NUM_TOPICS_3, SA_SUFFIX)
-plot_topics_of_org(tidy_tweets_SA, "Daily Maverick", NUM_TOPICS_3, SA_SUFFIX)
-plot_topics_of_org(tidy_tweets_SA, "Eyewitness News", NUM_TOPICS_3, SA_SUFFIX)
-plot_topics_of_org(tidy_tweets_SA, "News24", NUM_TOPICS_5, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, SABC_NAME, NUM_TOPICS_3, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, DM_NAME, NUM_TOPICS_3, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, EWN_NAME, NUM_TOPICS_3, SA_SUFFIX)
+plot_topics_of_org(tidy_tweets_SA, N24_NAME, NUM_TOPICS_5, SA_SUFFIX)
 ```
 
 ```{r}
 # Global
 
-plot_topics_of_org(tidy_tweets_global, "The New York Times", NUM_TOPICS_5, GLOBAL_SUFFIX)
-plot_topics_of_org(tidy_tweets_global, "The Economist", NUM_TOPICS_4, GLOBAL_SUFFIX)
-plot_topics_of_org(tidy_tweets_global, "BBC News (World)", NUM_TOPICS_5, GLOBAL_SUFFIX)
-plot_topics_of_org(tidy_tweets_global, "The Associated Press", NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, NYT_NAME, NUM_TOPICS_5, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, ECON_NAME, NUM_TOPICS_4, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, BBC_NAME, NUM_TOPICS_5, GLOBAL_SUFFIX)
+plot_topics_of_org(tidy_tweets_global, AP_NAME, NUM_TOPICS_4, GLOBAL_SUFFIX)
 ```
 
 # Topics for specific Media Outlet for specific Month
