@@ -73,7 +73,7 @@ library(vader) # sentiment analysis
 ```
 ```{r global (static) variables}
 TOP_WORDS <- 10 # number of top words to show when plotting topics
-TUNING <- FALSE # controls whether LDA tuning should be performed
+TUNING <- FALSE # NOTE: set to TRUE to run ldatuning
 
 # LDA tuning number of topic variables
 NUM_TOPICS_3 <- 3
@@ -171,9 +171,8 @@ covid_tweets_global <- list(get_covid_tweets(nyTimes_tweets),
                             get_covid_tweets(economist_tweets))
 ```
 
-```{r}
-# combine all tweets into one dataframe
-# Covid-related tweets
+```{r combine covid-related tweets}
+# combine all Covid-related  tweets into one dataframe
 tweets_SA <- bind_rows(covid_tweets_SA)
 tweets_global <- bind_rows(covid_tweets_global)
 ```
@@ -189,18 +188,16 @@ clean_tweets <- function(tweets_in) {
   my_stopwords <- c("covid", "covid19", "corona", "coronavirus", "pandemic", "#sabcnews",
                     "maverick", "amp", "#covid", "#covid19", "#coronavirus",
                     "south", "africa")
-  # remove stopwords
+  # remove stopwords, links, mentions, special characters, and numbers
   tidy_tweets <- tweets_in %>% 
     unnest_tokens(word, text, token = "tweets") %>%
-    filter(!word %in% stop_words$word, # remove normal english stopwords
-           # remove normal english stopwords that would contain ' that was lost by unnesting
-           # eg "ain't" is a stopwords but wouldn't be recognised as such because it was converted to "aint"
-           !word %in% str_remove_all(stop_words$word, "'"), # remove remaining normal stopwords
-           !word %in% my_stopwords, # remove custom stopwords
-           !str_starts(word, "http"), # remove links
-           !str_starts(word, "@"), # remove mentions
-           str_detect(word, "^[a-z#]*$")) %>% # remove special characters
-    mutate(word = gsub("\\d+", "", word)) # remove numbers
+    filter(!word %in% stop_words$word,
+           !word %in% str_remove_all(stop_words$word, "'"), # remove normal english stopwords that would contain ' that was lost by unnesting
+           !word %in% my_stopwords,
+           !str_starts(word, "http"),
+           !str_starts(word, "@"),
+           str_detect(word, "^[a-z#]*$")) %>%
+    mutate(word = gsub("\\d+", "", word))
 
   # change "vaccines" to "vaccine" so it is treated as the same word
   tidy_tweets["word"][tidy_tweets["word"] == "vaccines"] <- "vaccine"
@@ -220,8 +217,8 @@ tidy_tweets_govZA <- clean_tweets(relevant_govZA)
 # topics arg: df containing word, topic and beta (probability that the word occurs in that topic) values
 # words_per_topic: number of top words to get
 top_words_per_topic <- function(topics, words_per_topic) {
-  return(topics%>%
-  group_by(topic) %>% # group words by topic
+  return(topics %>%
+  group_by(topic) %>%
   slice_max(beta, n = words_per_topic) %>% # get most relevant words for that topic
   ungroup() %>%
   arrange(topic, -beta)) # arrange words with decreasing relevance to the topic
@@ -230,8 +227,8 @@ top_words_per_topic <- function(topics, words_per_topic) {
 
 
 ```{r LDA tuning}
-# to find uptimal number of topics to model for given document term matrix
-# taken from: https://cran.r-project.org/web/packages/ldatuning/vignettes/topics.html
+# to find optimal number of topics to model for given document term matrix
+# source: https://cran.r-project.org/web/packages/ldatuning/vignettes/topics.html
 lda_tuning <- function(orgs_dtm) {
   result <- FindTopicsNumber(
       orgs_dtm,
@@ -242,7 +239,7 @@ lda_tuning <- function(orgs_dtm) {
       mc.cores = 2L,
       verbose = TRUE
     )
-  # choose extremum in following plots as optimal number of topics
+  # choose extreme in following plots as optimal number of topics
   FindTopicsNumber_plot(result)
 }
 ```
@@ -258,22 +255,17 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
     ungroup()
   
   # create document term matrix from word count
-  # (treating all tweets from one organisation as one document)
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
   
-  # checking for ideal number of topics
-  # set to TRUE to run ldatuning
+  # checking for ideal number of topics (NOTE: set to TRUE to run ldatuning)
   if (TUNING) {
     lda_tuning(orgs_dtm)
   }
   
-  # apply topic modelling to dtm
-  # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
+  # apply topic modelling to dtm and extract relevant data from LDA output
   orgs_lda <- LDA(orgs_dtm, k = nr_of_topics, control = list(seed = 1234))
-  
-  # extract relevant data from the LDA output: topic, term, beta
-  orgs_topics_overall <- tidy(orgs_lda, matrix = "beta") # beta = probability that a word is in each topic
+  orgs_topics_overall <- tidy(orgs_lda, matrix = "beta")
   
   return(orgs_topics_overall)
 }
@@ -296,14 +288,14 @@ plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
     group_by(topic) %>%
     filter(row_number()<=TOP_WORDS) # force number of terms to be TOP_WORDS per topic
   
-  # plot top terms per topic
+  # plot top terms per topic (sorted by beta relevance)
   top_terms %>%
-    mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
-    ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
+    mutate(term = reorder_within(term, beta, topic)) %>%
+    ggplot(aes(beta, term, fill = factor(topic))) +
     geom_col(show.legend = FALSE) +
     labs(title = paste("Covid-related Topics between Jan-June 2021"),
          subtitle = title_suffix) +
-    facet_wrap(~ topic, scales = "free") + # plot for each topic
+    facet_wrap(~ topic, scales = "free") + # combine plot for each topic
     scale_y_reordered() +
     scale_fill_manual(values = plot_colors) +
     custom_column_basic_theme()
@@ -316,30 +308,23 @@ plot_overall_topics <- function(tidy_tweets_in, nr_of_topics, title_suffix) {
 monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
   # word count by media organisation for specified month
   word_counts <- tidy_tweets_in %>%
-    # create time bins (monthly)
-    mutate(time_floor = floor_date(created_at, unit = "month")) %>%
+    mutate(time_floor = floor_date(created_at, unit = "month")) %>% # create time bins (monthly)
     select(name, word, time_floor) %>%
-    # filter to specified month
     filter(time_floor == as.Date(past_month)) %>%
     count(name, word, sort = TRUE) %>% # count how often each org uses each word
     ungroup()
     
   # create document term matrix from word count
-  # (treating all tweets from one organisation as one document)
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
 
-  # checking for ideal number of topics
-  # set to TRUE to run ldatuning
+  # checking for ideal number of topics (NOTE: set to TRUE to run ldatuning)
   if (TUNING) {
     lda_tuning(orgs_dtm)
   }
   
-  # apply topic modelling to dtm
-  # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
+  # apply topic modelling to dtm and extract relevant data from LDA output
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
-
-  # extract relevant data from the LDA output: topic, term, beta
   orgs_topics_month <- tidy(orgs_lda, matrix = "beta")
   
   return(orgs_topics_month)
@@ -360,18 +345,18 @@ plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics, title_su
 
   # top words per topic
   top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS) %>%
-    mutate(term = reorder_within(term, beta, topic)) %>% # order terms to decreasing relevance
+    mutate(term = reorder_within(term, beta, topic)) %>%
     group_by(topic) %>%
-    filter(row_number()<=TOP_WORDS) # force number of terms to be TOP_WORDS per topic
+    filter(row_number()<=TOP_WORDS)
 
-  # plot top terms per topic
+  # plot top terms per month (sorted by beta relevance)
   top_terms %>%
-    mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
-    ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
+    mutate(term = reorder_within(term, beta, topic)) %>%
+    ggplot(aes(beta, term, fill = factor(topic))) +
     geom_col(show.legend = FALSE) +
     labs(title = paste("Covid-related Topics in", format(as.Date(past_month), "%B")),
          subtitle = title_suffix) +
-    facet_wrap(~ topic, scales = "free") + # plot for each topic
+    facet_wrap(~ topic, scales = "free") + # combine plot for each topic
     scale_y_reordered() +
     scale_fill_manual(values = plot_colors) +
     custom_column_basic_theme()
@@ -381,32 +366,26 @@ plot_topics_of_month <- function(tidy_tweets_in, past_month, nr_topics, title_su
  
 # Topics for Specific Media Outlet
 
-```{r get topics per organisation}
+```{r get topics per media outlet}
 org_topics <- function(tidy_tweets_in, org, nr_topics) {
   # word count for specified media organisation
   word_counts <- tidy_tweets_in %>%
     select(name, word) %>%
-    # filter to specified org
     filter(name == org) %>%
     count(name, word, sort = TRUE) %>% # count how often the org uses each word
     ungroup()
     
-  # create document term matrix
-  # (treating all tweets from one organisation as one document)
+  # create document term matrix from word count
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
   
-  # checking for ideal number of topics
-  # set to TRUE to run ldatuning
+  # checking for ideal number of topics (NOTE: set to TRUE to run ldatuning)
   if (TUNING) {
     lda_tuning(orgs_dtm)
   }
 
-  # apply topic modelling to dtm
-  # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
+  # checking for ideal number of topics (NOTE: set to TRUE to run ldatuning)
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
-
-  # extract relevant data from the LDA output: topic, term, beta
   org_topics <- tidy(orgs_lda, matrix = "beta")
   
   return(org_topics)
@@ -427,18 +406,18 @@ plot_topics_of_org <- function(tidy_tweets_in, org, nr_topics, title_suffix) {
 
   # top words per topic
   top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS) %>%
-    mutate(term = reorder_within(term, beta, topic)) %>% # order terms to decreasing relevance
+    mutate(term = reorder_within(term, beta, topic)) %>%
     group_by(topic) %>%
-    filter(row_number()<=TOP_WORDS) # force number of terms to be TOP_WORDS per topic
+    filter(row_number()<=TOP_WORDS)
 
-  # plot top terms per topic
+  # plot top terms per media outlet (sorted by beta relevance)
   top_terms %>%
-    mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
-    ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
+    mutate(term = reorder_within(term, beta, topic)) %>%
+    ggplot(aes(beta, term, fill = factor(topic))) +
     geom_col(show.legend = FALSE) +
     labs(title = paste("Covid-related Topics by", org),
          subtitle = title_suffix) +
-    facet_wrap(~ topic, scales = "free") + # plot for each topic
+    facet_wrap(~ topic, scales = "free") + # combine plot for each topic
     scale_y_reordered() +
     scale_fill_manual(values = plot_colors) +
     custom_column_basic_theme()
@@ -450,13 +429,11 @@ plot_topics_of_org <- function(tidy_tweets_in, org, nr_topics, title_suffix) {
 
 ```{r get topics per organisation per month}
 monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
-  # word count for specified media organisation
+  # word count for specified media organisation for a specific month
   word_counts <- tidy_tweets_in %>%
     mutate(time_floor = floor_date(created_at, unit = "month")) %>%
     select(name, word, time_floor) %>%
-    # filter to specified org
     filter(name == org) %>%
-    # filter to specified month
     filter(time_floor == as.Date(past_month)) %>%
     count(name, word, sort = TRUE) %>% # count how often the org uses each word
     ungroup()
@@ -466,23 +443,19 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
     return()
   }
     
-  # create document term matrix
-  # (treating all tweets from one organisation as one document)
+  # create document term matrix from word count
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
   
-  # checking for ideal number of topics
-  # set to TRUE to run ldatuning
+  # checking for ideal number of topics (NOTE: set to TRUE to run ldatuning)
   if (TUNING) {
     lda_tuning(orgs_dtm)
   }
 
-  # apply topic modelling to dtm
-  # orgs_lda contains all the LDA output, incl alpha, beta, gamma values, terms, documents, wordassignments etc
+  # checking for ideal number of topics (NOTE: set to TRUE to run ldatuning)
   orgs_lda <- LDA(orgs_dtm, k = nr_topics, control = list(seed = 1234))
-
-  # extract relevant data from the LDA output: topic, term, beta
   topics <- tidy(orgs_lda, matrix = "beta")
+  
   return(topics)
 }
 ```
@@ -505,18 +478,18 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
   
   # top words per topic
   top_terms <- top_words_per_topic(orgs_topics, TOP_WORDS) %>%
-    mutate(term = reorder_within(term, beta, topic)) %>% # order terms to decreasing relevance
+    mutate(term = reorder_within(term, beta, topic)) %>%
     group_by(topic) %>%
     filter(row_number()<=TOP_WORDS) # force number of terms to be TOP_WORDS per topic
 
-  # plot top terms per topic
+  # plot top terms per media outlet per month (sorted by beta relevance)
   top_terms %>%
-    mutate(term = reorder_within(term, beta, topic)) %>% # reorder top terms to decreasing relevance
-    ggplot(aes(beta, term, fill = factor(topic))) + # plot relevance of word for top words
+    mutate(term = reorder_within(term, beta, topic)) %>%
+    ggplot(aes(beta, term, fill = factor(topic))) +
     geom_col(show.legend = FALSE) +
     labs(title = paste("Covid-related Topics by", org, "in", format(as.Date(past_month), "%B")),
          subtitle = title_suffix) +
-    facet_wrap(~ topic, scales = "free") + # plot for each topic
+    facet_wrap(~ topic, scales = "free") + # combine plot for each topic
     scale_y_reordered() +
     scale_fill_manual(values = plot_colors) +
     custom_column_basic_theme()
@@ -530,31 +503,27 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
 
 # Overall topics
 
-```{r}
+```{r plot overall topics using selected number of topics (lda tuning)}
 # South Africa
 plot_overall_topics(tidy_tweets_SA, NUM_TOPICS_6, SA_SUFFIX)
 plot_overall_topics(tidy_tweets_govZA, NUM_TOPICS_6, SA_GOV_SUFFIX)
+
 # Global
 plot_overall_topics(tidy_tweets_global, NUM_TOPICS_5, GLOBAL_SUFFIX)
 ```
 
 # Overall Topics for Specific Month
 
-```{r}
+```{r plot topics per month using selected number of topics (lda tuning)}
 # South Africa
-
 plot_topics_of_month(tidy_tweets_SA, "2021-01-01", NUM_TOPICS_5, SA_SUFFIX)
 plot_topics_of_month(tidy_tweets_SA, "2021-02-01", NUM_TOPICS_4, SA_SUFFIX)
 plot_topics_of_month(tidy_tweets_SA, "2021-03-01", NUM_TOPICS_6, SA_SUFFIX)
 plot_topics_of_month(tidy_tweets_SA, "2021-04-01", NUM_TOPICS_5, SA_SUFFIX)
 plot_topics_of_month(tidy_tweets_SA, "2021-05-01", NUM_TOPICS_5, SA_SUFFIX)
 plot_topics_of_month(tidy_tweets_SA, "2021-06-01", NUM_TOPICS_6, SA_SUFFIX)
-```
 
-
-```{r}
 # Global
-
 plot_topics_of_month(tidy_tweets_global, "2021-01-01", NUM_TOPICS_6, GLOBAL_SUFFIX)
 plot_topics_of_month(tidy_tweets_global, "2021-02-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
 plot_topics_of_month(tidy_tweets_global, "2021-03-01", NUM_TOPICS_4, GLOBAL_SUFFIX)
@@ -566,18 +535,14 @@ plot_topics_of_month(tidy_tweets_global, "2021-06-01", NUM_TOPICS_4, GLOBAL_SUFF
 
 # Topics for Specific Media Outlet
 
-```{r}
+```{r plot topics per media outlet using selected number of topics (lda tuning)}
 # South Africa
-
 plot_topics_of_org(tidy_tweets_SA, SABC_NAME, NUM_TOPICS_3, SA_SUFFIX)
 plot_topics_of_org(tidy_tweets_SA, DM_NAME, NUM_TOPICS_3, SA_SUFFIX)
 plot_topics_of_org(tidy_tweets_SA, EWN_NAME, NUM_TOPICS_3, SA_SUFFIX)
 plot_topics_of_org(tidy_tweets_SA, N24_NAME, NUM_TOPICS_5, SA_SUFFIX)
-```
 
-```{r}
 # Global
-
 plot_topics_of_org(tidy_tweets_global, NYT_NAME, NUM_TOPICS_5, GLOBAL_SUFFIX)
 plot_topics_of_org(tidy_tweets_global, ECON_NAME, NUM_TOPICS_4, GLOBAL_SUFFIX)
 plot_topics_of_org(tidy_tweets_global, BBC_NAME, NUM_TOPICS_5, GLOBAL_SUFFIX)
@@ -586,7 +551,7 @@ plot_topics_of_org(tidy_tweets_global, AP_NAME, NUM_TOPICS_4, GLOBAL_SUFFIX)
 
 # Topics for specific Media Outlet for specific Month
 
-```{r plot topics per outlet per month}
+```{r plot topics per outlet per month using selected number of topics (lda tuning)}
 plot_process_org_per_month <- function(date, suffix) {
   # set plotting variables according to whether it is for SA or Global
   if (suffix == SA_SUFFIX) {
@@ -676,7 +641,7 @@ global_topics_per_outlet_list <- list(
 head(global_topics_per_outlet_list)
 ```
 
-```{r get topics per media outlet per month}
+```{r get topics per media outlet per month (Jan and June)}
 sentiment_org_per_month <- function(date, suffix) {
   # set plotting variables according to whether it is for SA or Global
   if (suffix == SA_SUFFIX) {
@@ -686,8 +651,7 @@ sentiment_org_per_month <- function(date, suffix) {
     outlet_list <- global_media_outlets
     tidy_df <- tidy_tweets_global
   }
-  print(SA_media_outlets)
-  # print(outlet_list)
+  
   # plot
   top_words_per_topic_list <- list()
   i <- 1
@@ -710,8 +674,6 @@ global_topics_per_outlet_month_june <- sentiment_org_per_month("2021-06-01", GLO
 ```
 
 ```{r apply vader sentiment analysis to list of topics on covid tweets}
-# https://towardsdatascience.com/sentimental-analysis-using-vader-a3415fef7664
-# all values greater than zeroes will be considered a positive review and all values less than zero would be considered as a negative review.
 apply_vader <- function(df) {
   return(vader_df(df$term))
 }
