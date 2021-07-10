@@ -326,7 +326,7 @@ ggplot(tweets_global, aes(x = created_at, fill = name)) +
 ```
 
 ```{r}
-colors <- c("Tweets related to Covid" = "blue", "All Tweets" = "red")
+#colors <- c("Tweets related to Covid" = "blue", "All Tweets" = "red")
 # plot govZA tweet freq over time
 ggplot() +
   geom_histogram(govZA_tweets %>% mutate(created_at = as.Date(created_at)), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = TRUE) +
@@ -341,29 +341,33 @@ ggplot() +
 ```{r}
 # plot tweet frequency over time by SA media outlets
 ggplot() +
-  geom_histogram(all_tweets_SA %>% mutate(created_at = as.Date(created_at)) %>% filter(created_at > as.Date("2021-01-01 00:00:00")), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = FALSE) +
-  geom_histogram(tweets_SA, mapping = aes(x = created_at, fill = "Tweets related to Covid"), position = "identity", bins = 30, show.legend = FALSE) +
+  geom_histogram(all_tweets_SA %>% mutate(created_at = as.Date(created_at)) %>% filter(created_at > as.Date("2021-01-01 00:00:00")), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = TRUE) +
+  geom_histogram(tweets_SA, mapping = aes(x = created_at, fill = "Tweets related to Covid"), position = "identity", bins = 30, show.legend = TRUE) +
   scale_y_continuous(limits = c(0, 400)) +
   facet_wrap(~name, ncol = 1) +
-  labs(title = "Frequency of Covid-related Tweets for various SA Media Outlets",
-       x = "2021", y = "Tweet Count", color = "Tweets") +
+  labs(title = "Frequency of Tweets for various SA Media Outlets",
+       x = "2021", y = "Tweet Count", fill = "Tweets") +
     scale_color_manual(values = colors) +
   scale_fill_manual(values = ms_colors) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
-  custom_column_basic_theme()
+  custom_column_basic_theme() +
+  theme(legend.position = "right")
 
 # plot tweet frequency over time by global media outlets
 ggplot() +
-  geom_histogram(all_tweets_global %>% mutate(created_at = as.Date(created_at)) %>% filter(created_at > as.Date("2021-01-01 00:00:00")), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = FALSE) +
-  geom_histogram(tweets_global, mapping = aes(x = created_at, fill = "Tweets related to Covid"), position = "identity", bins = 30, show.legend = FALSE) +
+  geom_histogram(all_tweets_global %>% mutate(created_at = as.Date(created_at)) %>% filter(created_at > as.Date("2021-01-01 00:00:00")), mapping = aes(x = created_at, fill = "All Tweets"), position = "identity", bins = 30, show.legend = TRUE) +
+  geom_histogram(tweets_global, mapping = aes(x = created_at, fill = "Tweets related to Covid"), position = "identity", bins = 30, show.legend = TRUE) +
   scale_y_continuous(limits = c(0, 400)) +
   facet_wrap(~name, ncol = 1) +
-  labs(title = "Frequency of Covid-related Tweets for various Global Media Outlets",
-       x = "2021", y = "Tweet Count", color = "Tweets") +
+  labs(title = "Frequency of Tweets for various Global Media Outlets",
+       x = "2021", y = "Tweet Count", fill = "Tweets") +
     scale_color_manual(values = colors) +
   scale_fill_manual(values = c(ms_orange, ms_green)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
-  custom_column_basic_theme()
+  custom_column_basic_theme() +
+  theme(legend.position = "right")
+```
+
 ```
 
 
