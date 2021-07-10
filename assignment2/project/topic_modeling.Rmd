@@ -68,11 +68,8 @@ library(tidyr)
 library(ggplot2)
 library(topicmodels) # NOTE: (Gina) for Ubuntu need to install gsl package first with sudo apt-get install libgsl0-dev
 library(ldatuning) # NOTE: (Gina) for Ubuntu needed to install (gmp package first with sudo apt-get install libgmp-dev) and (Rmpfr package with sudo apt-get install libmpfr-dev)
-
-# Gina added
-library(reshape2) # threw an error when assigning org_lda for not having this package
+library(reshape2)
 library(vader) # sentiment analysis
-# library(data.table) # use for loops to iterate over months for plotting
 ```
 ```{r global (static) variables}
 TOP_WORDS <- 10 # number of top words to show when plotting topics
@@ -178,9 +175,6 @@ covid_tweets_global <- list(get_covid_tweets(nyTimes_tweets),
 # Covid-related tweets
 tweets_SA <- bind_rows(covid_tweets_SA)
 tweets_global <- bind_rows(covid_tweets_global)
-# all tweets
-all_tweets_SA <- bind_rows(SA_media_outlet_list)
-all_tweets_global <- bind_rows(global_media_outlet_list)
 ```
 
 ```{r media outlets}
