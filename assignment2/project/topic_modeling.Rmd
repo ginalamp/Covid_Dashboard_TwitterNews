@@ -72,6 +72,7 @@ library(ldatuning) # NOTE: (Gina) for Ubuntu needed to install (gmp package firs
 # Gina added
 library(reshape2) # threw an error when assigning org_lda for not having this package
 library(vader) # sentiment analysis
+# library(data.table) # use for loops to iterate over months for plotting
 ```
 ```{r global (static) variables}
 TOP_WORDS <- 10 # number of top words to show when plotting topics
@@ -590,89 +591,30 @@ plot_topics_of_org(tidy_tweets_global, "The Associated Press", NUM_TOPICS_4, GLO
 
 # Topics for specific Media Outlet for specific Month
 
-```{r}
-# South Africa - January
-for (outlet in SA_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_SA, outlet, "2021-01-01", NUM_TOPICS_4, SA_SUFFIX))
+```{r plot topics per outlet per month}
+plot_process_org_per_month <- function(date, suffix) {
+  # set plotting variables according to whether it is for SA or Global
+  if (suffix == SA_SUFFIX) {
+    outlet_list <- SA_media_outlets
+    tidy_df <- tidy_tweets_SA
+  } else {
+    outlet_list <- global_media_outlets
+    tidy_df <- tidy_tweets_global
+  }
+  # plot
+  for (outlet in outlet_list$name) {
+    print(plot_topics_of_org_for_month(tidy_df, outlet, date, NUM_TOPICS_4, suffix))
+  }
+}
+
+# plot outlet topic per month
+month_list <- c("2021-01-01", "2021-02-01", "2021-03-01", "2021-04-01", "2021-05-01", "2021-06-01")
+for (month in month_list) {
+  plot_process_org_per_month(month, SA_SUFFIX)
+  plot_process_org_per_month(month, GLOBAL_SUFFIX)
 }
 ```
 
-```{r}
-# South Africa - February
-for (outlet in SA_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_SA, outlet, "2021-02-01", NUM_TOPICS_4, SA_SUFFIX))
-}
-```
-
-```{r}
-# South Africa - March
-for (outlet in SA_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_SA, outlet, "2021-03-01", NUM_TOPICS_4, SA_SUFFIX))
-}
-```
-
-```{r}
-# South Africa - April
-for (outlet in SA_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_SA, outlet, "2021-04-01", NUM_TOPICS_4, SA_SUFFIX))
-}
-```
-
-```{r}
-# South Africa - May
-for (outlet in SA_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_SA, outlet, "2021-05-01", NUM_TOPICS_4, SA_SUFFIX))
-}
-```
-
-```{r}
-# South Africa - June
-for (outlet in SA_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_SA, outlet, "2021-06-01", NUM_TOPICS_4, SA_SUFFIX))
-}
-```
-
-```{r}
-# Global - January
-for (outlet in global_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_global, outlet, "2021-01-01", NUM_TOPICS_4, GLOBAL_SUFFIX))
-}
-```
-
-```{r}
-# Global - February
-for (outlet in global_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_global, outlet, "2021-02-01", NUM_TOPICS_4, GLOBAL_SUFFIX))
-}
-```
-
-```{r}
-# Global - March
-for (outlet in global_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_global, outlet, "2021-03-01", NUM_TOPICS_4, GLOBAL_SUFFIX))
-}
-```
-
-```{r}
-# Global - April
-for (outlet in global_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_global, outlet, "2021-04-01", NUM_TOPICS_4, GLOBAL_SUFFIX))
-}
-```
-
-```{r}
-# Global - May
-for (outlet in global_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_global, outlet, "2021-05-01", NUM_TOPICS_4, GLOBAL_SUFFIX))
-}
-```
-
-```{r}
-# Global - June
-for (outlet in global_media_outlets$name) {
-  print(plot_topics_of_org_for_month(tidy_tweets_global, outlet, "2021-06-01", NUM_TOPICS_4, GLOBAL_SUFFIX))
-}
-```
 
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
