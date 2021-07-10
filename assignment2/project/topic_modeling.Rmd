@@ -245,6 +245,24 @@ lda_tuning <- function(orgs_dtm) {
 }
 ```
 
+```{r}
+get_topics <- function(word_counts, nr_of_topics) {
+    # create document term matrix from word count
+  orgs_dtm <- word_counts %>%
+    cast_dtm(name, word, n)
+  
+  # checking for ideal number of topics (NOTE: set to TRUE to run ldatuning)
+  if (TUNING) {
+    lda_tuning(orgs_dtm)
+  }
+  
+  # apply topic modelling to dtm and extract relevant data from LDA output
+  orgs_lda <- LDA(orgs_dtm, k = nr_of_topics, control = list(seed = 1234))
+  return(tidy(orgs_lda, matrix = "beta"))
+}
+```
+
+
 # Overall topics
 
 ```{r apply topic modelling to get overall topics}
@@ -255,15 +273,16 @@ overall_topics <- function(tidy_tweets_in, nr_of_topics) {
     count(name, word, sort = TRUE) %>% # count how often each org uses each word
     ungroup()
   
+  # orgs_topics_overall <- get_topics(word_counts, nr_of_topics)
   # create document term matrix from word count
   orgs_dtm <- word_counts %>%
     cast_dtm(name, word, n)
-  
+
   # checking for ideal number of topics (NOTE: set to TRUE to run ldatuning)
   if (TUNING) {
     lda_tuning(orgs_dtm)
   }
-  
+
   # apply topic modelling to dtm and extract relevant data from LDA output
   orgs_lda <- LDA(orgs_dtm, k = nr_of_topics, control = list(seed = 1234))
   orgs_topics_overall <- tidy(orgs_lda, matrix = "beta")
