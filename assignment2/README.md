@@ -42,6 +42,8 @@
 
 # Topic modelling Ubuntu running notes
 * library(topicmodels) # NOTE: (Gina) for Ubuntu need to install gsl package first with sudo apt-get install libgsl0-dev
+*  ^^ sudo apt-get install -y r-cran-slam 
+* ^^  sudo apt-get install -y r-cran-xml2 
 * library(ldatuning) # NOTE: (Gina) for Ubuntu needed to install (gmp package first with sudo apt-get install libgmp-dev) and (Rmpfr package with sudo apt-get install libmpfr-dev)
 * library(reshape2) # threw an error when assigning org_lda for not having this package
 
