@@ -66,8 +66,8 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 library(ggplot2)
-library(topicmodels)
-library(ldatuning)
+library(topicmodels) # topic modelling
+library(ldatuning) # lda tuning for topic modelling
 library(reshape2)
 library(vader) # sentiment analysis
 ```
@@ -481,7 +481,7 @@ plot_topics_of_org_for_month <- function(tidy_tweets_in, org, past_month, nr_top
 
 ```{r plot overall topics using selected number of topics (lda tuning)}
 # South Africa
-plot_overall_topics(tidy_tweets_SA, NUM_TOPICS_6, SA_SUFFIX)
+plot_overall_topics(tidy_tweets_SA, NUM_TOPICS_5, SA_SUFFIX)
 plot_overall_topics(tidy_tweets_govZA, NUM_TOPICS_6, SA_GOV_SUFFIX) # TODO: remove
 
 # Global
