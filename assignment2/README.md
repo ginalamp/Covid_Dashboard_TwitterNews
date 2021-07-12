@@ -1,6 +1,6 @@
-# Assignment 2
+# Assignment 2: Twitter Media Outlet Analysis
 
-[overleaf report](https://www.overleaf.com/read/vsyrhcwznshb)
+For a report on the data analysis done in this repo, you can view our report [here](https://www.overleaf.com/read/vsyrhcwznshb)
 
 ## Usage
 To run this code, simply open the `.Rmd` file you wish to run in RStudio, set your cursor at the top of the file, and select "Run All Chunks below".
