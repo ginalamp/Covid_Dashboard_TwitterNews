@@ -323,7 +323,7 @@ ggplot() +
 
 
 # Top words
-```{r top words per outlet}
+```{r plot top words per outlet}
 grid.newpage()
 grid.table(top_words_SA)
 grid.newpage()
@@ -336,7 +336,6 @@ ggplot(top_words_SA_overall, aes(word, n)) +
   geom_col() +
   labs(title = "Top 20 words overall used by SA Media Outlets") +
   coord_flip() +
-  scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 
 # plot most frequently used words by global Media Outlets in covid-related tweets
@@ -344,22 +343,23 @@ ggplot(top_words_global_overall, aes(word, n)) +
   geom_col() +
   labs(title = "Top 20 words overall used by Global Media Outlets") +
   coord_flip() +
-  scale_fill_manual(values = ms_colors) +
   custom_column_basic_theme()
 ```
 # Top Hashtags
 
-```{r}
+```{r plot top hashtags used overall}
 # plot most frequently used hashtags by SA Media Outlets in covid-related tweets
 ggplot(top_hashtags_SA_overall, aes(word, n)) +
   geom_col() +
   labs(title = "Top hashtags overall used by SA Media Outlets") +
-  coord_flip()
+  coord_flip() +
+  custom_column_basic_theme()
 
 # plot most frequently used hashtags by global Media Outlets in covid-related tweets
 ggplot(top_hashtags_global_overall, aes(word, n)) +
   geom_col() +
   labs(title = "Top hashtags overall used by SA Media Outlets") +
-  coord_flip()
+  coord_flip() +
+  custom_column_basic_theme()
 ```
 
