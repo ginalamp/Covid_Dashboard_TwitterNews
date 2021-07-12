@@ -1,11 +1,8 @@
 ---
-title: "R Notebook"
+title: "Relevant Tweets"
 output: html_notebook
 ---
 
-## adapted from TidyTextMining Ch 7
-
-# TODO: remove code that isn't used in final analysis
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -41,17 +38,6 @@ custom_column_basic_theme <- function () {
             axis.title.y = element_text(size = 10)
         )
 }
-
-custom_line_basic_theme <- function () { 
-    theme_minimal(base_size=12, base_family="Avenir") +
-        theme(
-            panel.background  = element_blank(),
-            panel.grid.minor = element_blank(),
-            plot.title = element_text(size = 12, hjust = 0),
-            plot.subtitle = element_text(size = 10, hjust = 0),
-            axis.title.y = element_text(size = 10)
-        )
-}
 ```
 
 ```{r import libraries}
@@ -79,9 +65,6 @@ EWN_tweets <- extract_relevant_data(read.csv("data/ewnupdates.csv"))
 News24_tweets <- extract_relevant_data(read.csv("data/news24.csv"))
 
 SA_media_outlet_list <- list(DailyMav_tweets, EWN_tweets, News24_tweets, SABCNews_tweets)
-
-# SA government
-govZA_tweets <- extract_relevant_data(read.csv("data/governmentza.csv"))
 
 # Global
 nyTimes_tweets <- extract_relevant_data(read.csv("data/nytimes.csv"))
@@ -116,9 +99,6 @@ covid_tweets_SA <- list(get_covid_tweets(DailyMav_tweets),
                      get_covid_tweets(News24_tweets), 
                      get_covid_tweets(SABCNews_tweets))
 
-# SA government relevant (Covid-related) tweets
-relevant_govZA <- get_covid_tweets(govZA_tweets)
-
 # Global: combine relevant (Covid-related) tweets for all media outlets into list
 covid_tweets_global <- list(get_covid_tweets(nyTimes_tweets), 
                             get_covid_tweets(AP_tweets),
@@ -126,11 +106,11 @@ covid_tweets_global <- list(get_covid_tweets(nyTimes_tweets),
                             get_covid_tweets(economist_tweets))
 ```
 
-```{r}
-# combine all tweets into one dataframe
+```{r combine all tweets into one dataframe}
 # Covid-related tweets
 tweets_SA <- bind_rows(covid_tweets_SA)
 tweets_global <- bind_rows(covid_tweets_global)
+
 # all tweets
 all_tweets_SA <- bind_rows(SA_media_outlet_list)
 all_tweets_global <- bind_rows(global_media_outlet_list)
@@ -140,18 +120,16 @@ all_tweets_global <- bind_rows(global_media_outlet_list)
 clean_tweets <- function(tweets_in) {
   # define custom stopwords
   my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
-  # remove stopwords
+  # remove stopwords, links, mentions, special characters, and numbers
   tidy_tweets <- tweets_in %>% 
     unnest_tokens(word, text, token = "tweets") %>%
-    filter(!word %in% stop_words$word, # remove normal english stopwords
-           # remove normal english stopwords that would contain ' that was lost by unnesting
-           # eg "ain't" is a stopwords but wouldn't be recognised as such because it was converted to "aint"
-           !word %in% str_remove_all(stop_words$word, "'"), # remove remaining normal stopwords
-           !word %in% my_stopwords, # remove custom stopwords
-           !str_starts(word, "http"), # remove links
-           !str_starts(word, "@"), # remove mentions
-           str_detect(word, "^[a-z#]*$")) %>% # remove special characters
-    mutate(word = gsub("\\d+", "", word)) # remove numbers
+    filter(!word %in% stop_words$word,
+           !word %in% str_remove_all(stop_words$word, "'"), # remove normal english stopwords that would contain ' that was lost by unnesting
+           !word %in% my_stopwords,
+           !str_starts(word, "http"),
+           !str_starts(word, "@"),
+           str_detect(word, "^[a-z#]*$")) %>%
+    mutate(word = gsub("\\d+", "", word))
 
   return(tidy_tweets)
 }
@@ -161,18 +139,14 @@ tidy_tweets_global <- clean_tweets(tweets_global)
 ```
 
 # Top words per organisation
-```{r}
-# top n words to consider
-n_words <- 10
-```
 
 ```{r frequency of each word}
 # calculate the frequency by org of each word occuring in given dataframe
 word_frequencies <- function(tidy_df) {
-  frequencies <- tidy_df %>% 
+  frequencies <- tidy_df %>%
   group_by(name) %>% # group by organisation
   count(word, sort = TRUE) %>% # count occurrences of each word
-  left_join(tidy_df %>% 
+  left_join(tidy_df %>%
               group_by(name) %>% # add the word count to the original df
               summarise(total = n())) %>% # add the total number of words used per org
   mutate(freq = n/total) %>% # add frequency of each word occurence (number of times the word occurs divided by the total number of words)
@@ -184,25 +158,21 @@ word_frequency_global <- word_frequencies(tidy_tweets_global)
 ```
 
 
-```{r top n words per organisation}
+```{r get top n words}
+# top n words to consider
+n_words <- 10
+
 top_words <- function(word_frequency_df, n_top_words) {
   # top n words per organisation
   top_n <- word_frequency_df %>%
     group_by(name) %>% # group df by organisation
     slice_max(order_by = freq, n=n_top_words) %>% # extract n_top_words most frequent words used per org
     ungroup
-  
+
   users <- unique(top_n[c("name")]) # names of the orgs
-  
-  # Finding maximum length
-  #ln <- top_n %>%
-  #  group_by(name) %>%
-  #  count()
-  #ln
-  #max_ln <- max(ln$n)
-  
+
   # create dataframe to contain the most frequent words per org
-  top_n_per_org <- data.frame(top_n %>% 
+  top_n_per_org <- data.frame(top_n %>%
                                 filter(name == word_frequency_df$name[1]) %>%
                                 select(word))
   # add a column with the top words for each org
@@ -210,7 +180,7 @@ top_words <- function(word_frequency_df, n_top_words) {
     top_n_of_org <- top_n %>% filter(name == users$name[i]) %>% select(word) # get top words of org
     top_n_per_org[[users$name[i]]] = head(top_n_of_org, n_top_words) # add top words to df
   }
-  
+
   top_n_per_org <- top_n_per_org %>% unnest() %>% head(n_top_words) %>%
     select(!word)
   return(top_n_per_org)
@@ -220,10 +190,6 @@ top_words <- function(word_frequency_df, n_top_words) {
 top_words_SA <- top_words(word_frequency_SA, n_words)
 top_words_global <- top_words(word_frequency_global, n_words)
 ```
-
-
-
-
 
 
 # Top n words overall
@@ -288,8 +254,7 @@ top_hashtags_global_overall <- tail(overall_hashtag_frequency_global, n_top_hash
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 # Comparing Tweet Frequency over Time
-```{r}
-# plot tweet frequency over time by SA media outlet
+```{r plot tweet frequency over time by SA media outlet}
 ggplot(tweets_SA, aes(x = created_at, fill = name)) +
   # group tweets into 36 bins over 6 months -> 6 bins per month -> roughly 5 days
   geom_histogram(position = "identity", bins = 36, show.legend = FALSE) +
@@ -312,26 +277,7 @@ ggplot(tweets_global, aes(x = created_at, fill = name)) +
   custom_column_basic_theme()
 ```
 
-```{r}
-# plot govZA tweet freq over time
-ggplot() +
-  # group tweets into 36 bins over 6 months -> 6 bins per month -> roughly 5 days
-  geom_histogram(govZA_tweets %>% mutate(created_at = as.Date(created_at)), # all tweets
-                 mapping = aes(x = created_at, fill = "All Tweets"), 
-                 position = "identity", bins = 36, show.legend = TRUE) +
-  geom_histogram(relevant_govZA, # covid-related tweets
-                 mapping = aes(x = created_at, fill = "Tweets related to Covid"), 
-                 position = "identity", bins = 36, show.legend = TRUE) +
-  labs(title = "GovZA Tweet Frequency over Time", fill = "Tweets") +
-    scale_color_manual(values = colors) +
-  scale_fill_manual(values = ms_colors) +
-  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
-  custom_column_basic_theme() +
-  theme(legend.position = "right")
-```
-
-```{r}
-# plot tweet frequency over time by SA media outlets
+```{r plot tweet frequency over time by SA media outlets}
 ggplot() +
   # group tweets into 36 bins over 6 months -> 6 bins per month -> roughly 5 days
   geom_histogram(all_tweets_SA %>% mutate(created_at = as.Date(created_at)) %>% # all tweets
@@ -371,15 +317,13 @@ ggplot() +
   custom_column_basic_theme() +
   theme(legend.position = "right")
 ```
-
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
+<!-- Not in report (replaced by Topic Modelling Graphs)-->
+<!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
 
 # Top words
 ```{r top words per outlet}
-# https://stackoverflow.com/questions/31796219/grid-table-and-tablegrob-in-gridextra-package
-# https://cran.r-project.org/web/packages/gridExtra/vignettes/tableGrob.html#faster-tables-an-alternative-grid-function
-
-# plot top words per outlet as table
 grid.newpage()
 grid.table(top_words_SA)
 grid.newpage()
@@ -419,151 +363,3 @@ ggplot(top_hashtags_global_overall, aes(word, n)) +
   coord_flip()
 ```
 
-
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Decided not to use -->
-<!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
-# word usage over time
-
-```{r}
-words_by_time <- tidy_tweets_SA %>%
-  #filter(!str_detect(word, "^@")) %>%
-  # create time bins
-  mutate(time_floor = floor_date(created_at, unit = "week")) %>%
-  # count how often each org uses each word in each bin
-  count(time_floor, name, word) %>%
-  # add column for the total number words used by each org in each time bin
-  group_by(name, time_floor) %>%
-  mutate(time_total = sum(n)) %>%
-  # add column for the total number of times each word was used by each org
-  group_by(name, word) %>%
-  mutate(word_total = sum(n)) %>%
-  ungroup() %>%
-  rename(count = n) %>%
-  # consider only top words
-  filter(word %in% top_words_SA_overall$word)
-```
-
-```{r}
-library(purrr)
-library(broom)
-# create a dataframe with one row for each user-word combination, remaining data as a tibble in the last column
-nested_data <- words_by_time %>%
-  nest(-word, -name) 
-
-# model to determine the change in frequency over time as slopes
-nested_models <- nested_data %>%
-  mutate(models = map(data, ~ glm(cbind(count, time_total) ~ time_floor, ., 
-                                  family = "binomial")))
-
-# extract slopes
-slopes <- nested_models %>%
-  mutate(models = map(models, tidy)) %>%
-  unnest(cols = c(models)) %>%
-  filter(term == "time_floor") %>%
-  mutate(adjusted.p.value = p.adjust(p.value))
-```
-
-```{r}
-# plot change of word usage over time for SABC
-words_by_time %>%
-  inner_join(slopes, by = c("word", "name")) %>%
-  filter(name == "SABC News") %>%
-  ggplot(aes(time_floor, count/time_total, color = word)) +
-  geom_line(size = 1.3) +
-  labs(x = NULL, y = "Word frequency") +
-  # scale_color_manual(values = ms_colors) +
-  custom_line_basic_theme()
-```
-
-
-```{r}
-# plot comparison of word usage over time by orgs
-
-words_by_time_slopes <- words_by_time %>%
-  inner_join(slopes, by = c("word", "name"))
-
-ggplot(words_by_time_slopes, aes(time_floor, count/time_total, color = word)) +
-  geom_line(size = 1.3) +
-  facet_wrap(~name, ncol = 1) +
-  labs(x = NULL, y = "Word frequency") +
-  custom_column_basic_theme()
-```
-
-# hashtag usage over time
-```{r}
-ht_by_time <- tidy_tweets_SA_hashtag %>%
-  # only consider hashtags
-  filter(str_detect(word, "^#")) %>%
-  # create time bins
-  mutate(time_floor = floor_date(created_at, unit = "week")) %>%
-  # count how often each org uses each hashtag in each bin
-  count(time_floor, name, word) %>%
-  # add column for the total number hashtags used by each org in each time bin
-  group_by(name, time_floor) %>%
-  mutate(time_total = sum(n)) %>%
-  # add column for the total number of times each hashtag was used by each org
-  group_by(name, word) %>%
-  mutate(word_total = sum(n)) %>%
-  ungroup() %>%
-  rename(count = n) %>%
-  # consider only top hashtags
-   filter(word_total > 15)
-```
-```{r}
-library(purrr)
-library(broom)
-# create a dataframe with one row for each user-word combination, remaining data as a tibble in the last column
-nested_data <- ht_by_time %>%
-  nest(-word, -name) 
-
-# model to determine the change in frequency over time as slopes
-nested_models <- nested_data %>%
-  mutate(models = map(data, ~ glm(cbind(count, time_total) ~ time_floor, ., 
-                                  family = "binomial")))
-
-# extract slopes
-slopes <- nested_models %>%
-  mutate(models = map(models, tidy)) %>%
-  unnest(cols = c(models)) %>%
-  filter(term == "time_floor") %>%
-  mutate(adjusted.p.value = p.adjust(p.value))
-```
-
-```{r}
-# plot change of hashtag usage over time for SABC
-ht_by_time %>%
-  inner_join(slopes, by = c("word", "name")) %>%
-  filter(name == "SABC News") %>%
-  ggplot(aes(time_floor, count/time_total, color = word)) +
-  geom_line(size = 1.3) +
-  labs(x = NULL, y = "Word frequency") +
-  custom_line_basic_theme()
-```
-
-```{r}
-# plot change of word usage over time for daily maverick
-ht_by_time %>%
-  inner_join(slopes, by = c("word", "name")) %>%
-  filter(name == "Daily Maverick") %>%
-  ggplot(aes(time_floor, count/time_total, color = word)) +
-  geom_line(size = 1.3) +
-  labs(x = NULL, y = "Word frequency") +
-  scale_color_manual(values = ms_colors) +
-  custom_line_basic_theme()
-# NOTE: daily maverick has no frequent hashtags
-```
-
-```{r}
-# plot comparison of word usage over time by orgs
-
-ht_by_time_slopes <- ht_by_time %>%
-  inner_join(slopes, by = c("word", "name"))
-
-ggplot(ht_by_time_slopes, aes(time_floor, count/time_total, color = word)) +
-  geom_line(size = 1.3) +
-  facet_wrap(~name, ncol = 1) +
-  labs(x = NULL, y = "Word frequency") +
-  custom_line_basic_theme()
-```
