@@ -90,9 +90,8 @@ MONTH_LIST <- c("2021-01-01", "2021-02-01", "2021-03-01", "2021-04-01", "2021-05
 
 
 ```{r extract relevant data from read in csv}
-# TODO: update this to only have relevant fields
 extract_relevant_data <- function(df) {
-  return(df %>% select(status_id, screen_name, name, location, description, created_at, statuses_count, is_retweet, favorite_count, retweet_count, followers_count, friends_count, text))
+  return(df %>% select(status_id, name, created_at, text))
 }
 ```
 

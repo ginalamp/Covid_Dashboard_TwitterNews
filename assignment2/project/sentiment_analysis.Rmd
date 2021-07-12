@@ -68,7 +68,6 @@ library(gtable)
 ```{r global (static) variables}
 SA_SUFFIX <- "South Africa"
 GLOBAL_SUFFIX <- "Global"
-SA_GOV_SUFFIX <- "SA Government"
 NUM_TWEETS <- 10 # number of (retweeted/favourited) tweets to be extracted
 ROLLING_AVERAGE_TIME <- 30 # month
 ```
@@ -76,7 +75,7 @@ ROLLING_AVERAGE_TIME <- 30 # month
 
 ```{r extract relevant data from read in csv}
 extract_relevant_data <- function(df) {
-  return(df %>% select(status_id, name, created_at, statuses_count, is_retweet, favorite_count, retweet_count, followers_count, friends_count, text))
+  return(df %>% select(status_id, name, created_at, statuses_count, favorite_count, retweet_count, followers_count, text))
 }
 ```
 
@@ -136,16 +135,16 @@ global_covid_tweets <- list(get_covid_tweets(nytimes_tweets),
 my_stopwords <- c("covid", "covid19", "corona", "coronavirus")
 
 clean_tweets <- function(df) {
-# remove stop words, links, special characters
+# remove stop words, links, mentions, special characters, and numbers
 cleaned_tweets <- df %>%
   unnest_tokens(word, text) %>%
   filter(!word %in% stop_words$word,
          !word %in% my_stopwords,
-         !word %in% str_remove_all(stop_words$word, "'"),
-         !str_starts(word, "http"), # remove links
-         !str_starts(word, "@"), # remove mentions
-         str_detect(word, "^[a-z#]*$")) %>% # remove special characters
-  mutate(word = gsub("\\d+", "", word)) %>% # remove numbers
+         !word %in% str_remove_all(stop_words$word, "'"),   # remove normal english stopwords that would contain ' that was lost by unnesting
+         !str_starts(word, "http"),
+         !str_starts(word, "@"), 
+         str_detect(word, "^[a-z#]*$")) %>%
+  mutate(word = gsub("\\d+", "", word)) %>% 
   # group words back together (creating sentences) according to their twitter_id
   group_by(status_id, name, created_at, retweet_count, favorite_count) %>%
   summarize(text=str_c(word, collapse = " ")) %>%
