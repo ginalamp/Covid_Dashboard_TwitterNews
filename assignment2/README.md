@@ -1,6 +1,6 @@
 # Assignment 2: Twitter Media Outlet Analysis
 
-For a report on the data analysis done in this repo, you can view our report [here](https://www.overleaf.com/read/vsyrhcwznshb)
+For a report on the data analysis done in this repo, you can view our report on Overleaf [here](https://www.overleaf.com/read/vsyrhcwznshb)
 
 ## Usage
 To run this code, simply open the `.Rmd` file you wish to run in RStudio, set your cursor at the top of the file, and select "Run All Chunks below".
@@ -12,6 +12,9 @@ To run this code, simply open the `.Rmd` file you wish to run in RStudio, set yo
 * `topic_modelling`: applies *LDA* topic modelling to the overall tweets and visualises them. Selects the number of topics using *ldatuning*. Applies sentiment analysis on the extracted topics and visualises the results.
 
 ## Extra features
+* Global media outlet analysis
+* General numerical analysis
+* LDA tuning to get the optimal amount of topics per topic modelling analysis
 * Microsoft's SharePoint colour palette is used to visualise the data
 * Functions used to reduce code
 
