@@ -6,7 +6,7 @@ output: html_notebook
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
+# Setup
 ```{r set colours}
 # Microsoft Sharepoint main colours
 # https://docs.microsoft.com/en-us/sharepoint/dev/design/themes-colors
@@ -118,7 +118,8 @@ head(global_media_outlet_list[1])
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Wrangling: Topic modelling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
+# Data Wrangling: Topic Modelling
+## Data Cleaning
 ```{r extract tweets related to covid and combine covid tweets into a list}
 # extract covid tweets function
 get_covid_tweets <- function(df) {
@@ -183,7 +184,7 @@ tidy_tweets_SA <- clean_tweets(tweets_SA)
 tidy_tweets_global <- clean_tweets(tweets_global)
 ```
 
-# Topic Modelling Setup
+## Topic Modelling Setup
 
 ```{r extract top words per topic}
 # topics arg: df containing word, topic and beta (probability that the word occurs in that topic) values
@@ -234,7 +235,7 @@ get_topics <- function(word_counts, nr_topics) {
 ```
 
 
-# Overall topics
+## Overall topics
 
 ```{r apply topic modelling to get overall topics}
 overall_topics <- function(tidy_tweets_in, nr_topics) {
@@ -250,7 +251,7 @@ overall_topics <- function(tidy_tweets_in, nr_topics) {
 }
 ```
  
-# Overall Topics for Specific Month
+## Overall Topics for Specific Month
  
 ```{r apply topic modelling to get topics per month}
 monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
@@ -269,7 +270,7 @@ monthly_topics <- function(tidy_tweets_in, past_month, nr_topics) {
 ```
 
  
-# Topics for Specific Media Outlet
+## Topics for Specific Media Outlet
 
 ```{r apply topic modelling to get topics per media outlet}
 org_topics <- function(tidy_tweets_in, org, nr_topics) {
@@ -287,7 +288,7 @@ org_topics <- function(tidy_tweets_in, org, nr_topics) {
 ```
 
 
-# Topics for specific Media Outlet for specific Month
+## Topics for specific Media Outlet for specific Month
 
 ```{r apply topic modelling to get topics per organisation per month}
 monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
@@ -316,7 +317,9 @@ monthly_org_topics <- function(tidy_tweets_in, org, past_month, nr_topics) {
 <!-- Data Visualisation: Topic modelling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-# Overall topics
+# Data Visualisation: Topic Modelling
+
+## Overall topics
 
 ```{r plot topics}
 plot_overall_topics <- function(tidy_tweets_in, nr_topics, title_suffix) {
@@ -357,7 +360,7 @@ plot_overall_topics(tidy_tweets_SA, NUM_TOPICS_5, SA_SUFFIX)
 plot_overall_topics(tidy_tweets_global, NUM_TOPICS_5, GLOBAL_SUFFIX)
 ```
 
-# Overall Topics for Specific Month
+## Overall Topics for Specific Month
 
 ```{r plot topics per month}
 # past_month being the full date of the first day of that month - eg "2021-06-01" for June
@@ -410,7 +413,7 @@ plot_topics_of_month(tidy_tweets_global, "2021-06-01", NUM_TOPICS_4, GLOBAL_SUFF
 ```
 
 
-# Topics for Specific Media Outlet
+## Topics for Specific Media Outlet
 
 ```{r plot topics per organisation}
 # org being the name of the media agency as found in the tidy_tweets dataframe
@@ -458,7 +461,7 @@ plot_topics_of_org(tidy_tweets_global, BBC_NAME, NUM_TOPICS_5, GLOBAL_SUFFIX)
 plot_topics_of_org(tidy_tweets_global, AP_NAME, NUM_TOPICS_4, GLOBAL_SUFFIX)
 ```
 
-# Topics for specific Media Outlet for specific Month
+## Topics for specific Media Outlet for specific Month
 
 ```{r plot topics per organisation per month}
 # org being the name of the media agency as found in the tidy_tweets dataframe
@@ -525,8 +528,9 @@ for (month in MONTH_LIST) {
 <!-- Data Wrangling: Sentiment per topic -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-# Sentiment per topic: Data Wrangling
+# Data Wrangling: Sentiment per topic
 
+## Get topics into usable format
 ```{r split topics into list of dataframes}
 # split overall topics into a list with each dataframe only containing one topic and the term associated with it
 term_per_topic_list <- top_words_per_topic(overall_topics(tidy_tweets_SA, NUM_TOPICS_5), SENTIMENT_WORDS_PER_TOPIC) %>% 
@@ -539,7 +543,6 @@ global_term_per_topic_list <- top_words_per_topic(overall_topics(tidy_tweets_glo
   group_split(topic)
 head(global_term_per_topic_list)
 ```
-
 
 ```{r Create list with topics per month}
 # South Africa
@@ -609,6 +612,7 @@ global_topics_per_outlet_month_jan <- sentiment_org_per_month("2021-01-01", GLOB
 global_topics_per_outlet_month_june <- sentiment_org_per_month("2021-06-01", GLOBAL_SUFFIX)
 ```
 
+## Get sentiment
 ```{r apply vader sentiment analysis to list of topics on covid tweets}
 # overall topics
 apply_vader <- function(df) {
@@ -726,7 +730,7 @@ head(global_monthly_topic_sentiment)
 <!-- Data Visualisation: Sentiment per topic -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-# Sentiment per topic: Data Visualisation
+# Data Visualisation: Sentiment per topic
 ```{r plot overall topic sentiment}
 plot_sentiment_topic_bar <- function(df, plot_col, suffix) {
   # set plot colors
@@ -757,9 +761,6 @@ plot_sentiment_topic_bar(global_overall_sentiment_per_topic, global_sentiment_me
 
 
 ```{r plot topic sentiment per month}
-# SA topics 2 and 5 (lockdown and president)
-# Global topics 1 and 4 (lockdown and america president)
-
 plot_topic_month <- function(df, suffix) {
   # set plot colors
   plot_colors <- ms_colors

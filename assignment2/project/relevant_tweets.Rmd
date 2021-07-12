@@ -78,7 +78,9 @@ global_media_outlet_list <- list(nyTimes_tweets, economist_tweets, bbcworld_twee
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
+# Data Wrangling
 
+## Data Cleaning
 ```{r extract tweets related to covid and combine covid tweets into a list}
 # extract covid tweets function
 get_covid_tweets <- function(df) {
@@ -138,7 +140,7 @@ tidy_tweets_SA <- clean_tweets(tweets_SA)
 tidy_tweets_global <- clean_tweets(tweets_global)
 ```
 
-# Top words per organisation
+## Top words per media outlet
 
 ```{r frequency of each word}
 # calculate the frequency by org of each word occuring in given dataframe
@@ -156,7 +158,7 @@ word_frequencies <- function(tidy_df) {
 word_frequency_SA <- word_frequencies(tidy_tweets_SA)
 word_frequency_global <- word_frequencies(tidy_tweets_global)
 ```
-
+## Top words in SA and Globally
 
 ```{r get top n words}
 # top n words to consider
@@ -192,7 +194,7 @@ top_words_global <- top_words(word_frequency_global, n_words)
 ```
 
 
-# Top n words overall
+## Top n words overall
 
 ```{r frequency of words overall (not per org) in ascending order}
 n_words_overall <- 20
@@ -218,7 +220,7 @@ top_words_global_overall <- tail(overall_word_frequency_global, n_words_overall)
 ```
 
 
-# Top hashtags
+## Top hashtags
 
 ```{r extract hashtags}
 extract_hashtags <- function(tidy_tweets_df) {
@@ -252,8 +254,9 @@ top_hashtags_global_overall <- tail(overall_hashtag_frequency_global, n_top_hash
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Visualisation -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
+# Data Visualisation
 
-# Comparing Tweet Frequency over Time
+## Comparing Tweet Frequency over Time
 ```{r plot tweet frequency over time by SA media outlet}
 ggplot(tweets_SA, aes(x = created_at, fill = name)) +
   # group tweets into 36 bins over 6 months -> 6 bins per month -> roughly 5 days
@@ -320,9 +323,10 @@ ggplot() +
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Not in report (replaced by Topic Modelling Graphs)-->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
+# Additional Data Visualisation
+Not added in the report, as our topic modelling replaces this analysis.
 
-
-# Top words
+## Top words
 ```{r plot top words per outlet}
 grid.newpage()
 grid.table(top_words_SA)
@@ -345,7 +349,7 @@ ggplot(top_words_global_overall, aes(word, n)) +
   coord_flip() +
   custom_column_basic_theme()
 ```
-# Top Hashtags
+## Top Hashtags
 
 ```{r plot top hashtags used overall}
 # plot most frequently used hashtags by SA Media Outlets in covid-related tweets

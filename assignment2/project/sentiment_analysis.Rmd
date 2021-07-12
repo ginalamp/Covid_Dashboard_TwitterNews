@@ -6,7 +6,7 @@ output: html_notebook
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
+# Setup
 ```{r set colours}
 # Microsoft Sharepoint main colours
 # https://docs.microsoft.com/en-us/sharepoint/dev/design/themes-colors
@@ -103,7 +103,9 @@ head(global_media_outlet_list[1])
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
+# Data Wrangling
 
+## Data cleaning
 ```{r extract tweets related to covid and combine covid tweets into a list}
 # extract covid tweets function
 get_covid_tweets <- function(df) {
@@ -161,6 +163,7 @@ head(tidy_tweets)
 global_tidy_tweets <- lapply(global_covid_tweets, clean_tweets)
 head(global_tidy_tweets)
 ```
+## Get sentiment
 
 ```{r vader and sentiment mean functions}
 # apply vader sentiment analysis to list of cleaned covid tweets
@@ -211,9 +214,6 @@ global_total_overall_sentiment <- mean(global_overall_sentiment_per_outlet$globa
 head(global_total_overall_sentiment)
 ```
 
-
-# Sentiment on top x tweets
-
 ```{r get top NUM_TWEETS retweeted/favourited tweets per media outlet}
 get_top_count <- function(df, count_col) {
   text <- df %>%
@@ -251,7 +251,7 @@ global_top_favourited_sentiment_per_outlet <- data.frame(global_name, global_top
 head(global_top_favourited_sentiment_per_outlet)
 ```
 
-# Sentiment analysis over time
+## Sentiment analysis over time
 
 ```{r sentiment analysis over time with rolling avg}
 add_rolling_avg_to_tidy_df <- function(tidy_df, vader_df) {
@@ -276,7 +276,7 @@ global_tidy_tweets <- add_rolling_avg_to_tidy_df(global_tidy_tweets, global_vade
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Visualisation -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
+# Data Visualisation
 ```{r plot total overall sentiment}
 total_overall_sentiment
 global_total_overall_sentiment

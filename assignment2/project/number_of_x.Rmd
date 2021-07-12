@@ -6,7 +6,7 @@ output: html_notebook
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
+# Setup
 ```{r set colours}
 # palette generator: https://learnui.design/tools/data-color-picker.html#palette
 table_palette <- c("#6996b3", "#abd2ec", "#c1e7ff")
@@ -64,7 +64,9 @@ head(global_media_outlet_list[1])
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Wrangling -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
+# Data Wrangling
 
+## Data Cleaning
 ```{r extract tweets related to covid and combine covid tweets into a list}
 # extract covid tweets function
 get_covid_tweets <- function(df) {
@@ -92,6 +94,7 @@ global_covid_tweets <- list(get_covid_tweets(nytimes_tweets),
                             get_covid_tweets(economist_tweets))
 ```
 
+## Get number of x
 ```{r get number of followers, tweets, and retweets per media outlet}
 extract_number_of_x <- function(df_list) {
   extracted_list <- data.frame(name = unlist(lapply(df_list, function(df) {return(df$name[1])})),
@@ -134,9 +137,9 @@ head(global_top_favourited)
 ```
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-<!-- Data Visualisation (South African)-->
+<!-- Data Visualisation -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
-
+# Data Visualisation
 ```{r plot tables of dataframes}
 # add covid columns to df for table plot
 number_of_x$covid_tweets <- covid_number_of_x$tweets_count
