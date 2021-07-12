@@ -21,6 +21,11 @@ To run this code, simply
 * Microsoft's SharePoint colour palette is used to visualise the data
 * Functions used to reduce code
 
+## Data Collection
+[TwitterScraper](https://github.com/MatthewWolff/TwitterScraper) was used to collect Twitter data on the selected South African and global media outlets from 1 January 2021 to 1 July 2021. The output provided was in the form of tweet IDs in `.json` files which we used to query Twitter's API using `rtweet` to collect all tweets matching the tweet IDs in `data_by_tweetID.Rmd`. The `.csv` files in the `data/` folder is the output of the extracted tweets from the Twitter API. 
+
+Initially, we used `data.Rmd` to extract the 3200 most recent tweets using the Twitter API through `rtweet`. We replaced this with the TwitterScraper method described above.
+
 ## Error handling
 ### Topic modelling Ubuntu running notes
 If running the code using Linux (Ubuntu), you might need to install additional packages in order to install some of the libraries (such as `topicmodels`, `ldatuning`, `reshape2`, and `vader`)
