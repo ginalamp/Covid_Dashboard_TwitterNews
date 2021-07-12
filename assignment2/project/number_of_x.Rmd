@@ -2,10 +2,6 @@
 title: "Number of x"
 output: html_notebook
 ---
-# TODO
-* combine all charts into one grouped bar chart (one for SA, one for global)
-* label each column with number
-* plot all and covid
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
@@ -124,7 +120,6 @@ get_top_count <- function(df, count_col) {
 ```
 
 ```{r South Africa: get top NUM_TWEETS retweets and favourited tweets}
-# TODO need to plot nicely (as table?)
 top_retweets <- lapply(media_outlet_list, function(df) {return(get_top_count(df, df$retweet_count))})
 head(top_retweets)
 top_favourited <- lapply(media_outlet_list, function(df) {return(get_top_count(df, df$favorite_count))})
@@ -132,7 +127,6 @@ head(top_favourited)
 ```
 
 ```{r Global: get top NUM_TWEETS retweets and favourited tweets}
-# TODO need to plot nicely (as table?)
 global_top_retweets <- lapply(global_media_outlet_list, function(df) {return(get_top_count(df, df$retweet_count))})
 head(global_top_retweets)
 global_top_favourited <- lapply(global_media_outlet_list, function(df) {return(get_top_count(df, df$favorite_count))})
