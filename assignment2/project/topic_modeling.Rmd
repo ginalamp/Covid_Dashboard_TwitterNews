@@ -737,7 +737,7 @@ head(global_overall_sentiment_per_topic)
 vader_analysis_per_outlet_month_jan <- lapply(topics_per_outlet_month_jan, apply_vader_topic)
 vader_analysis_per_outlet_month_june <- lapply(topics_per_outlet_month_june, apply_vader_topic)
 
-# get sentiment
+# get sentiment mean
 topic_sentiment_per_outlet_month_jan <- lapply(vader_analysis_per_outlet_month_jan, get_mean_sentiment_per_topic)
 topic_sentiment_per_outlet_month_june <- lapply(vader_analysis_per_outlet_month_june, get_mean_sentiment_per_topic)
 ```
@@ -747,19 +747,22 @@ topic_sentiment_per_outlet_month_june <- lapply(vader_analysis_per_outlet_month_
 global_vader_analysis_per_outlet_month_jan <- lapply(global_topics_per_outlet_month_jan, apply_vader_topic)
 global_vader_analysis_per_outlet_month_june <- lapply(global_topics_per_outlet_month_june, apply_vader_topic)
 
-# Global
+# get sentiment mean
 global_topic_sentiment_per_outlet_month_jan <- lapply(global_vader_analysis_per_outlet_month_jan, get_mean_sentiment_per_topic)
 global_topic_sentiment_per_outlet_month_june <- lapply(global_vader_analysis_per_outlet_month_june, get_mean_sentiment_per_topic)
 ```
 
-```{r}
-v <- lapply(topics_per_month_list, apply_vader_month)
+```{r South Africa: get topic sentiment per month}
+vader_analysis_per_month <- lapply(topics_per_month_list, apply_vader_month)
+monthly_topic_sentiment <- lapply(vader_analysis_per_month, get_mean_sentiment_per_month)
+head(monthly_topic_sentiment)
 ```
 
 
-```{r}
-montly_topic_sentiment <- lapply(v, get_mean_sentiment_per_month)
-montly_topic_sentiment
+```{r Global: get topic sentiment per month}
+global_vader_analysis_per_month <- lapply(global_topics_per_month_list, apply_vader_month)
+global_monthly_topic_sentiment <- lapply(global_vader_analysis_per_month, get_mean_sentiment_per_month)
+head(global_monthly_topic_sentiment)
 ```
 
 
@@ -827,12 +830,12 @@ montly_topic_sentiment
 <!-- Data Visualisation: Sentiment per topic -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 
-<!-- 
+
+
+```{r plot topic sentiment per month}
 # SA topics 2 and 5 (lockdown and president)
 # Global topics 1 and 4 (lockdown and america president)
--->
 
-```{r}
 plot_topic_month <- function(df, suffix) {
   # set plot colors
   plot_colors <- ms_colors
@@ -840,26 +843,27 @@ plot_topic_month <- function(df, suffix) {
     plot_colors <- rev(ms_colors)
   }
   
-  fill = format(df$month, "%B")
-  
   # plot
   ggplot() +
-    geom_col(bind_rows(df, .id = "id"), mapping = aes(month, compound, fill=factor(topic)), stat='Identity', position=position_dodge()) +
-    labs(title = paste("Sentiment per media outlet topic in", month),
+    geom_col(bind_rows(df, .id = "id"), mapping = aes(as.Date(month), compound, fill=factor(topic)), stat='Identity', position=position_dodge()) +
+    labs(title = "Topic sentiment per month",
          subtitle = suffix,
          x=NULL,
          y="Vader Sentiment Score") +
     scale_fill_manual(values = plot_colors, name = "Topic") +
-    custom_column_basic_theme()
+    scale_x_date(date_breaks = "1 month", date_labels = "%B") +
+    custom_column_basic_theme() +
+    theme(legend.position = "right", axis.text.x = element_text(size = 7.5))
 }
 
 
-plot_topic_month(montly_topic_sentiment, SA_SUFFIX)
+plot_topic_month(monthly_topic_sentiment, SA_SUFFIX)
+plot_topic_month(global_monthly_topic_sentiment, GLOBAL_SUFFIX)
 ```
 
 
 
-```{r plot sentiment per media outlet per month}
+```{r plot sentiment per media outlet per month: Jan and June}
 plot_topic_outlet_month <- function(df, month, suffix) {
   # set plot colors
   plot_colors <- ms_colors
@@ -896,10 +900,11 @@ plot_sentiment_topic_bar <- function(df, plot_row, plot_col, title, suffix) {
   
   fill = plot_row
   # set fill to month if plotting by month
-  if (title == "month") {
-    fill = format(plot_row, "%B")
-  }
+  # if (title == "month") {
+  #   fill = format(plot_row, "%B")
+  # }
   
+  # TODO: change to topic automatic
   x_axis_title <- NULL
   # set x-axis title to Topic if plotting by topic
   if (title == "topic") {
@@ -921,47 +926,48 @@ ggplot(df, aes(plot_row, plot_col, fill=fill)) +
 ```{r Plot topic sentiment per month and topic}
 # South Africa
 plot_sentiment_topic_bar(overall_sentiment_per_topic, overall_sentiment_per_topic$topic, sentiment_mean_per_topic, "topic", SA_SUFFIX)
-plot_sentiment_topic_bar(overall_sentiment_per_month, overall_sentiment_per_month$month, sentiment_mean_per_month, "month", SA_SUFFIX)
+# plot_sentiment_topic_bar(overall_sentiment_per_month, overall_sentiment_per_month$month, sentiment_mean_per_month, "month", SA_SUFFIX)
 
 # Global
 plot_sentiment_topic_bar(global_overall_sentiment_per_topic, global_overall_sentiment_per_topic$topic, global_sentiment_mean_per_topic, "topic", GLOBAL_SUFFIX)
-plot_sentiment_topic_bar(global_overall_sentiment_per_month, global_overall_sentiment_per_month$month, global_sentiment_mean_per_month, "month", GLOBAL_SUFFIX)
+# plot_sentiment_topic_bar(global_overall_sentiment_per_month, global_overall_sentiment_per_month$month, global_sentiment_mean_per_month, "month", GLOBAL_SUFFIX)
 ```
 
-```{r plot sentiment per media outlet over time (overall, jan, june)}
-plot_sentiment_topic_outlet_bar <- function(average, jan, june, suffix) {
-    # set plot colors and labels
-    plot_colors <- ms_colors
-    legend_labels = c("Overall", "January", "June")
-    
-    if (suffix == GLOBAL_SUFFIX) {
-      # set global plot colors
-      plot_colors <- rev(ms_colors)
-    }
-    
-    # condense df such that multiple series bar plot can be plotted
-    sentiment_merged <- merge(average, jan, by = "media_outlet")
-    sentiment_merged <- merge(sentiment_merged, june, by="media_outlet")
-    if (suffix == SA_SUFFIX) {
-        sentiment_melted <- melt(sentiment_merged %>%
-                                   select(media_outlet, sentiment_mean_per_outlet, sentiment_mean_per_outlet_month_jan, sentiment_mean_per_outlet_month_june), id.vars=c("media_outlet"))
-    } else {
-        sentiment_melted <- melt(sentiment_merged %>%
-                               select(media_outlet, global_sentiment_mean_per_outlet, global_sentiment_mean_per_outlet_month_jan, global_sentiment_mean_per_outlet_month_june), id.vars=c("media_outlet"))
-    }
+<!-- x -->
+<!-- ```{r plot sentiment per media outlet over time (overall, jan, june)} -->
+<!-- plot_sentiment_topic_outlet_bar <- function(average, jan, june, suffix) { -->
+<!--     # set plot colors and labels -->
+<!--     plot_colors <- ms_colors -->
+<!--     legend_labels = c("Overall", "January", "June") -->
 
-  # plot
-  ggplot(sentiment_melted, aes(media_outlet, value, fill=variable)) +
-    geom_bar(stat='Identity', position=position_dodge()) +
-      labs(title = "Sentiment comparison over time per media outlet for their overall topics",
-           subtitle = suffix,
-           x=NULL,
-           y="Vader Sentiment Score") +
-      scale_fill_manual(values = plot_colors, labels = legend_labels, name = "Average sentiment") +
-    custom_column_basic_theme() + 
-    theme(legend.position = "right", axis.text.x = element_text(size = 7.5))
-}
+<!--     if (suffix == GLOBAL_SUFFIX) { -->
+<!--       # set global plot colors -->
+<!--       plot_colors <- rev(ms_colors) -->
+<!--     } -->
 
-plot_sentiment_topic_outlet_bar(overall_sentiment_per_outlet, overall_sentiment_per_outlet_month_jan, overall_sentiment_per_outlet_month_june, SA_SUFFIX)
-plot_sentiment_topic_outlet_bar(global_overall_sentiment_per_outlet, global_overall_sentiment_per_outlet_month_jan, global_overall_sentiment_per_outlet_month_june, GLOBAL_SUFFIX)
-```
+<!--     # condense df such that multiple series bar plot can be plotted -->
+<!--     sentiment_merged <- merge(average, jan, by = "media_outlet") -->
+<!--     sentiment_merged <- merge(sentiment_merged, june, by="media_outlet") -->
+<!--     if (suffix == SA_SUFFIX) { -->
+<!--         sentiment_melted <- melt(sentiment_merged %>% -->
+<!--                                    select(media_outlet, sentiment_mean_per_outlet, sentiment_mean_per_outlet_month_jan, sentiment_mean_per_outlet_month_june), id.vars=c("media_outlet")) -->
+<!--     } else { -->
+<!--         sentiment_melted <- melt(sentiment_merged %>% -->
+<!--                                select(media_outlet, global_sentiment_mean_per_outlet, global_sentiment_mean_per_outlet_month_jan, global_sentiment_mean_per_outlet_month_june), id.vars=c("media_outlet")) -->
+<!--     } -->
+
+<!--   # plot -->
+<!--   ggplot(sentiment_melted, aes(media_outlet, value, fill=variable)) + -->
+<!--     geom_bar(stat='Identity', position=position_dodge()) + -->
+<!--       labs(title = "Sentiment comparison over time per media outlet for their overall topics", -->
+<!--            subtitle = suffix, -->
+<!--            x=NULL, -->
+<!--            y="Vader Sentiment Score") + -->
+<!--       scale_fill_manual(values = plot_colors, labels = legend_labels, name = "Average sentiment") + -->
+<!--     custom_column_basic_theme() +  -->
+<!--     theme(legend.position = "right", axis.text.x = element_text(size = 7.5)) -->
+<!-- } -->
+
+<!-- plot_sentiment_topic_outlet_bar(overall_sentiment_per_outlet, overall_sentiment_per_outlet_month_jan, overall_sentiment_per_outlet_month_june, SA_SUFFIX) -->
+<!-- plot_sentiment_topic_outlet_bar(global_overall_sentiment_per_outlet, global_overall_sentiment_per_outlet_month_jan, global_overall_sentiment_per_outlet_month_june, GLOBAL_SUFFIX) -->
+<!-- ``` -->
