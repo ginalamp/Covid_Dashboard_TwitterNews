@@ -705,43 +705,21 @@ vader_analysis_per_outlet_month_jan <- lapply(topics_per_outlet_month_jan, apply
 vader_analysis_per_outlet_month_jan
 ```
 ```{r}
-topic_sentiment_per_outlet_month_jan <- vader_analysis_per_outlet_month_jan[[1]] %>% 
-  group_by(topic, outlet) %>% 
-  summarize(compound_sum = sum(compound))
+mean_sentiment_per_topic <- function(df) {
+  sum_sentiment <- df %>%
+    group_by(topic, outlet) %>%
+    summarize(compound = mean(compound))
+  return(sum_sentiment)
+}
+
+topic_sentiment_per_outlet_month_jan <- lapply(vader_analysis_per_outlet_month_jan, mean_sentiment_per_topic)
 topic_sentiment_per_outlet_month_jan
 ```
 
 
+
+
 ```{r South Africa: get topic sentiment mean per month, outlet}
-# TODO: this needs changing - do not apply sentiment mean
-# topics_per_outlet_month_jan
-
-# get average sentiment
-# vader_analysis_per_month <- lapply(topics_per_month_list, apply_vader)
-# sentiment_mean_per_month <- unlist(lapply(vader_analysis_per_month, get_sentiment_mean))
-
-# vader_analysis_per_outlet <- lapply(topics_per_outlet_list, apply_vader)
-# sentiment_mean_per_outlet <- unlist(lapply(vader_analysis_per_outlet, get_sentiment_mean))
-
-vader_analysis_per_outlet_month_jan <- lapply(topics_per_outlet_month_jan, apply_vader)
-vader_analysis_per_outlet_month_june <- lapply(topics_per_outlet_month_june, apply_vader)
-# sentiment_mean_per_outlet_month_jan <- unlist(lapply(vader_analysis_per_outlet_month_jan, get_sentiment_mean))
-# sentiment_mean_per_outlet_month_june <- unlist(lapply(vader_analysis_per_outlet_month_june, get_sentiment_mean))
-
-# get sentiment mean per  month
-# overall_sentiment_per_month <- data.frame(month=MONTHS_TO_PLOT, sentiment_mean_per_month)
-# head(overall_sentiment_per_month)
-
-# overall_sentiment_per_outlet <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet)
-# head(overall_sentiment_per_outlet)
-
-# overall_sentiment_per_outlet_month_jan <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet_month_jan)
-# overall_sentiment_per_outlet_month_june <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet_month_june)
-# head(overall_sentiment_per_outlet_month_jan)
-# head(overall_sentiment_per_outlet_month_june)
-```
-
-```{r}
 
 # get average sentiment
 vader_analysis_per_month <- lapply(topics_per_month_list, apply_vader)
@@ -750,10 +728,10 @@ sentiment_mean_per_month <- unlist(lapply(vader_analysis_per_month, get_sentimen
 vader_analysis_per_outlet <- lapply(topics_per_outlet_list, apply_vader)
 sentiment_mean_per_outlet <- unlist(lapply(vader_analysis_per_outlet, get_sentiment_mean))
 
-vader_analysis_per_outlet_month_jan <- lapply(topics_per_outlet_month_jan, apply_vader)
-vader_analysis_per_outlet_month_june <- lapply(topics_per_outlet_month_june, apply_vader)
-sentiment_mean_per_outlet_month_jan <- unlist(lapply(vader_analysis_per_outlet_month_jan, get_sentiment_mean))
-sentiment_mean_per_outlet_month_june <- unlist(lapply(vader_analysis_per_outlet_month_june, get_sentiment_mean))
+# vader_analysis_per_outlet_month_jan <- lapply(topics_per_outlet_month_jan, apply_vader)
+# vader_analysis_per_outlet_month_june <- lapply(topics_per_outlet_month_june, apply_vader)
+# sentiment_mean_per_outlet_month_jan <- unlist(lapply(vader_analysis_per_outlet_month_jan, get_sentiment_mean))
+# sentiment_mean_per_outlet_month_june <- unlist(lapply(vader_analysis_per_outlet_month_june, get_sentiment_mean))
 
 # get sentiment mean per  month
 overall_sentiment_per_month <- data.frame(month=MONTHS_TO_PLOT, sentiment_mean_per_month)
@@ -762,10 +740,10 @@ head(overall_sentiment_per_month)
 overall_sentiment_per_outlet <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet)
 head(overall_sentiment_per_outlet)
 
-overall_sentiment_per_outlet_month_jan <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet_month_jan)
-overall_sentiment_per_outlet_month_june <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet_month_june)
-head(overall_sentiment_per_outlet_month_jan)
-head(overall_sentiment_per_outlet_month_june)
+# overall_sentiment_per_outlet_month_jan <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet_month_jan)
+# overall_sentiment_per_outlet_month_june <- data.frame(media_outlet=OUTLETS_TO_PLOT, sentiment_mean_per_outlet_month_june)
+# head(overall_sentiment_per_outlet_month_jan)
+# head(overall_sentiment_per_outlet_month_june)
 ```
 
 
@@ -802,6 +780,33 @@ head(global_overall_sentiment_per_outlet_month_june)
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Data Visualisation: Sentiment per topic -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
+
+```{r}
+x <- bind_rows(topic_sentiment_per_outlet_month_jan, .id = "id")
+x
+```
+```{r}
+y <- melt(x %>%
+            select(outlet, compound, topic), id.vars=c("outlet"))
+y
+```
+
+```{r}
+ggplot(y, aes(outlet, value, fill=variable)) +
+  geom_bar(stat='Identity', position=position_dodge()) +
+    labs(title = "Sentiment comparison per media outlet",
+         # subtitle = suffix,
+         x=NULL,
+         y="Vader Sentiment Score") +
+    # scale_fill_manual(values = plot_colors, labels = legend_labels, name = "Average sentiment") +
+    custom_column_basic_theme()
+```
+
+```{r}
+ggplot(x, aes(outlet, compound)) +
+  geom_bar(stat='Identity', position=position_dodge())
+```
+
 
 ```{r plot topics and month sentiment}
 plot_sentiment_topic_bar <- function(df, plot_row, plot_col, title, suffix) {
