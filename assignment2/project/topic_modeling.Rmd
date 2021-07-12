@@ -652,6 +652,7 @@ apply_vader_month <- function(df) {
   vader_applied <- vader_applied %>%
     select(topic, month, compound)
   return(vader_applied)
+}
   
 # for individual topics
 apply_vader_topic <- function(df) {
@@ -661,7 +662,6 @@ apply_vader_topic <- function(df) {
   vader_applied <- vader_applied %>%
     select(topic, outlet, compound)
   return(vader_applied)
-}
 }
 ```
 
