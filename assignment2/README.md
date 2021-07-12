@@ -3,7 +3,10 @@
 For a report on the data analysis done in this repo, you can view our report on Overleaf [here](https://www.overleaf.com/read/vsyrhcwznshb)
 
 ## Usage
-To run this code, simply open the `.Rmd` file you wish to run in RStudio, set your cursor at the top of the file, and select "Run All Chunks below".
+To run this code, simply
+1. Open the `.Rmd` you wish to run
+2. Select 'Run'
+3. Select 'Run all'
 
 ## File description
 * `number_of_x`: computes the total number of followers, tweets, and retweets of all media outlets and visualises them using a table.
