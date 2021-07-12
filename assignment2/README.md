@@ -1,6 +1,6 @@
 # Assignment 2: Twitter Media Outlet Analysis
 
-For a report on the data analysis done in this repo, you can view our report on Overleaf [here](https://www.overleaf.com/read/vsyrhcwznshb)
+The report on the data analysis done in this repo is available in the `.pdf` file and was written in Latex.
 
 ## Usage
 To run this code, simply
