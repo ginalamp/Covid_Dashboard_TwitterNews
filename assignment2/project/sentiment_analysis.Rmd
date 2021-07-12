@@ -3,10 +3,6 @@ title: "Sentiment analysis"
 output: html_notebook
 ---
 
-# TODO
-* add custom sentiment to vader analysis?
-* Extract data wrangling functions to the top? 
-
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
 <!-- Setup -->
 <!----------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -85,7 +81,6 @@ extract_relevant_data <- function(df) {
 ```
 
 ```{r read South Africa data}
-# TODO: add SA gov
 DailyMav_tweets <- extract_relevant_data(read.csv("data/dailymaverick.csv"))
 EWN_tweets <- extract_relevant_data(read.csv("data/ewnupdates.csv"))
 News24_tweets <- extract_relevant_data(read.csv("data/news24.csv"))
