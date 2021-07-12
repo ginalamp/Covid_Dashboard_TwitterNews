@@ -786,10 +786,25 @@ x <- bind_rows(topic_sentiment_per_outlet_month_jan, .id = "id")
 x
 ```
 ```{r}
+ggplot() +
+  geom_col(x, mapping = aes(topic, compound, fill=topic), stat='Identity', position=position_dodge()) +
+  facet_wrap(~ outlet, scales = "free") 
+    labs(title = "Sentiment comparison per media outlet",
+         # subtitle = suffix,
+         x=NULL,
+         y="Vader Sentiment Score") +
+    # scale_fill_manual(values = plot_colors, labels = legend_labels, name = "Average sentiment") +
+    custom_column_basic_theme()
+```
+
+
+```{r}
 y <- melt(x %>%
             select(outlet, compound, topic), id.vars=c("outlet"))
 y
 ```
+
+
 
 ```{r}
 ggplot(y, aes(outlet, value, fill=variable)) +
